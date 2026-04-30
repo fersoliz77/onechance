@@ -1,5 +1,10 @@
+"use client"
 import Link from 'next/link'
+import Image from 'next/image'
+import { useState } from 'react'
 import Background from '@/components/layout/Background'
+import AuthModal from '@/components/landing/AuthModal'
+import { PlayerCard, ClubChip, CoachCard, RepChip } from '@/components/landing/Cards'
 
 const stats = [
   { value: '1.2k', label: 'Jugadores' },
@@ -9,10 +14,10 @@ const stats = [
 ]
 
 const roles = [
-  { icon: '⚽', label: 'Jugador / Jugadora', color: '#00C853' },
-  { icon: '📋', label: 'Técnico',            color: '#5A8FFF' },
-  { icon: '🏟️', label: 'Club',              color: '#FFB400' },
-  { icon: '🤝', label: 'Representante',      color: '#B464FF' },
+  { icon: '⚽', label: 'Soy jugador / jugadora', color: '#00C853' },
+  { icon: '📋', label: 'Soy técnico',            color: '#5A8FFF' },
+  { icon: '🏟️', label: 'Represento un club',     color: '#FFB400' },
+  { icon: '🤝', label: 'Soy representante',      color: '#B464FF' },
 ]
 
 const ticker = [
@@ -25,156 +30,169 @@ const ticker = [
 ]
 
 export default function Landing() {
-  return (
-    <div className="relative min-h-screen">
-      <Background scanlines />
+  const [openModal, setOpenModal] = useState(false)
+  const tickerLoop = [...ticker, ...ticker, ...ticker]
 
-      <div className="relative z-[2] pt-14">
+  return (
+    <main className="relative min-h-screen overflow-x-clip">
+      <Background scanlines />
+      <div className="absolute inset-0 z-[1] pointer-events-none">
+        <Image
+          src="/images/estadio.png"
+          alt="Estadio nocturno"
+          fill
+          priority
+          className="object-cover opacity-[0.42]"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(108deg,rgba(5,10,20,0.78)_0%,rgba(5,10,20,0.64)_38%,rgba(5,10,20,0.58)_60%,rgba(5,10,20,0.82)_100%)]" />
+      </div>
+
+      <div className="relative z-[2] min-h-screen flex flex-col pt-[calc(var(--oc-nav-height)+44px)] md:pt-[calc(var(--oc-nav-height)+56px)] pb-[10vh] md:pb-[9vh]">
         {/* HERO */}
-        <div className="max-w-[1100px] mx-auto px-7 pt-14 grid grid-cols-[1fr_44px_1fr] min-h-[520px]">
+        <div className="oc-shell grid grid-cols-1 lg:grid-cols-[1fr_44px_1fr] min-h-[calc(100vh-260px)] lg:min-h-[calc(100vh-250px)] items-center gap-8 lg:gap-0 lg:translate-y-[5vh]">
 
           {/* LEFT */}
-          <div className="pt-2 pr-8 flex flex-col justify-start">
-            <div className="inline-flex items-center gap-2 bg-[rgba(0,200,83,0.08)] border border-[rgba(0,200,83,0.25)] rounded-[20px] px-[14px] py-[5px] mb-7 w-fit">
+          <div className="pt-2 lg:pr-8 flex flex-col justify-start max-w-[620px] justify-self-center lg:justify-self-end w-full">
+            <div className="inline-flex items-center gap-2 bg-[rgba(0,200,83,0.08)] border-[0.5px] border-[rgba(0,200,83,0.25)] rounded-[20px] px-[14px] py-[5px] mb-6 w-fit animate-fade-up" style={{ animationDelay: '0.1s' }}>
               <span className="w-[6px] h-[6px] bg-oc-green rounded-full animate-blink" />
               <span className="text-oc-green text-[10px] tracking-[0.07em]">PLATAFORMA PROFESIONAL DE FÚTBOL</span>
             </div>
 
-            <h1 className="text-white text-[56px] font-medium leading-[0.95] tracking-[-0.04em] mb-6">
-              Tu{' '}
-              <span className="text-[rgba(255,255,255,0.2)]">única</span>
+            <h1 className="text-white text-[clamp(46px,6vw,58px)] font-medium leading-[0.92] tracking-[-0.045em] mb-5 animate-fade-up" style={{ animationDelay: '0.2s' }}>
+              Mostrá
               <br />
-              <span className="text-oc-green inline-block" style={{ transform: 'skewX(-10deg)' }}>/</span>{' '}
-              oportunidad
+              tu <span className="text-oc-green inline-block" style={{ transform: 'skewX(-10deg)' }}>/</span>
+              <br />
+              <span className="text-transparent [text-shadow:0_0_0_rgba(255,255,255,0)] [WebkitTextStroke:1px_rgba(255,255,255,0.22)]">talento</span>
             </h1>
 
-            <p className="text-[rgba(255,255,255,0.35)] text-[13px] leading-[1.7] max-w-[320px] mb-9">
+            <p className="text-[rgba(255,255,255,0.35)] text-[clamp(13px,1.4vw,15px)] leading-[1.65] max-w-[440px] mb-9 animate-fade-up" style={{ animationDelay: '0.3s' }}>
               La vidriera donde{' '}
               <strong className="text-[rgba(255,255,255,0.7)] font-normal">clubes, representantes y técnicos</strong>{' '}
-              descubren el talento que están buscando.
+              descubren el talento que están buscando. Creá tu perfil. Hacete ver.
             </p>
 
-            <div className="flex items-center gap-4 mb-12">
+             <div className="flex items-center gap-5 mb-0 flex-wrap animate-fade-up group" style={{ animationDelay: '0.4s' }}>
               <Link
                 href="/auth?tab=register"
-                className="bg-oc-green text-oc-green-dark text-[13px] font-medium px-[26px] py-[13px] rounded-[9px] inline-flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(0,200,83,0.35)] hover:bg-oc-green-hover no-underline"
+                onClick={e => { e.preventDefault(); setOpenModal(true) }}
+                className="h-[46px] px-6 rounded-[12px] inline-flex items-center gap-2.5 no-underline text-[13px] font-medium tracking-[-0.01em] text-[#032113] border-[0.5px] border-[rgba(145,255,194,0.55)] bg-[linear-gradient(135deg,#18f17a_0%,#00c853_52%,#00b54b_100%)] shadow-[0_10px_28px_rgba(0,200,83,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_32px_rgba(0,200,83,0.45)] group-hover:block flex"
               >
-                Publicar mi perfil →
+                Crear mi perfil
+                <span className="text-[16px] leading-none transition-transform duration-200 group-hover:translate-x-1">→</span>
               </Link>
-              <Link href="/jugadores" className="text-[rgba(255,255,255,0.4)] text-[13px] flex items-center gap-1.5 transition-colors hover:text-white no-underline">
-                Ver jugadores
+              <Link href="/jugadores" className="text-[rgba(255,255,255,0.4)] text-[13px] flex items-center gap-2 transition-colors hover:text-white no-underline">
+                <span className="w-8 h-8 rounded-full border-[0.5px] border-[rgba(255,255,255,0.2)] inline-flex items-center justify-center text-[10px] text-[rgba(255,255,255,0.6)]">▶</span>
+                Ver la plataforma
               </Link>
             </div>
 
-            <div className="flex gap-6">
+            <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 rounded-[12px] border-[0.5px] border-[rgba(255,255,255,0.1)] bg-[rgba(5,10,20,0.62)] backdrop-blur-[8px] max-w-[620px] overflow-hidden relative z-10 animate-fade-up" style={{ animationDelay: '0.5s' }}>
               {stats.map(s => (
-                <div key={s.label}>
-                  <div className="text-oc-green text-[20px] font-medium tracking-[-0.02em]">{s.value}</div>
-                  <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.06em] mt-0.5">{s.label}</div>
+                <div key={s.label} className="px-4 py-3.5 sm:px-[16px] sm:py-[13px] border-r-[0.5px] border-b-[0.5px] sm:border-b-0 border-[rgba(255,255,255,0.08)] last:border-r-0 even:sm:border-r-[0.5px]">
+                  <div className="text-oc-green text-[clamp(24px,2.2vw,31px)] font-medium tracking-[-0.03em] leading-[0.95]">{s.value}</div>
+                  <div className="text-[rgba(255,255,255,0.3)] text-[10px] uppercase tracking-[0.05em] mt-1.5">{s.label}</div>
                 </div>
               ))}
             </div>
           </div>
 
           {/* CENTER DIVIDER */}
-          <div className="flex flex-col items-center py-8">
+          <div className="hidden lg:flex flex-col items-center py-8">
             <div className="flex-1 w-px bg-gradient-to-b from-transparent via-[rgba(0,200,83,0.25)] to-transparent" />
-            <div className="w-[8px] h-[8px] bg-oc-green my-2" style={{ clipPath: 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)' }} />
+            <div className="w-[8px] h-[8px] bg-oc-green my-2 shadow-[0_0_10px_rgba(0,200,83,0.6)]" style={{ clipPath: 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)' }} />
             <div className="flex-1 w-px bg-gradient-to-b from-transparent via-[rgba(0,200,83,0.25)] to-transparent" />
           </div>
 
           {/* RIGHT — Floating cards */}
-          <div className="flex flex-col items-center justify-center gap-5 relative pt-8">
-            <div
-              className="w-[220px] bg-gradient-to-br from-[#0C1F12] to-[#060F09] border border-[rgba(0,200,83,0.2)] p-4 animate-float"
-              style={{ borderRadius:'16px 4px 16px 16px', clipPath:'polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%)' }}
-            >
-              <div className="h-[2px] bg-gradient-to-r from-oc-green to-transparent -mt-4 -mx-4 mb-3" />
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-[44px] h-[44px] rounded-full bg-gradient-to-br from-oc-green to-oc-green-deep flex items-center justify-center text-[18px] border-[1.5px] border-[rgba(0,200,83,0.4)]">👤</div>
-                <div className="flex-1">
-                  <div className="text-white text-[12px] font-medium">Lucas Ferreira</div>
-                  <div className="text-oc-green text-[10px] mt-0.5">Enganche</div>
-                </div>
-                <div className="bg-[rgba(0,200,83,0.1)] rounded-[7px] px-[8px] py-[5px] text-center">
-                  <div className="text-oc-green text-[14px] font-medium leading-none">87</div>
-                  <div className="text-[rgba(255,255,255,0.2)] text-[7px] uppercase mt-0.5">OVR</div>
-                </div>
+          <div className="flex flex-col items-center lg:items-start justify-center gap-4 sm:gap-5 relative pt-6 lg:pt-10 justify-self-center lg:justify-self-start w-full max-w-[860px]">
+            <div className="flex gap-3 items-start relative z-10 lg:-translate-y-2">
+              <div className="flex flex-col gap-3 lg:translate-y-4">
+                <PlayerCard
+                  name="Lucas Ferreira" position="Enganche" country="ARG" age="23" height="1.78m" overall="87"
+                  rotate={-1} animClass="animate-float"
+                />
+                <ClubChip
+                  name="San Lorenzo" liga="Primera División · ARG" rotate={-1}
+                  animClass="animate-float" delay="-3s"
+                  className="lg:ml-4"
+                />
+                <PlayerCard
+                  name="Camila Ríos" position="Mediocampista" country="URU" age="21" height="1.70m" overall="84" avatar="⚽"
+                  rotate={-1} animClass="animate-float" delay="-2.2s"
+                  className="hidden md:block lg:-ml-3"
+                />
               </div>
-              <div className="grid grid-cols-3 gap-1.5">
-                {[['ARG','Nac.'],['1.78m','Alt.'],['23','Edad']].map(([v,l]) => (
-                  <div key={l} className="bg-[rgba(0,200,83,0.06)] rounded-[6px] p-[6px] text-center">
-                    <div className="text-oc-green text-[11px] font-medium">{v}</div>
-                    <div className="text-[rgba(255,255,255,0.2)] text-[7px] uppercase mt-0.5">{l}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
 
-            <div
-              className="w-[200px] bg-[#0B1A2E] border border-[rgba(80,140,255,0.2)] p-4"
-              style={{ borderRadius:'16px 4px 16px 16px', clipPath:'polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%)', transform:'rotate(2deg)' }}
-            >
-              <div className="flex items-center gap-2.5 mb-2">
-                <div className="w-[36px] h-[36px] rounded-full bg-gradient-to-br from-oc-blue to-[#0B1A3A] flex items-center justify-center text-[14px] border border-[rgba(90,143,255,0.35)]">📋</div>
-                <div>
-                  <div className="text-white text-[11px] font-medium">Martín Álvarez</div>
-                  <div className="text-oc-blue text-[9px] mt-0.5">Técnico · Uruguay</div>
-                </div>
+              <div className="hidden sm:flex flex-col gap-3 mt-8 lg:-ml-6">
+                <CoachCard
+                  name="Martín Álvarez" role="Técnico · Uruguay" tags={['4-3-3', 'Ofensivo', '12 años']} rotate={2}
+                  animClass="animate-float" delay="-1s"
+                />
+                <RepChip
+                  name="Carlos Vega" players="18" countries="5" rotate={-1}
+                  animClass="animate-float" delay="-4s"
+                  className="lg:ml-10"
+                />
+                <CoachCard
+                  name="Paula Méndez" role="Técnica · Chile" tags={['Presión alta', 'Juveniles', 'UEFA B']} rotate={-2}
+                  animClass="animate-float" delay="-2.8s"
+                  className="lg:-ml-2"
+                />
               </div>
-              <div className="flex gap-1 flex-wrap">
-                {['4-3-3','Ofensivo','12 años'].map(t => (
-                  <span key={t} className="bg-[rgba(90,143,255,0.07)] border border-[rgba(90,143,255,0.18)] text-oc-blue text-[8px] px-[8px] py-[3px] rounded-[8px]">{t}</span>
-                ))}
+
+              <div className="hidden xl:flex flex-col gap-3 mt-4 lg:-ml-8 lg:translate-y-5">
+                <PlayerCard
+                  name="Thiago Lima" position="Extremo" country="BRA" age="19" height="1.74m" overall="82" avatar="⚡"
+                  rotate={2} animClass="animate-float" delay="-1.6s"
+                  className="scale-[0.92]"
+                />
+                <RepChip
+                  name="Lucía Torres" players="12" countries="4" rotate={1}
+                  animClass="animate-float" delay="-3.5s"
+                  className="lg:ml-7"
+                />
               </div>
             </div>
           </div>
         </div>
 
         {/* ROLE STRIP */}
-        <div className="max-w-[1100px] mx-auto px-7 mt-12 mb-10 flex items-center gap-3 overflow-x-auto">
-          <span className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.07em] whitespace-nowrap mr-2">Perfiles para</span>
-          {roles.map(r => (
-            <Link
-              key={r.label}
-              href="/auth?tab=register"
-              className="flex items-center gap-2 rounded-[20px] px-[14px] py-[6px] border whitespace-nowrap cursor-pointer transition-all hover:scale-[1.02] no-underline"
-              style={{ background:`${r.color}0D`, borderColor:`${r.color}33` }}
-            >
-              <span className="text-[13px]">{r.icon}</span>
-              <span className="text-[11px] font-medium" style={{ color:r.color }}>{r.label}</span>
-            </Link>
-          ))}
-        </div>
-
-        {/* TICKER */}
-        <div className="border-t border-b border-[rgba(255,255,255,0.05)] overflow-hidden py-2.5 bg-[rgba(255,255,255,0.01)]">
-          <div className="flex animate-ticker whitespace-nowrap" style={{ width:'max-content' }}>
-            {[...ticker,...ticker].map((t,i) => (
-              <span key={i} className="text-[rgba(255,255,255,0.25)] text-[11px] px-5">
-                {t}<span className="text-oc-green mx-4">·</span>
-              </span>
+        <div className="fixed left-0 right-0 bottom-[64px] z-[45] pointer-events-none">
+          <div className="oc-shell flex items-center justify-center gap-2.5 flex-wrap pointer-events-auto">
+            {roles.map(r => (
+              <Link
+                key={r.label}
+                href="/auth?tab=register"
+                onClick={e => { e.preventDefault(); setOpenModal(true) }}
+                className="flex items-center gap-2 rounded-[9px] px-[14px] py-[8px] border whitespace-nowrap cursor-pointer transition-all hover:-translate-y-0.5 no-underline"
+                style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }}
+              >
+                <span className="text-[13px]">{r.icon}</span>
+                <span className="text-[11px] font-medium" style={{ color:r.color }}>{r.label}</span>
+                <span className="text-[rgba(255,255,255,0.2)] text-[10px]">→</span>
+              </Link>
             ))}
           </div>
         </div>
 
-        {/* BOTTOM CTA */}
-        <div className="text-center py-20 px-7">
-          <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.1em] mb-4">Empezá ahora</div>
-          <h2 className="text-white text-[36px] font-medium tracking-[-0.03em] leading-[1.1] mb-4 max-w-[500px] mx-auto">
-            Creá tu perfil.<br /><span className="text-[rgba(255,255,255,0.25)]">Hacete ver.</span>
-          </h2>
-          <p className="text-[rgba(255,255,255,0.35)] text-[13px] mb-8 max-w-[380px] mx-auto">
-            Miles de clubes, técnicos y representantes ya usan OneChance para descubrir talento.
-          </p>
-          <Link
-            href="/auth?tab=register"
-            className="inline-flex items-center gap-2 bg-oc-green text-oc-green-dark text-[13px] font-medium px-[26px] py-[13px] rounded-[9px] no-underline transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(0,200,83,0.35)]"
-          >
-            Registrarme gratis →
-          </Link>
+      </div>
+      {/* TICKER */}
+      <div className="fixed bottom-0 left-0 right-0 z-[40] h-[6vh] min-h-[56px] border-t border-b border-[rgba(255,255,255,0.1)] overflow-hidden bg-[rgba(3,7,14,0.9)] backdrop-blur-[2px] flex items-center">
+        <div className="flex w-max animate-ticker-loop">
+          {[0, 1].map(loop => (
+            <div key={loop} className="flex shrink-0 whitespace-nowrap">
+              {tickerLoop.map((t, i) => (
+                <span key={`${loop}-${i}`} className="text-[rgba(255,255,255,0.45)] text-[clamp(10px,0.9vw,14px)] leading-[1] px-6 inline-flex items-center gap-3">
+                  {i > 0 && <span className="w-[4px] h-[4px] rounded-full bg-[rgba(0,200,83,0.72)] shrink-0 mx-1" />}
+                  <span className="leading-[1]">{t}</span>
+                </span>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
-    </div>
+      <AuthModal open={openModal} onClose={() => setOpenModal(false)} />
+    </main>
   )
 }

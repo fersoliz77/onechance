@@ -2,13 +2,15 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { onAuthStateChanged, auth, getUserRecord } from '@/lib/auth'
 import type { User } from 'firebase/auth'
-import type { Role } from '@/types'
+import type { Role, SystemRole } from '@/types'
 
 interface AuthUser {
   uid: string
   email: string | null
   name: string
   role: Role | null
+  systemRole: SystemRole
+  permissions: string[]
 }
 
 interface AuthCtx {
@@ -29,11 +31,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setFirebaseUser(fbUser)
       if (fbUser) {
         const record = await getUserRecord(fbUser.uid)
+        const token = await fbUser.getIdTokenResult()
+        const claimRole = token.claims.role
+        const systemRole = claimRole === 'super_admin' || claimRole === 'admin' ? claimRole : (record?.systemRole ?? 'user')
         setUser({
           uid: fbUser.uid,
           email: fbUser.email,
           name: record?.name ?? '',
           role: record?.role ?? null,
+          systemRole,
+          permissions: Array.isArray(record?.permissions) ? record.permissions : [],
         })
       } else {
         setUser(null)

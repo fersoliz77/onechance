@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 // Auth token check handled client-side via AuthContext.
-export function proxy(request: NextRequest) {
+export function proxy() {
   return NextResponse.next()
 }
 

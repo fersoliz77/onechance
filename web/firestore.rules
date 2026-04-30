@@ -10,8 +10,22 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    function systemRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.systemRole;
+    }
+
     function isAdmin() {
-      return isSignedIn() && request.auth.token.email.matches('.*admin.*');
+      return isSignedIn() && (systemRole() == 'admin' || systemRole() == 'super_admin');
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && systemRole() == 'super_admin';
+    }
+
+    function isBootstrapSuperAdmin() {
+      return isSignedIn()
+        && request.auth.token.email == 'fer@soliz.com'
+        && request.resource.data.systemRole == 'super_admin';
     }
 
     function isPublished(resource) {
@@ -22,29 +36,51 @@ service cloud.firestore {
     // all profiles readable by admin and owner
     match /players/{userId} {
       allow read: if isPublished(resource) || isOwner(userId) || isAdmin();
-      allow write: if isOwner(userId) || isAdmin();
+      allow update: if isOwner(userId)
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.isFeatured == resource.data.isFeatured
+        || isAdmin();
+      allow create: if isOwner(userId) || isAdmin();
     }
 
     match /coaches/{userId} {
       allow read: if isPublished(resource) || isOwner(userId) || isAdmin();
-      allow write: if isOwner(userId) || isAdmin();
+      allow update: if isOwner(userId)
+        && request.resource.data.status == resource.data.status
+        || isAdmin();
+      allow create: if isOwner(userId) || isAdmin();
     }
 
     match /clubs/{userId} {
       allow read: if isPublished(resource) || isOwner(userId) || isAdmin();
-      allow write: if isOwner(userId) || isAdmin();
+      allow update: if isOwner(userId)
+        && request.resource.data.status == resource.data.status
+        || isAdmin();
+      allow create: if isOwner(userId) || isAdmin();
     }
 
     match /agents/{userId} {
       allow read: if isPublished(resource) || isOwner(userId) || isAdmin();
-      allow write: if isOwner(userId) || isAdmin();
+      allow update: if isOwner(userId)
+        && request.resource.data.status == resource.data.status
+        || isAdmin();
+      allow create: if isOwner(userId) || isAdmin();
     }
 
     // User records — owner reads their own, admin reads all
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId)
+        && (
+          request.resource.data.systemRole == 'user'
+          || isBootstrapSuperAdmin()
+        )
+        || isSuperAdmin();
+      allow update: if isOwner(userId)
+        && request.resource.data.systemRole == resource.data.systemRole
+        && request.resource.data.permissions == resource.data.permissions
+        && request.resource.data.isActive == resource.data.isActive
+        || isSuperAdmin();
     }
   }
 }

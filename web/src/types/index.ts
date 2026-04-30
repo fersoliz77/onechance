@@ -1,4 +1,5 @@
 export type Role = 'player' | 'coach' | 'club' | 'agent'
+export type SystemRole = 'user' | 'admin' | 'super_admin'
 export type ProfileStatus = 'draft' | 'pending' | 'published' | 'rejected' | 'hidden'
 export type Gender = 'M' | 'F'
 export type AgeRange = '13-17' | '18-22' | '23-30'
@@ -12,6 +13,9 @@ export interface UserRecord {
   email: string
   role: Role
   name: string
+  systemRole?: SystemRole
+  permissions?: string[]
+  isActive?: boolean
   createdAt: string
 }
 

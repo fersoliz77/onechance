@@ -1,10 +1,10 @@
 import {
-  collection, doc, getDoc, getDocs, setDoc, updateDoc,
-  query, where, orderBy, limit, serverTimestamp,
+  collection, doc, getDoc, getDocs, updateDoc, setDoc,
+  query, where, serverTimestamp,
   type DocumentData,
 } from 'firebase/firestore'
 import { db } from './firebase'
-import type { PlayerProfile, CoachProfile, ClubProfile, AgentProfile } from '@/types'
+import type { PlayerProfile, CoachProfile, ClubProfile, AgentProfile, Role, ProfileStatus, UserRecord } from '@/types'
 
 // ── PLAYERS ──────────────────────────────────────────────────
 export async function getPublishedPlayers(): Promise<PlayerProfile[]> {
@@ -65,6 +65,10 @@ export async function getAllClubs(): Promise<ClubProfile[]> {
   return snap.docs.map(d => d.data() as ClubProfile)
 }
 
+export async function updateClub(uid: string, data: Partial<ClubProfile>) {
+  await updateDoc(doc(db, 'clubs', uid), { ...data, updatedAt: serverTimestamp() })
+}
+
 // ── AGENTS ────────────────────────────────────────────────────
 export async function getPublishedAgents(): Promise<AgentProfile[]> {
   const q = query(collection(db, 'agents'), where('status', '==', 'published'))
@@ -80,6 +84,10 @@ export async function getAgent(uid: string): Promise<AgentProfile | null> {
 export async function getAllAgents(): Promise<AgentProfile[]> {
   const snap = await getDocs(collection(db, 'agents'))
   return snap.docs.map(d => d.data() as AgentProfile)
+}
+
+export async function updateAgent(uid: string, data: Partial<AgentProfile>) {
+  await updateDoc(doc(db, 'agents', uid), { ...data, updatedAt: serverTimestamp() })
 }
 
 // ── ADMIN ─────────────────────────────────────────────────────
@@ -104,4 +112,35 @@ export async function setProfileStatus(col: string, uid: string, status: string)
 
 export async function setFeatured(uid: string, isFeatured: boolean) {
   await updateDoc(doc(db, 'players', uid), { isFeatured })
+}
+
+export async function setOwnProfileStatus(role: Role, uid: string, status: ProfileStatus) {
+  const map: Record<Role, string> = {
+    player: 'players',
+    coach: 'coaches',
+    club: 'clubs',
+    agent: 'agents',
+  }
+  await updateDoc(doc(db, map[role], uid), { status })
+}
+
+export async function getAllUsers(): Promise<UserRecord[]> {
+  const snap = await getDocs(collection(db, 'users'))
+  return snap.docs.map(d => d.data() as UserRecord)
+}
+
+export async function logAdminAction(payload: {
+  actorUid: string
+  actorEmail?: string | null
+  action: string
+  targetCollection?: string
+  targetUid?: string
+  metadata?: Record<string, unknown>
+}) {
+  const id = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+  await setDoc(doc(db, 'admin_audit_meta', 'last'), { updatedAt: serverTimestamp() }, { merge: true })
+  await setDoc(doc(db, 'admin_audit_logs', id), {
+    ...payload,
+    createdAt: serverTimestamp(),
+  })
 }

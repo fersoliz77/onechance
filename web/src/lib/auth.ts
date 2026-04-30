@@ -36,6 +36,9 @@ export async function createUserRecord(
     email,
     name,
     role,
+    systemRole: 'user',
+    permissions: [],
+    isActive: true,
     createdAt: serverTimestamp(),
   })
 }

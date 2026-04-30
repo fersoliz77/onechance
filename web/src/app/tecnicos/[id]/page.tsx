@@ -23,8 +23,8 @@ export default function CoachProfilePage() {
   return (
     <div className="relative min-h-screen">
       <Background />
-      <div className="relative z-[2] pt-14">
-        <div className="max-w-[960px] mx-auto px-6 py-8">
+      <div className="relative z-[2] oc-main-offset">
+        <div className="oc-shell-detail oc-page-block">
           <Button variant="ghost" onClick={() => router.push('/tecnicos')} className="mb-5 text-[11px]">← Volver al listado</Button>
 
           {/* Hero card */}
@@ -38,9 +38,9 @@ export default function CoachProfilePage() {
             }}
           >
             <div className="h-[2px]" style={{ background: `linear-gradient(90deg,${accent},rgba(0,0,0,0))` }} />
-            <div className="flex items-stretch">
+            <div className="flex flex-col md:flex-row items-stretch">
               {/* Left panel */}
-              <div className="w-[220px] shrink-0 p-8 flex flex-col items-center justify-center relative"
+              <div className="w-full md:w-[220px] shrink-0 p-8 flex flex-col items-center justify-center relative"
                 style={{ background: `linear-gradient(160deg,${accent}18,rgba(0,0,0,0))`, borderRight: `0.5px solid ${accent}22` }}>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140px] h-[140px] opacity-[0.07]">
                   <svg viewBox="0 0 100 110" fill={accent}><path d="M50 2 L95 20 L95 55 C95 80 72 98 50 108 C28 98 5 80 5 55 L5 20 Z" /></svg>
@@ -70,7 +70,7 @@ export default function CoachProfilePage() {
                     </>
                   )}
                 </div>
-                <div className="grid grid-cols-3 gap-2 mb-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-5">
                   {[['Experiencia',`${coach.years || '—'} años`],['Edad',coach.age ? `${coach.age} años` : '—'],['Club',coach.currentClub || 'Libre']].map(([l,v]) => (
                     <div key={l} className="rounded-[9px] p-[10px_12px] text-center" style={{ background:`${accent}08`, border:`0.5px solid ${accent}20` }}>
                       <div className="text-[13px] font-medium leading-none truncate" style={{ color: accent }}>{v}</div>
@@ -99,7 +99,7 @@ export default function CoachProfilePage() {
           </div>
 
           {/* Two-col */}
-          <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 280px' }}>
+          <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
             <div className="flex flex-col gap-3.5">
               {coach.bio && (
                 <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-[18px_20px]">
@@ -135,6 +135,17 @@ export default function CoachProfilePage() {
                   </div>
                 </div>
               )}
+              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-[18px_20px]">
+                <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2.5">Videos</div>
+                <div className="grid sm:grid-cols-2 gap-2.5">
+                  {[0, 1].map(i => (
+                    <div key={i} className="relative overflow-hidden rounded-[9px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] aspect-video flex items-center justify-center">
+                      <div className="absolute inset-0 bg-[rgba(0,0,0,0.25)]" />
+                      <div className="relative z-[2] w-9 h-9 rounded-full border border-[rgba(255,255,255,0.5)] flex items-center justify-center text-white text-[12px]">▶</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="flex flex-col gap-3">
               <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-4">

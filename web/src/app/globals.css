@@ -25,7 +25,8 @@
   --animate-blink:       oc-blink 2s infinite;
   --animate-grid-scroll: oc-grid 24s linear infinite;
   --animate-ticker:      oc-ticker 22s linear infinite;
-  --animate-fade-up:     oc-fadeUp 0.5s ease forwards;
+  --animate-ticker-loop: oc-ticker-loop 36s linear infinite;
+  --animate-fade-up:     oc-fadeUp 0.5s ease both;
 }
 
 @keyframes oc-float {
@@ -48,12 +49,83 @@
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
+@keyframes oc-ticker-loop {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
 @keyframes oc-fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Semantic color tokens */
+  --oc-surface-1: rgba(255,255,255,0.02);
+  --oc-surface-2: rgba(255,255,255,0.04);
+  --oc-border-soft: rgba(255,255,255,0.07);
+  --oc-border-strong: rgba(255,255,255,0.12);
+  --oc-border-green: rgba(0,200,83,0.24);
+  --oc-border-blue: rgba(90,143,255,0.24);
+  --oc-border-yellow: rgba(255,180,0,0.24);
+  --oc-border-purple: rgba(180,100,255,0.24);
+  --oc-text-primary: rgba(255,255,255,0.94);
+  --oc-text-muted: rgba(255,255,255,0.35);
+  --oc-text-faint: rgba(255,255,255,0.25);
+  --oc-text-label: rgba(255,255,255,0.2);
+
+  --oc-fz-9: 9px;
+  --oc-fz-10: 10px;
+  --oc-fz-11: 11px;
+  --oc-fz-12: 12px;
+  --oc-fz-13: 13px;
+  --oc-fz-stat: 22px;
+
+  --oc-space-2: 8px;
+  --oc-space-3: 12px;
+  --oc-space-4: 16px;
+  --oc-space-5: 20px;
+  --oc-space-6: 24px;
+  --oc-space-8: 32px;
+  --oc-space-10: 40px;
+  --oc-space-12: 48px;
+  --oc-page-pad-x: clamp(20px, 3.2vw, 48px);
+  --oc-shell-max: 1380px;
+  --oc-shell-max-content: 1100px;
+  --oc-shell-max-detail: 960px;
+  --oc-nav-height: 72px;
+  --oc-nav-offset: calc(var(--oc-nav-height) + var(--oc-space-5));
+  --oc-control-h-sm: 32px;
+  --oc-control-h-md: 40px;
+  --oc-control-h-lg: 48px;
+  --oc-radius-sm: 8px;
+  --oc-radius-md: 10px;
+  --oc-radius-lg: 12px;
+  --oc-radius-xl: 14px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --oc-control-h-sm: 36px;
+    --oc-control-h-md: 44px;
+    --oc-control-h-lg: 52px;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --oc-page-pad-x: 16px;
+    --oc-nav-height: 68px;
+  }
+}
+
+@media (min-width: 1536px) {
+  :root {
+    --oc-shell-max: 1480px;
+    --oc-space-8: 36px;
+  }
+}
 
 body {
   background: #050A14;
@@ -66,3 +138,86 @@ input, select, textarea, button { font-family: inherit; }
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(0,200,83,0.25); border-radius: 2px; }
+
+.animate-ticker-loop {
+  animation: oc-ticker-loop 90s linear infinite;
+}
+
+.oc-shell {
+  width: min(100%, var(--oc-shell-max));
+  margin-inline: auto;
+  padding-inline: var(--oc-page-pad-x);
+}
+
+.oc-shell-content {
+  width: min(100%, var(--oc-shell-max-content));
+  margin-inline: auto;
+  padding-inline: var(--oc-page-pad-x);
+}
+
+.oc-shell-detail {
+  width: min(100%, var(--oc-shell-max-detail));
+  margin-inline: auto;
+  padding-inline: var(--oc-page-pad-x);
+}
+
+.oc-page-block {
+  padding-block: var(--oc-space-8);
+}
+
+.oc-list-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+@media (min-width: 1024px) {
+  .oc-list-grid {
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .oc-list-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+.oc-list-card {
+  min-height: 176px;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .oc-list-card {
+    min-height: 198px;
+    padding: 18px;
+  }
+}
+
+.oc-meta-chip {
+  background: var(--oc-surface-2);
+  border: 1px solid var(--oc-border-soft);
+  border-radius: 5px;
+  padding: 3px 8px;
+  color: var(--oc-text-faint);
+  font-size: var(--oc-fz-9);
+}
+
+@media (min-width: 1024px) {
+  .oc-meta-chip {
+    font-size: 10px;
+    padding: 4px 9px;
+  }
+}
+
+.oc-main-offset {
+  padding-top: var(--oc-nav-offset);
+}

@@ -76,7 +76,7 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
   )
 }
 
-function RegisterForm({ onDone }: { onDone: () => void }) {
+function RegisterForm() {
   const [step, setStep] = useState(0)
   const [creds, setCreds] = useState({ email: '', pass: '', confirm: '' })
   const [role, setRole] = useState<Role | null>(null)
@@ -115,8 +115,8 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
       else if (role === 'agent') await createAgentRecord(user.uid, base)
       setStep(3)
       setTimeout(() => router.push('/dashboard'), 1800)
-    } catch (e: any) {
-      setErr(e?.message ?? 'Error al registrarse.')
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : 'Error al registrarse.')
     } finally {
       setLoading(false)
     }
@@ -248,7 +248,7 @@ function AuthContent() {
   return (
     <div className="relative min-h-screen">
       <Background />
-      <div className="relative z-[2] pt-14 flex items-center justify-center min-h-screen px-6 py-8">
+      <div className="relative z-[2] pt-[calc(var(--oc-nav-height)+20px)] flex items-center justify-center min-h-screen px-[var(--oc-page-pad-x)] py-8">
         <div className="w-full max-w-[420px]">
           {/* Tab toggle */}
           <div className="flex bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)] rounded-[10px] p-1 mb-7">
@@ -270,7 +270,7 @@ function AuthContent() {
           <div className="bg-[rgba(8,15,25,0.9)] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-7 backdrop-blur-[20px]">
             {tab === 'login'
               ? <LoginForm onSwitch={() => setTab('register')} />
-              : <RegisterForm onDone={() => setTab('login')} />
+              : <RegisterForm />
             }
           </div>
         </div>

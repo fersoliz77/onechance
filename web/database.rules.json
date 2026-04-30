@@ -1,21 +1,27 @@
 {
   "rules": {
+    "userRoles": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')",
+        ".write": "auth != null && ((auth.uid === $uid && !data.exists() && auth.token.email === 'fer@soliz.com') || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')"
+      }
+    },
     "profiles": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || auth.token.email.contains('admin'))",
-        ".write": "auth != null && (auth.uid === $uid || auth.token.email.contains('admin'))"
+        ".read": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')"
       }
     },
     "videos": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || auth.token.email.contains('admin'))",
-        ".write": "auth != null && (auth.uid === $uid || auth.token.email.contains('admin'))"
+        ".read": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')"
       }
     },
     "photos": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || auth.token.email.contains('admin'))",
-        ".write": "auth != null && (auth.uid === $uid || auth.token.email.contains('admin'))"
+        ".read": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')"
       }
     }
   }

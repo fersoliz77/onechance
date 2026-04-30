@@ -1,4 +1,4 @@
-import { ref, get, set, update, onValue, off, push, remove } from 'firebase/database'
+import { ref, get, set, update, push, remove } from 'firebase/database'
 import { rtdb } from './firebase'
 import type { ProfileState, VideoEntry } from '@/types'
 

@@ -7,20 +7,23 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
-import { getPlayer, getCoach, getClub, getAgent, updatePlayer, updateCoach } from '@/lib/firestore'
-import { getProfileState, updateProfileState, submitForReview, getVideos, addVideo, removeVideo, toggleVideoStatus } from '@/lib/rtdb'
+import Textarea from '@/components/ui/Textarea'
+import SurfaceCard from '@/components/ui/SurfaceCard'
+import SectionKicker from '@/components/ui/SectionKicker'
+import { getPlayer, getCoach, getClub, getAgent, updatePlayer, updateCoach, updateClub, updateAgent, setOwnProfileStatus } from '@/lib/firestore'
+import { getProfileState, submitForReview, getVideos, addVideo, removeVideo, toggleVideoStatus } from '@/lib/rtdb'
 import type { PlayerProfile, CoachProfile, ClubProfile, AgentProfile, ProfileState, VideoEntry } from '@/types'
-import { POSITIONS, COUNTRIES, STATUS_META } from '@/types'
+import { POSITIONS, COUNTRIES } from '@/types'
 
 type AnyProfile = PlayerProfile | CoachProfile | ClubProfile | AgentProfile
 
 function CompletionBar({ pct }: { pct: number }) {
   return (
     <div>
-      <div className="flex justify-between mb-1.5">
-        <span className="text-[rgba(255,255,255,0.35)] text-[10px]">Completud del perfil</span>
-        <span className="text-[10px]" style={{ color: pct >= 80 ? '#00C853' : pct >= 50 ? '#FFB400' : '#FF6060' }}>{pct}%</span>
-      </div>
+        <div className="flex justify-between mb-1.5">
+          <span className="text-[rgba(255,255,255,0.35)] text-[11px] lg:text-[12px]">Completud del perfil</span>
+          <span className="text-[11px] lg:text-[12px]" style={{ color: pct >= 80 ? '#00C853' : pct >= 50 ? '#FFB400' : '#FF6060' }}>{pct}%</span>
+        </div>
       <div className="h-[4px] rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
         <div className="h-full rounded-full transition-all duration-500"
           style={{ width: `${pct}%`, background: pct >= 80 ? '#00C853' : pct >= 50 ? '#FFB400' : '#FF6060' }} />
@@ -31,33 +34,33 @@ function CompletionBar({ pct }: { pct: number }) {
 
 function StatusCard({ profile, state, onSubmit }: { profile: AnyProfile; state: ProfileState | null; onSubmit: () => void }) {
   const status = profile.status
-  const meta = STATUS_META[status]
+
   return (
-    <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[14px] p-5">
+    <SurfaceCard>
       <div className="flex items-center justify-between mb-3">
-        <span className="text-white text-[12px] font-medium">Estado del perfil</span>
+        <span className="text-white text-[13px] lg:text-[14px] font-medium">Estado del perfil</span>
         <Badge status={status} />
       </div>
       {state && <CompletionBar pct={state.completionPct} />}
       {status === 'draft' && (
         <div className="mt-4">
-          <p className="text-[rgba(255,255,255,0.35)] text-[11px] mb-3">Tu perfil está en borrador. Completalo y envialo a revisión para que sea visible.</p>
+          <p className="text-[rgba(255,255,255,0.35)] text-[12px] lg:text-[13px] mb-3">Tu perfil está en borrador. Completalo y envialo a revisión para que sea visible.</p>
           <Button variant="primary" size="sm" onClick={onSubmit} className="w-full justify-center">Enviar a revisión →</Button>
         </div>
       )}
       {status === 'pending' && (
-        <p className="text-[rgba(255,180,0,0.7)] text-[11px] mt-3">Tu perfil está siendo revisado. Recibirás una notificación cuando sea aprobado.</p>
+        <p className="text-[rgba(255,180,0,0.7)] text-[12px] lg:text-[13px] mt-3">Tu perfil está siendo revisado. Recibirás una notificación cuando sea aprobado.</p>
       )}
       {status === 'published' && (
-        <p className="text-[rgba(0,200,83,0.7)] text-[11px] mt-3">Tu perfil está publicado y visible en la plataforma.</p>
+        <p className="text-[rgba(0,200,83,0.7)] text-[12px] lg:text-[13px] mt-3">Tu perfil está publicado y visible en la plataforma.</p>
       )}
       {status === 'rejected' && (
         <div className="mt-3">
-          <p className="text-[rgba(255,60,60,0.7)] text-[11px] mb-3">Tu perfil fue rechazado. Revisá los datos, corregí lo necesario y volvé a enviarlo.</p>
+          <p className="text-[rgba(255,60,60,0.7)] text-[12px] lg:text-[13px] mb-3">Tu perfil fue rechazado. Revisá los datos, corregí lo necesario y volvé a enviarlo.</p>
           <Button variant="primary" size="sm" onClick={onSubmit} className="w-full justify-center">Reenviar →</Button>
         </div>
       )}
-    </div>
+    </SurfaceCard>
   )
 }
 
@@ -84,8 +87,8 @@ function PlayerEditForm({ player, uid, onSaved }: { player: PlayerProfile; uid: 
   }
 
   return (
-    <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[14px] p-5">
-      <div className="text-white text-[12px] font-medium mb-4">Editar perfil</div>
+    <SurfaceCard>
+      <div className="text-white text-[13px] lg:text-[14px] font-medium mb-4">Editar perfil</div>
       <div className="flex flex-col gap-2.5">
         <Input placeholder="Nombre completo" value={form.fullName} onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))} />
         <Select value={form.position} onChange={e => setForm(f => ({ ...f, position: e.target.value }))}
@@ -99,18 +102,17 @@ function PlayerEditForm({ player, uid, onSaved }: { player: PlayerProfile; uid: 
           <Input placeholder="Peso (ej: 75)" value={form.weight} onChange={e => setForm(f => ({ ...f, weight: e.target.value }))} />
         </div>
         <Input placeholder="Club actual (o dejar vacío si libre)" value={form.currentClub} onChange={e => setForm(f => ({ ...f, currentClub: e.target.value }))} />
-        <textarea
+        <Textarea
           placeholder="Descripción / Bio (opcional)"
           value={form.bio}
           onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
           rows={3}
-          className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.1)] rounded-[8px] px-3 py-[9px] text-white text-[12px] outline-none resize-none placeholder:text-[rgba(255,255,255,0.25)]"
         />
       </div>
       <Button variant="primary" size="sm" className="mt-3 w-full justify-center" onClick={save} disabled={saving}>
         {saved ? '✓ Guardado' : saving ? 'Guardando...' : 'Guardar cambios'}
       </Button>
-    </div>
+    </SurfaceCard>
   )
 }
 
@@ -134,26 +136,115 @@ function CoachEditForm({ coach, uid, onSaved }: { coach: CoachProfile; uid: stri
   }
 
   return (
-    <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[14px] p-5">
-      <div className="text-white text-[12px] font-medium mb-4">Editar perfil</div>
+    <SurfaceCard>
+      <div className="text-white text-[13px] lg:text-[14px] font-medium mb-4">Editar perfil</div>
       <div className="flex flex-col gap-2.5">
         <Input placeholder="Nombre completo" value={form.fullName} onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))} />
         <Select value={form.nationality} onChange={e => setForm(f => ({ ...f, nationality: e.target.value }))}
           options={[{value:'',label:'Nacionalidad'},...COUNTRIES.map(c => ({value:c,label:c}))]} />
         <Input placeholder="Club actual" value={form.currentClub} onChange={e => setForm(f => ({ ...f, currentClub: e.target.value }))} />
         <Input placeholder="Años de experiencia" type="number" value={String(form.years)} onChange={e => setForm(f => ({ ...f, years: parseInt(e.target.value) || 0 }))} />
-        <textarea
+        <Textarea
           placeholder="Bio / Descripción"
           value={form.bio}
           onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
           rows={3}
-          className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.1)] rounded-[8px] px-3 py-[9px] text-white text-[12px] outline-none resize-none placeholder:text-[rgba(255,255,255,0.25)]"
         />
       </div>
       <Button variant="primary" size="sm" className="mt-3 w-full justify-center" onClick={save} disabled={saving}>
         {saved ? '✓ Guardado' : saving ? 'Guardando...' : 'Guardar cambios'}
       </Button>
-    </div>
+    </SurfaceCard>
+  )
+}
+
+function ClubEditForm({ club, uid, onSaved }: { club: ClubProfile; uid: string; onSaved: (c: ClubProfile) => void }) {
+  const [form, setForm] = useState({
+    name: club.name,
+    country: club.country,
+    city: club.city,
+    division: club.division,
+    currentCoach: club.currentCoach,
+    bio: club.bio,
+  })
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  const save = async () => {
+    setSaving(true)
+    await updateClub(uid, form as Partial<ClubProfile>)
+    setSaving(false); setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+    onSaved({ ...club, ...form })
+  }
+
+  return (
+    <SurfaceCard>
+      <div className="text-white text-[13px] lg:text-[14px] font-medium mb-4">Editar perfil del club</div>
+      <div className="flex flex-col gap-2.5">
+        <Input placeholder="Nombre del club" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+        <Select value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))}
+          options={[{value:'',label:'País'},...COUNTRIES.map(c => ({value:c,label:c}))]} />
+        <Input placeholder="Ciudad" value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
+        <Input placeholder="División" value={form.division} onChange={e => setForm(f => ({ ...f, division: e.target.value }))} />
+        <Input placeholder="DT actual" value={form.currentCoach} onChange={e => setForm(f => ({ ...f, currentCoach: e.target.value }))} />
+        <Textarea
+          placeholder="Descripción institucional"
+          value={form.bio}
+          onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
+          rows={3}
+        />
+      </div>
+      <Button variant="primary" size="sm" className="mt-3 w-full justify-center" onClick={save} disabled={saving}>
+        {saved ? '✓ Guardado' : saving ? 'Guardando...' : 'Guardar cambios'}
+      </Button>
+    </SurfaceCard>
+  )
+}
+
+function AgentEditForm({ agent, uid, onSaved }: { agent: AgentProfile; uid: string; onSaved: (a: AgentProfile) => void }) {
+  const [form, setForm] = useState({
+    fullName: agent.fullName,
+    nationality: agent.nationality,
+    agencyName: agent.agencyName,
+    players: agent.players,
+    countries: agent.countries,
+    bio: agent.bio,
+  })
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  const save = async () => {
+    setSaving(true)
+    await updateAgent(uid, form as Partial<AgentProfile>)
+    setSaving(false); setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+    onSaved({ ...agent, ...form })
+  }
+
+  return (
+    <SurfaceCard>
+      <div className="text-white text-[13px] lg:text-[14px] font-medium mb-4">Editar perfil del representante</div>
+      <div className="flex flex-col gap-2.5">
+        <Input placeholder="Nombre completo" value={form.fullName} onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))} />
+        <Select value={form.nationality} onChange={e => setForm(f => ({ ...f, nationality: e.target.value }))}
+          options={[{value:'',label:'Nacionalidad'},...COUNTRIES.map(c => ({value:c,label:c}))]} />
+        <Input placeholder="Nombre de agencia" value={form.agencyName} onChange={e => setForm(f => ({ ...f, agencyName: e.target.value }))} />
+        <div className="grid grid-cols-2 gap-2">
+          <Input placeholder="Jugadores" type="number" value={String(form.players)} onChange={e => setForm(f => ({ ...f, players: parseInt(e.target.value, 10) || 0 }))} />
+          <Input placeholder="Países" type="number" value={String(form.countries)} onChange={e => setForm(f => ({ ...f, countries: parseInt(e.target.value, 10) || 0 }))} />
+        </div>
+        <Textarea
+          placeholder="Descripción"
+          value={form.bio}
+          onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
+          rows={3}
+        />
+      </div>
+      <Button variant="primary" size="sm" className="mt-3 w-full justify-center" onClick={save} disabled={saving}>
+        {saved ? '✓ Guardado' : saving ? 'Guardando...' : 'Guardar cambios'}
+      </Button>
+    </SurfaceCard>
   )
 }
 
@@ -207,8 +298,8 @@ function VideosSection({ uid }: { uid: string }) {
   const platformIcon = (p: VideoEntry['platform']) => p === 'youtube' ? '▶' : p === 'vimeo' ? '🎬' : p === 'tiktok' ? '🎵' : p === 'instagram' ? '📸' : '🔗'
 
   return (
-    <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[14px] p-5">
-      <div className="text-white text-[12px] font-medium mb-4">Mis videos</div>
+    <SurfaceCard>
+      <div className="text-white text-[13px] lg:text-[14px] font-medium mb-4">Mis videos</div>
       <div className="flex flex-col gap-2 mb-4">
         <Input placeholder="URL del video (YouTube, Vimeo, TikTok...)" value={url} onChange={e => setUrl(e.target.value)} />
         <Input placeholder="Título del video (opcional)" value={title} onChange={e => setTitle(e.target.value)} />
@@ -223,11 +314,11 @@ function VideosSection({ uid }: { uid: string }) {
       ) : (
         <div className="flex flex-col gap-2">
           {videos.map(v => (
-            <div key={v.id} className="flex items-center gap-3 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)] rounded-[9px] px-3 py-2.5">
+            <div key={v.id} className="flex items-center gap-3 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)] rounded-[9px] px-3 py-2.5 lg:px-3.5 lg:py-3">
               <span className="text-[14px] shrink-0">{platformIcon(v.platform)}</span>
               <div className="flex-1 min-w-0">
-                <div className="text-white text-[11px] truncate">{v.title}</div>
-                <div className="text-[rgba(255,255,255,0.25)] text-[9px] truncate">{v.url}</div>
+                <div className="text-white text-[12px] lg:text-[13px] truncate">{v.title}</div>
+                <div className="text-[rgba(255,255,255,0.25)] text-[10px] truncate">{v.url}</div>
               </div>
               <div className="flex gap-1.5 shrink-0">
                 <button
@@ -245,7 +336,7 @@ function VideosSection({ uid }: { uid: string }) {
           ))}
         </div>
       )}
-    </div>
+    </SurfaceCard>
   )
 }
 
@@ -255,7 +346,7 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<AnyProfile | null>(null)
   const [state, setState] = useState<ProfileState | null>(null)
   const [loadingProfile, setLoadingProfile] = useState(true)
-  const [tab, setTab] = useState<'overview' | 'edit' | 'videos'>('overview')
+  const [tab, setTab] = useState<'overview' | 'edit' | 'videos' | 'photos' | 'settings'>('overview')
 
   useEffect(() => {
     if (!authLoading && !user) router.push('/auth?tab=login')
@@ -270,15 +361,21 @@ export default function DashboardPage() {
       agent: () => getAgent(user.uid),
     }
     const fn = fetchers[user.role ?? '']
-    if (!fn) { setLoadingProfile(false); return }
+    if (!fn) {
+      Promise.resolve().then(() => setLoadingProfile(false))
+      return
+    }
     Promise.all([fn(), getProfileState(user.uid)]).then(([p, s]) => {
       setProfile(p); setState(s); setLoadingProfile(false)
     })
   }, [user])
 
   const handleSubmit = async () => {
-    if (!user || !profile) return
-    await submitForReview(user.uid)
+    if (!user || !profile || !user.role) return
+    await Promise.all([
+      submitForReview(user.uid),
+      setOwnProfileStatus(user.role, user.uid, 'pending'),
+    ])
     setProfile(p => p ? { ...p, status: 'pending' } : null)
     setState(s => s ? { ...s, status: 'pending' } : null)
   }
@@ -292,27 +389,29 @@ export default function DashboardPage() {
   const roleLabel: Record<string, string> = { player:'Jugador', coach:'Técnico', club:'Club', agent:'Representante' }
   const roleAccent: Record<string, string> = { player:'#00C853', coach:'#5A8FFF', club:'#FFB400', agent:'#B464FF' }
   const accent = roleAccent[user.role ?? ''] ?? '#00C853'
-  const tabs = [
-    { id:'overview', label:'Resumen' },
-    { id:'edit', label:'Editar' },
-    ...(user.role === 'player' ? [{ id:'videos', label:'Videos' }] : []),
-  ] as { id: typeof tab; label: string }[]
+    const tabs = [
+    { id:'overview', icon:'◉', label:'Mi perfil' },
+    { id:'edit', icon:'✎', label:'Editar datos' },
+    { id:'videos', icon:'▶', label:'Videos' },
+    { id:'photos', icon:'□', label:'Fotos' },
+    { id:'settings', icon:'⚙', label:'Configuración' },
+  ] as { id: typeof tab; icon: string; label: string }[]
 
   return (
     <div className="relative min-h-screen">
       <Background />
-      <div className="relative z-[2] pt-14">
-        <div className="max-w-[860px] mx-auto px-6 py-8">
+      <div className="relative z-[2] oc-main-offset">
+        <div className="oc-shell-content oc-page-block max-w-[980px]">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-[56px] h-[56px] rounded-full flex items-center justify-center text-[22px] border-[2px]"
+          <div className="flex items-center gap-4 lg:gap-5 mb-6 lg:mb-8">
+            <div className="w-[56px] h-[56px] lg:w-[64px] lg:h-[64px] rounded-full flex items-center justify-center text-[22px] lg:text-[26px] border-[2px]"
               style={{ background: `linear-gradient(135deg,${accent},${accent}44)`, borderColor: `${accent}66` }}>
               {user.role === 'player' ? '⚽' : user.role === 'coach' ? '📋' : user.role === 'club' ? '🏟️' : '🤝'}
             </div>
-            <div>
-              <div className="text-white text-[18px] font-medium">{user.name || user.email}</div>
-              <div className="text-[11px] mt-0.5" style={{ color: accent }}>{roleLabel[user.role ?? ''] ?? 'Usuario'}</div>
-            </div>
+              <div>
+                <div className="text-white text-[20px] lg:text-[24px] font-medium">{user.name || user.email}</div>
+                <div className="text-[12px] lg:text-[13px] mt-0.5" style={{ color: accent }}>{roleLabel[user.role ?? ''] ?? 'Usuario'}</div>
+              </div>
             {profile && (
               <div className="ml-auto">
                 <Badge status={profile.status} />
@@ -320,20 +419,21 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Tab bar */}
-          <div className="flex gap-1 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)] rounded-[10px] p-1 mb-6 w-fit">
-            {tabs.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)}
-                className="px-4 py-2 rounded-[7px] text-[11px] font-medium cursor-pointer font-sans transition-all duration-200 border-none"
-                style={{ background: tab === t.id ? accent : 'transparent', color: tab === t.id ? (user.role === 'player' ? '#002A12' : '#000') : 'rgba(255,255,255,0.35)' }}>
-                {t.label}
-              </button>
-            ))}
-          </div>
+          <div className="grid lg:grid-cols-[240px_1fr] gap-4 lg:gap-6 items-start">
+            <aside className="w-full lg:w-[240px] shrink-0 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] rounded-[12px] overflow-hidden lg:sticky lg:top-[calc(var(--oc-nav-height)+var(--oc-space-4))]">
+              {tabs.map(t => (
+                <button key={t.id} onClick={() => setTab(t.id)}
+                  className="w-full h-[44px] lg:h-[48px] px-3.5 lg:px-4 border-none border-b border-[rgba(255,255,255,0.04)] text-left cursor-pointer flex items-center gap-2.5"
+                  style={{ background: tab === t.id ? 'rgba(0,200,83,0.1)' : 'transparent', boxShadow: tab === t.id ? 'inset 2px 0 0 #00C853' : 'none' }}>
+                  <span className="text-[12px] lg:text-[13px]" style={{ color: tab === t.id ? '#00C853' : 'rgba(255,255,255,0.28)' }}>{t.icon}</span>
+                  <span className="text-[12px] lg:text-[13px]" style={{ color: tab === t.id ? '#fff' : 'rgba(255,255,255,0.42)' }}>{t.label}</span>
+                </button>
+              ))}
+            </aside>
 
-          {/* Content */}
+            <div className="min-w-0 flex flex-col gap-4">
           {tab === 'overview' && (
-            <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 300px' }}>
+            <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
               <div className="flex flex-col gap-4">
                 {profile ? (
                   <StatusCard profile={profile} state={state} onSubmit={handleSubmit} />
@@ -343,28 +443,28 @@ export default function DashboardPage() {
                   </div>
                 )}
                 {user.role === 'player' && profile && (
-                  <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[14px] p-5">
-                    <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.07em] mb-3">Datos del jugador</div>
-                    <div className="grid grid-cols-2 gap-3">
+                  <SurfaceCard>
+                    <SectionKicker className="mb-3">Datos del jugador</SectionKicker>
+                    <div className="grid grid-cols-2 gap-2.5">
                       {[
                         ['Posición', (profile as PlayerProfile).position || '—'],
                         ['Nacionalidad', (profile as PlayerProfile).nationality || '—'],
                         ['Pie', (profile as PlayerProfile).strongFoot || '—'],
                         ['Club', (profile as PlayerProfile).currentClub || 'Libre'],
                       ].map(([l, v]) => (
-                        <div key={l}>
-                          <div className="text-[rgba(255,255,255,0.25)] text-[9px] uppercase tracking-[0.05em]">{l}</div>
-                          <div className="text-white text-[12px] mt-0.5">{v}</div>
-                        </div>
-                      ))}
+                          <div key={l}>
+                            <div className="text-[rgba(255,255,255,0.22)] text-[10px] uppercase tracking-[0.06em]">{l}</div>
+                            <div className="text-white text-[13px] lg:text-[14px] mt-0.5">{v}</div>
+                          </div>
+                        ))}
                     </div>
-                  </div>
+                  </SurfaceCard>
                 )}
               </div>
               <div className="flex flex-col gap-3">
-                <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[14px] p-4">
-                  <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.07em] mb-3">Acciones rápidas</div>
-                  <div className="flex flex-col gap-2">
+                <SurfaceCard className="p-4">
+                  <SectionKicker className="mb-3">Acciones rápidas</SectionKicker>
+                  <div className="flex flex-col gap-1.5">
                     {profile && (
                       <Button variant="ghost" size="sm" className="w-full justify-start text-[11px]"
                         onClick={() => router.push(`/${user.role === 'player' ? 'jugadores' : user.role === 'coach' ? 'tecnicos' : user.role === 'club' ? 'clubes' : 'representantes'}/${user.uid}`)}>
@@ -380,7 +480,7 @@ export default function DashboardPage() {
                       </Button>
                     )}
                   </div>
-                </div>
+                </SurfaceCard>
               </div>
             </div>
           )}
@@ -393,10 +493,11 @@ export default function DashboardPage() {
               {user.role === 'coach' && (
                 <CoachEditForm coach={profile as CoachProfile} uid={user.uid} onSaved={setProfile} />
               )}
-              {(user.role === 'club' || user.role === 'agent') && (
-                <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[14px] p-5 text-[rgba(255,255,255,0.35)] text-[12px]">
-                  La edición completa para clubes y representantes estará disponible próximamente.
-                </div>
+              {user.role === 'club' && (
+                <ClubEditForm club={profile as ClubProfile} uid={user.uid} onSaved={setProfile} />
+              )}
+              {user.role === 'agent' && (
+                <AgentEditForm agent={profile as AgentProfile} uid={user.uid} onSaved={setProfile} />
               )}
             </div>
           )}
@@ -404,6 +505,38 @@ export default function DashboardPage() {
           {tab === 'videos' && user.role === 'player' && (
             <VideosSection uid={user.uid} />
           )}
+
+          {tab === 'photos' && (
+            <SurfaceCard>
+              <div className="text-white text-[13px] font-medium mb-4">Fotos del perfil</div>
+              <div className="grid grid-cols-4 gap-3 mb-3">
+                {[0, 1, 2].map(i => (
+                  <div key={i} className="aspect-square rounded-[9px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[22px] text-[rgba(255,255,255,0.18)]">📷</div>
+                ))}
+                <div className="aspect-square rounded-[9px] border-2 border-dashed border-[rgba(255,255,255,0.12)] flex flex-col items-center justify-center text-[rgba(255,255,255,0.25)] text-[11px]">
+                  <span className="text-[24px] leading-none mb-1">+</span>
+                  Subir foto
+                </div>
+              </div>
+              <div className="text-[rgba(255,255,255,0.22)] text-[10px]">Max. 10 fotos por perfil</div>
+            </SurfaceCard>
+          )}
+
+          {tab === 'settings' && (
+            <SurfaceCard>
+              <div className="text-white text-[13px] font-medium mb-4">Configuración</div>
+              <div className="space-y-3">
+                {['Visibilidad del contacto', 'Perfil destacado (pago)', 'Notificaciones por email'].map(i => (
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-[rgba(255,255,255,0.05)]">
+                    <span className="text-[12px] text-[rgba(255,255,255,0.65)]">{i}</span>
+                    <span className="w-9 h-5 rounded-full bg-[rgba(0,200,83,0.28)] border border-[rgba(0,200,83,0.4)] relative after:content-[''] after:absolute after:right-[2px] after:top-[2px] after:w-[12px] after:h-[12px] after:rounded-full after:bg-oc-green" />
+                  </div>
+                ))}
+              </div>
+            </SurfaceCard>
+          )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
