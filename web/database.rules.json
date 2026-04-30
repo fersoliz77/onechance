@@ -1,0 +1,22 @@
+{
+  "rules": {
+    "profiles": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email.contains('admin'))",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email.contains('admin'))"
+      }
+    },
+    "videos": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email.contains('admin'))",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email.contains('admin'))"
+      }
+    },
+    "photos": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email.contains('admin'))",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email.contains('admin'))"
+      }
+    }
+  }
+}

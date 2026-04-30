@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  /* Font */
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+
+  /* OneChance brand colors */
+  --color-oc-bg:           #050A14;
+  --color-oc-bg-alt:       #060D18;
+  --color-oc-card-green:   #0C1F12;
+  --color-oc-card-blue:    #0B1A2E;
+  --color-oc-green:        #00C853;
+  --color-oc-green-hover:  #00E660;
+  --color-oc-green-dark:   #002A12;
+  --color-oc-green-deep:   #003A18;
+  --color-oc-blue:         #5A8FFF;
+  --color-oc-blue-alt:     #4A9FFF;
+  --color-oc-yellow:       #FFB400;
+  --color-oc-purple:       #B464FF;
+  --color-oc-red:          #FF3C3C;
+
+  /* Animations */
+  --animate-float:       oc-float 6s ease-in-out infinite;
+  --animate-pulse-orb:   oc-pulse 7s ease-in-out infinite;
+  --animate-blink:       oc-blink 2s infinite;
+  --animate-grid-scroll: oc-grid 24s linear infinite;
+  --animate-ticker:      oc-ticker 22s linear infinite;
+  --animate-fade-up:     oc-fadeUp 0.5s ease forwards;
+}
+
+@keyframes oc-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes oc-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50%       { transform: scale(1.15); opacity: 1; }
+}
+@keyframes oc-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+@keyframes oc-grid {
+  from { transform: translateY(0); }
+  to   { transform: translateY(48px); }
+}
+@keyframes oc-ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes oc-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #050A14;
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+input, select, textarea, button { font-family: inherit; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,200,83,0.25); border-radius: 2px; }

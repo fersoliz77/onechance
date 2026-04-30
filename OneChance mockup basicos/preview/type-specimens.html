@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #050A14; font-family: 'DM Sans', sans-serif; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+.title-demo { color: #fff; font-size: 52px; font-weight: 500; line-height: 0.95; letter-spacing: -0.04em; }
+.t-green { color: #00C853; display: inline-block; transform: skewX(-10deg); }
+.t-outline { -webkit-text-stroke: 1px rgba(255,255,255,0.2); color: transparent; }
+.t-dim { color: rgba(255,255,255,0.2); }
+.stat-row { display: flex; gap: 8px; }
+.stat { color: #00C853; font-size: 22px; font-weight: 500; letter-spacing: -0.03em; }
+.stat-l { color: rgba(255,255,255,0.25); font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 3px; }
+.badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,200,83,0.1); border: 0.5px solid rgba(0,200,83,0.3); border-radius: 20px; padding: 4px 12px; }
+.bdot { width: 6px; height: 6px; background: #00C853; border-radius: 50%; animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.badge span { color: #00C853; font-size: 10px; font-weight: 500; letter-spacing: 0.06em; }
+.label-tag { color: rgba(255,255,255,0.2); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+</style>
+</head><body>
+<div>
+  <div class="label-tag">Hero Title Treatment</div>
+  <div class="title-demo">
+    Tu<br>
+    <span class="t-green">/</span>única<br>
+    <span class="t-outline">oportunidad</span>
+  </div>
+</div>
+<div>
+  <div class="label-tag">Eyebrow Pill</div>
+  <div class="badge"><div class="bdot"></div><span>Plataforma profesional de fútbol</span></div>
+</div>
+<div>
+  <div class="label-tag">Stat Numbers</div>
+  <div class="stat-row">
+    <div><div class="stat">1.2k</div><div class="stat-l">Jugadores</div></div>
+    <div style="width:1px;background:rgba(255,255,255,0.05);margin:0 8px"></div>
+    <div><div class="stat">84</div><div class="stat-l">Clubes</div></div>
+    <div style="width:1px;background:rgba(255,255,255,0.05);margin:0 8px"></div>
+    <div><div class="stat">14</div><div class="stat-l">Países</div></div>
+  </div>
+</div>
+</body></html>

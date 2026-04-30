@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #050A14; font-family: 'DM Sans', sans-serif; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.row { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+.swatch { border-radius: 8px; overflow: hidden; flex: 1; min-width: 80px; }
+.color-block { height: 52px; }
+.swatch-label { padding: 7px 9px; background: rgba(255,255,255,0.04); }
+.name { color: rgba(255,255,255,0.9); font-size: 10px; font-weight: 500; }
+.val { color: rgba(255,255,255,0.3); font-size: 9px; margin-top: 1px; }
+.section-title { color: rgba(255,255,255,0.2); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+</style>
+</head><body>
+<div class="section-title">Brand Greens</div>
+<div class="row">
+  <div class="swatch"><div class="color-block" style="background:#00C853"></div><div class="swatch-label"><div class="name">green-primary</div><div class="val">#00C853</div></div></div>
+  <div class="swatch"><div class="color-block" style="background:#00E660"></div><div class="swatch-label"><div class="name">green-hover</div><div class="val">#00E660</div></div></div>
+  <div class="swatch"><div class="color-block" style="background:#002A12"></div><div class="swatch-label"><div class="name">green-dark</div><div class="val">#002A12</div></div></div>
+  <div class="swatch"><div class="color-block" style="background:#003A18"></div><div class="swatch-label"><div class="name">green-deep</div><div class="val">#003A18</div></div></div>
+  <div class="swatch"><div class="color-block" style="background:rgba(0,200,83,0.08)"></div><div class="swatch-label"><div class="name">green-dim</div><div class="val">rgba 8%</div></div></div>
+</div>
+<div class="section-title">Blue Accent</div>
+<div class="row">
+  <div class="swatch"><div class="color-block" style="background:#5A8FFF"></div><div class="swatch-label"><div class="name">blue-accent</div><div class="val">#5A8FFF</div></div></div>
+  <div class="swatch"><div class="color-block" style="background:#4A9FFF"></div><div class="swatch-label"><div class="name">blue-alt</div><div class="val">#4A9FFF</div></div></div>
+  <div class="swatch"><div class="color-block" style="background:rgba(80,140,255,0.08)"></div><div class="swatch-label"><div class="name">blue-dim</div><div class="val">rgba 8%</div></div></div>
+</div>
+<div class="section-title">Backgrounds</div>
+<div class="row">
+  <div class="swatch"><div class="color-block" style="background:#050A14;border:0.5px solid rgba(255,255,255,0.08)"></div><div class="swatch-label"><div class="name">bg-base</div><div class="val">#050A14</div></div></div>
+  <div class="swatch"><div class="color-block" style="background:#060D18;border:0.5px solid rgba(255,255,255,0.08)"></div><div class="swatch-label"><div class="name">bg-alt</div><div class="val">#060D18</div></div></div>
+  <div class="swatch"><div class="color-block" style="background:#0C1F12"></div><div class="swatch-label"><div class="name">card-green</div><div class="val">#0C1F12</div></div></div>
+  <div class="swatch"><div class="color-block" style="background:#0B1A2E"></div><div class="swatch-label"><div class="name">card-blue</div><div class="val">#0B1A2E</div></div></div>
+</div>
+</body></html>

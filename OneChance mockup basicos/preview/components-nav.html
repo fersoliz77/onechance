@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #050A14; font-family: 'DM Sans', sans-serif; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.label { color: rgba(255,255,255,0.2); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+
+/* Nav bar */
+.nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.05); background: #060D18; border-radius: 10px; }
+.logo { display: flex; align-items: baseline; gap: 2px; }
+.logo-one { color: #fff; font-size: 15px; font-weight: 500; letter-spacing: -0.02em; }
+.logo-chance { color: #00C853; font-size: 15px; font-weight: 500; letter-spacing: -0.02em; }
+.logo-dot { width: 4px; height: 4px; background: #00C853; border-radius: 50%; margin: 0 1px 1px; animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.nav-links { display: flex; gap: 22px; }
+.nav-links a { color: rgba(255,255,255,0.35); font-size: 12px; text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: #fff; }
+.nav-right { display: flex; gap: 8px; align-items: center; }
+.btn-in { background: transparent; border: 0.5px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); font-size: 12px; padding: 7px 14px; border-radius: 7px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.btn-reg { background: #00C853; color: #002A12; font-size: 12px; font-weight: 500; padding: 7px 16px; border-radius: 7px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+/* Role tags */
+.role-strip { display: flex; gap: 8px; flex-wrap: wrap; }
+.role-tag { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); border: 0.5px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 9px 16px; cursor: pointer; transition: all 0.2s; }
+.role-tag:hover { border-color: rgba(0,200,83,0.3); background: rgba(0,200,83,0.05); }
+.rt-label { color: rgba(255,255,255,0.4); font-size: 11px; }
+.rt-arrow { color: rgba(255,255,255,0.15); font-size: 11px; margin-left: 2px; }
+
+/* Position pills */
+.pill-row { display: flex; gap: 6px; }
+.pill { background: rgba(255,255,255,0.03); border: 0.5px solid rgba(255,255,255,0.07); color: rgba(255,255,255,0.2); font-size: 9px; padding: 5px 12px; border-radius: 20px; letter-spacing: 0.04em; }
+.pill.active { background: rgba(0,200,83,0.1); border-color: rgba(0,200,83,0.3); color: #00C853; }
+</style>
+</head><body>
+<div>
+  <div class="label">Navigation Bar</div>
+  <nav class="nav">
+    <div class="logo">
+      <span class="logo-one">ONE</span>
+      <div class="logo-dot"></div>
+      <span class="logo-chance">CHANCE</span>
+    </div>
+    <div class="nav-links">
+      <a href="#">Jugadores</a>
+      <a href="#">Técnicos</a>
+      <a href="#">Clubes</a>
+      <a href="#">Representantes</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-in">Ingresar</button>
+      <button class="btn-reg">Publicar perfil</button>
+    </div>
+  </nav>
+</div>
+<div>
+  <div class="label">Role Tags</div>
+  <div class="role-strip">
+    <div class="role-tag"><span>⚽</span><span class="rt-label">Soy jugador / jugadora</span><span class="rt-arrow">→</span></div>
+    <div class="role-tag"><span>📋</span><span class="rt-label">Soy técnico</span><span class="rt-arrow">→</span></div>
+    <div class="role-tag"><span>🏟️</span><span class="rt-label">Represento un club</span><span class="rt-arrow">→</span></div>
+    <div class="role-tag"><span>🤝</span><span class="rt-label">Soy representante</span><span class="rt-arrow">→</span></div>
+  </div>
+</div>
+<div>
+  <div class="label">Position Pills</div>
+  <div class="pill-row">
+    <div class="pill active">Delantero</div>
+    <div class="pill">Arquero</div>
+    <div class="pill">Volante</div>
+    <div class="pill">Defensa</div>
+    <div class="pill">Lateral</div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #050A14; font-family: 'DM Sans', sans-serif; padding: 20px; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+.label { color: rgba(255,255,255,0.2); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+
+/* Grid background demo */
+.grid-demo {
+  width: 200px; height: 110px; border-radius: 10px; overflow: hidden; position: relative;
+  background: #050A14;
+  border: 0.5px solid rgba(255,255,255,0.07);
+}
+.grid-bg {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,200,83,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,200,83,0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  animation: gm 12s linear infinite;
+}
+@keyframes gm { from{transform:translateY(0)} to{transform:translateY(24px)} }
+.orb { position: absolute; border-radius: 50%; filter: blur(40px); }
+.orb-1 { width: 120px; height: 120px; background: rgba(0,200,83,0.12); top: -40px; left: -30px; animation: pulse 6s ease-in-out infinite; }
+.orb-2 { width: 80px; height: 80px; background: rgba(0,100,255,0.08); bottom: -20px; right: -10px; animation: pulse 8s ease-in-out infinite reverse; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+.scan { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.025) 3px, rgba(0,0,0,0.025) 4px); }
+.grid-label { position: absolute; bottom: 8px; right: 10px; color: rgba(255,255,255,0.2); font-size: 9px; letter-spacing: 0.04em; }
+
+/* Orb-only demo */
+.orb-demo {
+  width: 140px; height: 110px; border-radius: 10px; overflow: hidden; position: relative;
+  background: #050A14;
+  border: 0.5px solid rgba(255,255,255,0.07);
+}
+
+/* Divider */
+.div-demo { display: flex; flex-direction: column; align-items: center; height: 110px; justify-content: center; gap: 0; padding: 10px 0; }
+.div-line { flex: 1; width: 0.5px; background: linear-gradient(to bottom, transparent, rgba(0,200,83,0.35) 30%, rgba(0,200,83,0.35) 70%, transparent); }
+.div-diamond { width: 7px; height: 7px; background: #00C853; transform: rotate(45deg); box-shadow: 0 0 10px rgba(0,200,83,0.7); margin: 7px 0; }
+</style>
+</head><body>
+<div>
+  <div class="label">Animated Grid + Orbs + Scanlines</div>
+  <div class="grid-demo">
+    <div class="grid-bg"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="scan"></div>
+    <div class="grid-label">48×48px · 4% green</div>
+  </div>
+</div>
+<div>
+  <div class="label">Glow Orbs Only</div>
+  <div class="orb-demo">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+</div>
+<div>
+  <div class="label">Vertical Divider</div>
+  <div class="div-demo">
+    <div class="div-line"></div>
+    <div class="div-diamond"></div>
+    <div class="div-line"></div>
+  </div>
+</div>
+</body></html>

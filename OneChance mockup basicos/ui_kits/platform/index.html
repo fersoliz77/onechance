@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Chance — Plataforma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: 'DM Sans', system-ui, sans-serif; background: #050A14; color: #fff; -webkit-font-smoothing: antialiased; }
+input, select, textarea, button { font-family: inherit; }
+a { text-decoration: none; }
+
+@keyframes oc-blink  { 0%,100%{opacity:1} 50%{opacity:0.2} }
+@keyframes oc-grid   { from{transform:translateY(0)} to{transform:translateY(48px)} }
+@keyframes oc-pulse  { 0%,100%{transform:scale(1);opacity:0.8} 50%{transform:scale(1.15);opacity:1} }
+@keyframes oc-float  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+@keyframes oc-ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,200,83,0.2); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="Shared.jsx"></script>
+<script type="text/babel" src="PlayersScreen.jsx"></script>
+<script type="text/babel" src="ProfileScreens.jsx"></script>
+<script type="text/babel" src="AuthScreen.jsx"></script>
+<script type="text/babel" src="DashboardScreen.jsx"></script>
+<script type="text/babel" src="AdminScreen.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+/* ── Simple hash router ── */
+function useRoute() {
+  const parse = () => {
+    const hash = window.location.hash.replace('#','') || '/jugadores';
+    const [path, qs] = hash.split('?');
+    const params = {};
+    if (qs) qs.split('&').forEach(p => { const [k,v] = p.split('='); params[k] = v; });
+    return { path, params };
+  };
+  const [route, setRoute] = useState(parse);
+  useEffect(() => {
+    const handler = () => setRoute(parse());
+    window.addEventListener('hashchange', handler);
+    return () => window.removeEventListener('hashchange', handler);
+  }, []);
+  const navigate = useCallback((to) => {
+    window.location.hash = to;
+  }, []);
+  return { route, navigate };
+}
+
+/* ── Landing screen (inline, minimal) ── */
+function LandingScreen({ navigate }) {
+  const [hovCta, setHovCta] = useState(false);
+
+  return (
+    <div style={{ position:'relative', zIndex:2, paddingTop:56, minHeight:'100vh', overflow:'hidden' }}>
+      {/* Grid */}
+      <div style={{ position:'fixed', inset:0, zIndex:0, backgroundImage:'linear-gradient(rgba(0,200,83,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,83,0.03) 1px,transparent 1px)', backgroundSize:'48px 48px', animation:'oc-grid 24s linear infinite', pointerEvents:'none' }} />
+      <div style={{ position:'fixed', inset:0, zIndex:0, pointerEvents:'none', background:'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.02) 3px,rgba(0,0,0,0.02) 4px)' }} />
+      <div style={{ position:'fixed', width:400, height:400, borderRadius:'50%', background:'rgba(0,200,83,0.07)', filter:'blur(90px)', top:-100, left:-80, animation:'oc-pulse 7s ease-in-out infinite', pointerEvents:'none', zIndex:0 }} />
+      <div style={{ position:'fixed', width:260, height:260, borderRadius:'50%', background:'rgba(0,100,255,0.06)', filter:'blur(70px)', bottom:60, right:-40, animation:'oc-pulse 9s ease-in-out infinite reverse', pointerEvents:'none', zIndex:0 }} />
+
+      {/* Hero */}
+      <div style={{ position:'relative', zIndex:2, maxWidth:1100, margin:'0 auto', padding:'52px 40px 0', display:'grid', gridTemplateColumns:'1fr 44px 1fr', minHeight:520 }}>
+        {/* Left */}
+        <div style={{ paddingRight:32, display:'flex', flexDirection:'column' }}>
+          <div style={{ display:'inline-flex', alignItems:'center', gap:8, background:'rgba(0,200,83,0.08)', border:'0.5px solid rgba(0,200,83,0.25)', borderRadius:20, padding:'5px 14px', marginBottom:28, width:'fit-content' }}>
+            <div style={{ width:6, height:6, background:'#00C853', borderRadius:'50%', animation:'oc-blink 2s infinite' }} />
+            <span style={{ color:'#00C853', fontSize:10, letterSpacing:'0.07em' }}>Plataforma profesional de fútbol</span>
+          </div>
+          <h1 style={{ color:'#fff', fontSize:56, fontWeight:500, lineHeight:0.95, letterSpacing:'-0.04em', marginBottom:24 }}>
+            Mostrá<br />
+            tu <span style={{ color:'#00C853', display:'inline-block', transform:'skewX(-10deg)' }}>/</span><br />
+            <span style={{ WebkitTextStroke:'1px rgba(255,255,255,0.2)', color:'transparent' }}>talento</span>
+          </h1>
+          <p style={{ color:'rgba(255,255,255,0.35)', fontSize:13, lineHeight:1.7, maxWidth:320, marginBottom:36 }}>
+            La vidriera donde <strong style={{ color:'rgba(255,255,255,0.7)', fontWeight:400 }}>clubes, representantes y técnicos</strong> descubren el talento que están buscando. Creá tu perfil. Hacete ver.
+          </p>
+          <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:48 }}>
+            <button onMouseEnter={() => setHovCta(true)} onMouseLeave={() => setHovCta(false)}
+              onClick={() => navigate('/jugadores')}
+              style={{ background:'#00C853', color:'#002A12', fontSize:13, fontWeight:500, padding:'13px 26px', borderRadius:9, border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:8, transition:'all 0.2s', transform: hovCta ? 'translateY(-2px)' : 'none', boxShadow: hovCta ? '0 10px 28px rgba(0,200,83,0.35)' : 'none' }}>
+              Ver jugadores →
+            </button>
+            <button onClick={() => navigate('/auth?tab=register')}
+              style={{ color:'rgba(255,255,255,0.4)', fontSize:13, background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+              <div style={{ width:28, height:28, borderRadius:'50%', border:'0.5px solid rgba(255,255,255,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, color:'rgba(255,255,255,0.5)' }}>+</div>
+              Publicar mi perfil
+            </button>
+          </div>
+          {/* Stats */}
+          <div style={{ display:'flex', border:'0.5px solid rgba(255,255,255,0.07)', borderRadius:10, overflow:'hidden', transform:'translateX(-6px)' }}>
+            {[['1.2k','Jugadores'],['84','Clubes'],['47','Representantes'],['14','Países']].map(([n,l],i,a) => (
+              <div key={l} style={{ flex:1, padding:'13px 15px', borderRight: i<a.length-1 ? '0.5px solid rgba(255,255,255,0.05)' : 'none' }}>
+                <div style={{ color:'#00C853', fontSize:20, fontWeight:500, letterSpacing:'-0.03em', lineHeight:1 }}>{n}</div>
+                <div style={{ color:'rgba(255,255,255,0.25)', fontSize:9, marginTop:3, textTransform:'uppercase', letterSpacing:'0.05em' }}>{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', paddingTop:40 }}>
+          <div style={{ flex:1, width:'0.5px', background:'linear-gradient(to bottom,transparent,rgba(0,200,83,0.3) 30%,rgba(0,200,83,0.3) 70%,transparent)' }} />
+          <div style={{ width:7, height:7, background:'#00C853', transform:'rotate(45deg)', margin:'8px 0', boxShadow:'0 0 10px rgba(0,200,83,0.6)' }} />
+          <div style={{ flex:1, width:'0.5px', background:'linear-gradient(to bottom,transparent,rgba(0,200,83,0.3) 30%,rgba(0,200,83,0.3) 70%,transparent)' }} />
+        </div>
+
+        {/* Right — card collage */}
+        <div style={{ paddingTop:20, paddingLeft:16, position:'relative' }}>
+          <div style={{ display:'flex', gap:10, alignItems:'flex-start' }}>
+            {/* Col 1 */}
+            <div style={{ display:'flex', flexDirection:'column', gap:8, marginTop:16 }}>
+              {/* Featured player card */}
+              <div style={{ width:200, background:'linear-gradient(145deg,#0C1F12,#060F09)', border:'0.5px solid rgba(0,200,83,0.22)', borderRadius:'16px 4px 16px 16px', overflow:'hidden', clipPath:'polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%)', animation:'oc-float 6s ease-in-out infinite' }}>
+                <div style={{ height:2, background:'linear-gradient(90deg,#00C853,rgba(0,200,83,0.15))' }} />
+                <div style={{ padding:'14px 18px 18px' }}>
+                  <div style={{ background:'#00C853', color:'#002A12', fontSize:8, fontWeight:500, padding:'3px 10px', borderRadius:10, letterSpacing:'0.07em', display:'inline-block', marginBottom:10 }}>★ DESTACADO</div>
+                  <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#00C853,#003A18)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, border:'1.5px solid rgba(0,200,83,0.35)', marginBottom:8 }}>👤</div>
+                  <div style={{ color:'#fff', fontSize:13, fontWeight:500 }}>Lucas Ferreira</div>
+                  <div style={{ color:'rgba(0,200,83,0.75)', fontSize:10, marginTop:2, marginBottom:10 }}>Enganche · Argentina · 23</div>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:5 }}>
+                    {[['91','Regate'],['90','Visión'],['88','Ritmo'],['87','OVR']].map(([v,l]) => (
+                      <div key={l} style={{ background:'rgba(0,200,83,0.06)', borderRadius:6, padding:'6px 8px' }}>
+                        <div style={{ color:'#00C853', fontSize:13, fontWeight:500 }}>{v}</div>
+                        <div style={{ color:'rgba(255,255,255,0.25)', fontSize:8, textTransform:'uppercase', letterSpacing:'0.04em' }}>{l}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              {/* Player chip */}
+              <div style={{ background:'linear-gradient(135deg,#0C1F12,#060F09)', border:'0.5px solid rgba(0,200,83,0.18)', borderRadius:10, padding:'10px 12px', display:'flex', alignItems:'center', gap:10, width:190, transform:'rotate(-1deg)', animation:'oc-float 7s ease-in-out infinite 0.5s' }}>
+                <div style={{ width:30, height:30, borderRadius:'50%', background:'linear-gradient(135deg,#B464FF,#3A1A5A)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, flexShrink:0 }}>👩</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ color:'#fff', fontSize:11, fontWeight:500 }}>Camila Ríos</div>
+                  <div style={{ color:'rgba(255,255,255,0.3)', fontSize:9, marginTop:1 }}>Mediocampista · URU</div>
+                </div>
+                <div style={{ background:'rgba(180,100,255,0.12)', borderRadius:5, padding:'4px 6px', textAlign:'center' }}>
+                  <div style={{ color:'#B464FF', fontSize:12, fontWeight:500 }}>84</div>
+                  <div style={{ color:'rgba(255,255,255,0.2)', fontSize:7, textTransform:'uppercase' }}>OVR</div>
+                </div>
+              </div>
+              {/* Club chip */}
+              <div style={{ background:'#0D1829', border:'0.5px solid rgba(255,180,0,0.2)', borderRadius:10, padding:'10px 14px', width:190, transform:'rotate(1deg)', animation:'oc-float 8s ease-in-out infinite 1s' }}>
+                <div style={{ color:'rgba(255,180,0,0.6)', fontSize:8, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:5 }}>Club verificado</div>
+                <div style={{ color:'#fff', fontSize:12, fontWeight:500 }}>San Lorenzo</div>
+                <div style={{ color:'rgba(255,255,255,0.3)', fontSize:9, marginTop:2, marginBottom:7 }}>Primera División · ARG</div>
+                <div style={{ display:'flex', alignItems:'center', gap:5, background:'rgba(255,180,0,0.07)', borderRadius:6, padding:'4px 7px' }}>
+                  <div style={{ width:4, height:4, borderRadius:'50%', background:'#FFB400' }} />
+                  <span style={{ color:'#FFB400', fontSize:9 }}>Buscando 3 jugadores</span>
+                </div>
+              </div>
+            </div>
+            {/* Col 2 */}
+            <div style={{ display:'flex', flexDirection:'column', gap:8, marginTop:36 }}>
+              {/* Coach card */}
+              <div style={{ width:170, background:'#0B1A2E', border:'0.5px solid rgba(80,140,255,0.2)', borderRadius:'4px 14px 14px 14px', padding:14, transform:'rotate(2deg)', animation:'oc-float 7s ease-in-out infinite 0.3s' }}>
+                <div style={{ color:'rgba(100,160,255,0.65)', fontSize:9, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:7 }}>Técnico verificado</div>
+                <div style={{ color:'#fff', fontSize:13, fontWeight:500 }}>Martín Álvarez</div>
+                <div style={{ color:'rgba(255,255,255,0.3)', fontSize:10, marginTop:2, marginBottom:10 }}>DT · Uruguay · 12 años</div>
+                <div style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(80,140,255,0.08)', borderRadius:6, padding:'6px 8px' }}>
+                  <div style={{ width:5, height:5, borderRadius:'50%', background:'#5A8FFF' }} />
+                  <span style={{ color:'#5A8FFF', fontSize:10, fontWeight:500 }}>Disponible</span>
+                </div>
+              </div>
+              {/* Player chip 2 */}
+              <div style={{ background:'#080F1C', border:'0.5px solid rgba(80,140,255,0.18)', borderRadius:10, padding:'10px 12px', display:'flex', alignItems:'center', gap:10, width:175, transform:'rotate(1.5deg)', animation:'oc-float 6s ease-in-out infinite 0.8s' }}>
+                <div style={{ width:30, height:30, borderRadius:'50%', background:'linear-gradient(135deg,#5A8FFF,#0B2A5A)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13 }}>👤</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ color:'#fff', fontSize:11, fontWeight:500 }}>Diego Méndez</div>
+                  <div style={{ color:'rgba(255,255,255,0.3)', fontSize:9, marginTop:1 }}>Arquero · BRA</div>
+                </div>
+                <div style={{ background:'rgba(80,140,255,0.1)', borderRadius:5, padding:'4px 6px', textAlign:'center' }}>
+                  <div style={{ color:'#5A8FFF', fontSize:12, fontWeight:500 }}>79</div>
+                  <div style={{ color:'rgba(255,255,255,0.2)', fontSize:7, textTransform:'uppercase' }}>OVR</div>
+                </div>
+              </div>
+              {/* Rep chip */}
+              <div style={{ background:'#120A1E', border:'0.5px solid rgba(180,100,255,0.22)', borderRadius:10, padding:'10px 14px', width:172, transform:'rotate(-1deg)', animation:'oc-float 9s ease-in-out infinite 1.2s' }}>
+                <div style={{ color:'rgba(180,100,255,0.7)', fontSize:8, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:5 }}>Representante</div>
+                <div style={{ color:'#fff', fontSize:12, fontWeight:500 }}>Carlos Vega</div>
+                <div style={{ display:'flex', gap:6, marginTop:7 }}>
+                  <div style={{ flex:1, background:'rgba(180,100,255,0.08)', borderRadius:5, padding:'5px 7px', textAlign:'center' }}>
+                    <div style={{ color:'#B464FF', fontSize:12, fontWeight:500 }}>18</div>
+                    <div style={{ color:'rgba(255,255,255,0.2)', fontSize:7, textTransform:'uppercase', marginTop:1 }}>Jugadores</div>
+                  </div>
+                  <div style={{ flex:1, background:'rgba(180,100,255,0.08)', borderRadius:5, padding:'5px 7px', textAlign:'center' }}>
+                    <div style={{ color:'#B464FF', fontSize:12, fontWeight:500 }}>5</div>
+                    <div style={{ color:'rgba(255,255,255,0.2)', fontSize:7, textTransform:'uppercase', marginTop:1 }}>Países</div>
+                  </div>
+                </div>
+              </div>
+              {/* Player chip 3 */}
+              <div style={{ background:'linear-gradient(135deg,#1A0A2E,#0B0518)', border:'0.5px solid rgba(180,100,255,0.18)', borderRadius:10, padding:'10px 12px', display:'flex', alignItems:'center', gap:10, width:174, transform:'rotate(-0.5deg)', animation:'oc-float 7s ease-in-out infinite 1.5s' }}>
+                <div style={{ width:30, height:30, borderRadius:'50%', background:'linear-gradient(135deg,#B464FF,#3A1A5A)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13 }}>👩</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ color:'#fff', fontSize:11, fontWeight:500 }}>Valentina Soto</div>
+                  <div style={{ color:'rgba(255,255,255,0.3)', fontSize:9, marginTop:1 }}>Lateral · CHI</div>
+                </div>
+                <div style={{ background:'rgba(180,100,255,0.12)', borderRadius:5, padding:'4px 6px', textAlign:'center' }}>
+                  <div style={{ color:'#B464FF', fontSize:12, fontWeight:500 }}>82</div>
+                  <div style={{ color:'rgba(255,255,255,0.2)', fontSize:7, textTransform:'uppercase' }}>OVR</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Role strip */}
+      <div style={{ position:'relative', zIndex:2, display:'flex', justifyContent:'center', gap:10, padding:'24px 40px 0', flexWrap:'wrap' }}>
+        {[['⚽','Soy jugador / jugadora','/auth?tab=register'],['📋','Soy técnico','/auth?tab=register'],['🏟️','Represento un club','/auth?tab=register'],['🤝','Soy representante','/auth?tab=register']].map(([icon,label,to]) => (
+          <button key={label} onClick={() => navigate(to)}
+            style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.03)', border:'0.5px solid rgba(255,255,255,0.07)', borderRadius:8, padding:'10px 18px', cursor:'pointer', fontFamily:'inherit', transition:'all 0.15s' }}>
+            <span style={{ fontSize:14 }}>{icon}</span>
+            <span style={{ color:'rgba(255,255,255,0.4)', fontSize:11 }}>{label}</span>
+            <span style={{ color:'rgba(255,255,255,0.15)', fontSize:11, marginLeft:4 }}>→</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Ticker */}
+      <div style={{ position:'relative', zIndex:2, overflow:'hidden', height:34, borderTop:'0.5px solid rgba(255,255,255,0.05)', display:'flex', alignItems:'center', background:'rgba(0,0,0,0.25)', marginTop:24 }}>
+        <div style={{ display:'flex', animation:'oc-ticker 22s linear infinite', whiteSpace:'nowrap' }}>
+          {['ONE CHANCE','Lucas F. · ENG · ARG','Camila R. · MED · URU','Diego M. · ARQ · BRA','Valentina S. · LAT · CHI','Rodrigo P. · DEL · COL','Ana L. · DEF · PAR','ONE CHANCE','Lucas F. · ENG · ARG','Camila R. · MED · URU','Diego M. · ARQ · BRA','Valentina S. · LAT · CHI'].map((item,i) => (
+            <div key={i} style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'0 28px', color: item==='ONE CHANCE' ? '#00C853' : 'rgba(255,255,255,0.2)', fontSize:10, fontWeight: item==='ONE CHANCE' ? 500 : 400, borderRight:'0.5px solid rgba(255,255,255,0.04)', letterSpacing: item==='ONE CHANCE' ? '0.04em' : 0 }}>
+              <div style={{ width:3, height:3, background:'rgba(0,200,83,0.5)', borderRadius:'50%' }} />
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── App shell ── */
+function App() {
+  const { route, navigate } = useRoute();
+  const [user, setUser] = useState(null);
+
+  const handleLogin = (u) => setUser(u);
+  const handleLogout = () => { setUser(null); navigate('/jugadores'); };
+
+  // Route matching
+  const path = route.path;
+  const params = route.params;
+
+  const playerMatch  = path.match(/^\/jugadores\/(\d+)$/);
+  const coachMatch   = path.match(/^\/tecnicos\/(\d+)$/);
+  const clubMatch    = path.match(/^\/clubes\/(\d+)$/);
+  const agentMatch   = path.match(/^\/representantes\/(\d+)$/);
+
+  // Guard private routes
+  useEffect(() => {
+    if ((path === '/dashboard' || path === '/admin') && !user) navigate('/auth?tab=login');
+    if (path === '/admin' && user && user.role !== 'admin') navigate('/dashboard');
+  }, [path, user]);
+
+  return (
+    <>
+      <OcBackground subtle={path !== '/'} />
+      <OcNavBar currentRoute={path} navigate={navigate} user={user} onAuthClick={handleLogout} />
+
+      {path === '/'                && <LandingScreen navigate={navigate} />}
+      {path === '/jugadores'      && !playerMatch && <PlayersListScreen navigate={navigate} />}
+      {playerMatch                 && <PlayerProfileScreen playerId={playerMatch[1]} navigate={navigate} />}
+      {path === '/tecnicos'       && !coachMatch  && <TecsScreen navigate={navigate} />}
+      {coachMatch                  && <CoachProfileScreen coachId={coachMatch[1]} navigate={navigate} />}
+      {path === '/clubes'         && !clubMatch   && <ClubsScreen navigate={navigate} />}
+      {clubMatch                   && <ClubProfileScreen clubId={clubMatch[1]} navigate={navigate} />}
+      {path === '/representantes' && !agentMatch  && <AgentsScreen navigate={navigate} />}
+      {agentMatch                  && <AgentProfileScreen agentId={agentMatch[1]} navigate={navigate} />}
+      {path === '/auth'           && <AuthScreen navigate={navigate} onLogin={handleLogin} initialTab={params.tab || 'login'} />}
+      {path === '/dashboard'      && user && <DashboardScreen user={user} navigate={navigate} />}
+      {path === '/admin'          && user?.role === 'admin' && <AdminScreen user={user} navigate={navigate} />}
+    </>
+  );
+}
+
+// TecsScreen, ClubsScreen, AgentsScreen are defined in ProfileScreens.jsx
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

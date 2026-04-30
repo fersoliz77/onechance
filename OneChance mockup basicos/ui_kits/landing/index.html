@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Chance — Landing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #050A14; font-family: 'DM Sans', system-ui, sans-serif; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+
+@keyframes oc-blink  { 0%,100%{opacity:1}  50%{opacity:0.2} }
+@keyframes oc-float  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+@keyframes oc-float-slow { 0%,100%{transform:rotate(2deg) translateY(0)} 50%{transform:rotate(2deg) translateY(-5px)} }
+@keyframes oc-float-rev  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+@keyframes oc-grid   { from{transform:translateY(0)} to{transform:translateY(48px)} }
+@keyframes oc-ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+@keyframes oc-pulse  { 0%,100%{transform:scale(1);opacity:0.8} 50%{transform:scale(1.15);opacity:1} }
+@keyframes oc-fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+.fade-1, .fade-2, .fade-3, .fade-4, .fade-5 { /* no entry animation — content always visible */ }
+.fade-card  { animation: oc-float 6s ease-in-out infinite; }
+.fade-coach { animation: oc-float-slow 7s ease-in-out infinite; }
+.fade-mini  { animation: oc-float-rev 5s ease-in-out infinite; }
+</style>
+</head>
+<body>
+<script type="text/babel" src="Nav.jsx"></script>
+<script type="text/babel" src="Cards.jsx"></script>
+<script type="text/babel" src="RoleStrip.jsx"></script>
+<script type="text/babel" src="Ticker.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+function Background() {
+  return (
+    <>
+      {/* Animated grid */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: 'linear-gradient(rgba(0,200,83,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,200,83,0.03) 1px, transparent 1px)',
+        backgroundSize: '48px 48px',
+        animation: 'oc-grid 24s linear infinite',
+        pointerEvents: 'none'
+      }} />
+      {/* Scanlines */}
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 50, pointerEvents: 'none',
+        background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.022) 3px, rgba(0,0,0,0.022) 4px)'
+      }} />
+      {/* Orbs */}
+      <div style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: 'rgba(0,200,83,0.07)', filter: 'blur(90px)', top: -100, left: -80, animation: 'oc-pulse 7s ease-in-out infinite', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', width: 260, height: 260, borderRadius: '50%', background: 'rgba(0,100,255,0.06)', filter: 'blur(70px)', bottom: 60, right: -40, animation: 'oc-pulse 9s ease-in-out infinite reverse', pointerEvents: 'none' }} />
+    </>
+  );
+}
+
+function HeroLeft({ onCTA }) {
+  const [hovCta, setHovCta] = useState(false);
+  return (
+    <div style={{ paddingTop: 52, paddingRight: 32, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+      {/* Eyebrow */}
+      <div className="fade-1" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(0,200,83,0.08)', border: '0.5px solid rgba(0,200,83,0.25)', borderRadius: 20, padding: '5px 14px', marginBottom: 28, width: 'fit-content' }}>
+        <div style={{ width: 6, height: 6, background: '#00C853', borderRadius: '50%', animation: 'oc-blink 2s infinite' }} />
+        <span style={{ color: '#00C853', fontSize: 10, letterSpacing: '0.07em' }}>Plataforma profesional de fútbol</span>
+      </div>
+
+      {/* Title */}
+      <h1 className="fade-2" style={{ color: '#fff', fontSize: 58, fontWeight: 500, lineHeight: 0.95, letterSpacing: '-0.04em', marginBottom: 24 }}>
+        Mostrá<br />
+        tu <span style={{ color: '#00C853', display: 'inline-block', transform: 'skewX(-10deg)', fontStyle: 'normal' }}>/</span><br />
+        <span style={{ WebkitTextStroke: '1px rgba(255,255,255,0.2)', color: 'transparent' }}>talento</span>
+      </h1>
+
+      {/* Sub */}
+      <p className="fade-3" style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, lineHeight: 1.7, maxWidth: 320, marginBottom: 36 }}>
+        La vidriera donde <strong style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>clubes, representantes y técnicos</strong> descubren el talento que están buscando. Creá tu perfil. Hacete ver.
+      </p>
+
+      {/* CTAs */}
+      <div className="fade-4" style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 48 }}>
+        <button
+          onClick={onCTA}
+          onMouseEnter={() => setHovCta(true)}
+          onMouseLeave={() => setHovCta(false)}
+          style={{
+            background: '#00C853', color: '#002A12', fontSize: 13, fontWeight: 500,
+            padding: '13px 26px', borderRadius: 9, border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'inherit',
+            transform: hovCta ? 'translateY(-2px)' : 'none',
+            boxShadow: hovCta ? '0 10px 28px rgba(0,200,83,0.35)' : 'none',
+            transition: 'all 0.2s'
+          }}>
+          Crear mi perfil
+          <span style={{ transition: 'transform 0.2s', display: 'inline-block', transform: hovCta ? 'translateX(4px)' : 'none' }}>→</span>
+        </button>
+        <button style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit' }}>
+          <div style={{ width: 28, height: 28, borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>▶</div>
+          Ver la plataforma
+        </button>
+      </div>
+
+      {/* Stats bar */}
+      <div className="fade-5" style={{ display: 'flex', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: 10, overflow: 'hidden', transform: 'translateX(-6px)' }}>
+        {[['1.2k','Jugadores'],['84','Clubes'],['47','Representantes'],['14','Países']].map(([n, l]) => (
+          <div key={l} style={{ flex: 1, padding: '14px 16px', borderRight: '0.5px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ color: '#00C853', fontSize: 22, fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 1 }}>{n}</div>
+            <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 9, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{l}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HeroDivider() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 40 }}>
+      <div style={{ flex: 1, width: 0.5, background: 'linear-gradient(to bottom, transparent, rgba(0,200,83,0.3) 30%, rgba(0,200,83,0.3) 70%, transparent)' }} />
+      <div style={{ width: 7, height: 7, background: '#00C853', transform: 'rotate(45deg)', margin: '8px 0', boxShadow: '0 0 10px rgba(0,200,83,0.6)' }} />
+      <div style={{ flex: 1, width: 0.5, background: 'linear-gradient(to bottom, transparent, rgba(0,200,83,0.3) 30%, rgba(0,200,83,0.3) 70%, transparent)' }} />
+    </div>
+  );
+}
+
+// Mini player chip
+function PlayerChip({ name, pos, country, overall, accent = '#00C853', rotate = 0, animClass = '' }) {
+  return (
+    <div className={animClass} style={{
+      background: accent === '#00C853' ? 'linear-gradient(135deg,#0C1F12,#060F09)' : '#0B1A2E',
+      border: `0.5px solid ${accent === '#00C853' ? 'rgba(0,200,83,0.22)' : 'rgba(80,140,255,0.2)'}`,
+      borderRadius: 10, padding: '10px 12px',
+      display: 'flex', alignItems: 'center', gap: 10,
+      transform: `rotate(${rotate}deg)`,
+      width: 190,
+    }}>
+      <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg,${accent},${accent === '#00C853' ? '#003A18' : '#0B2A5A'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0, border: `1px solid ${accent}44` }}>⚽</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ color: '#fff', fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
+        <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9, marginTop: 1 }}>{pos} · {country}</div>
+      </div>
+      <div style={{ background: `${accent}18`, borderRadius: 6, padding: '4px 7px', textAlign: 'center', flexShrink: 0 }}>
+        <div style={{ color: accent, fontSize: 13, fontWeight: 500, lineHeight: 1 }}>{overall}</div>
+        <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 7, marginTop: 1, textTransform: 'uppercase', letterSpacing: '0.04em' }}>OVR</div>
+      </div>
+    </div>
+  );
+}
+
+function ClubChip({ name, liga, players, rotate = 0, animClass = '' }) {
+  return (
+    <div className={animClass} style={{
+      background: '#0D1829',
+      border: '0.5px solid rgba(255,180,0,0.2)',
+      borderRadius: 10, padding: '10px 14px',
+      width: 175, transform: `rotate(${rotate}deg)`,
+    }}>
+      <div style={{ color: 'rgba(255,180,0,0.6)', fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>Club verificado</div>
+      <div style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>{name}</div>
+      <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10, marginTop: 2, marginBottom: 8 }}>{liga}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,180,0,0.07)', borderRadius: 6, padding: '5px 8px' }}>
+        <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#FFB400' }} />
+        <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9 }}>Buscando</span>
+        <span style={{ color: '#FFB400', fontSize: 9, fontWeight: 500, marginLeft: 'auto' }}>{players} jugadores</span>
+      </div>
+    </div>
+  );
+}
+
+function RepChip({ name, players, countries, rotate = 0, animClass = '' }) {
+  return (
+    <div className={animClass} style={{
+      background: '#120A1E',
+      border: '0.5px solid rgba(180,100,255,0.22)',
+      borderRadius: 10, padding: '10px 14px',
+      width: 172, transform: `rotate(${rotate}deg)`,
+    }}>
+      <div style={{ color: 'rgba(180,100,255,0.7)', fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>Representante</div>
+      <div style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>{name}</div>
+      <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+        <div style={{ flex: 1, background: 'rgba(180,100,255,0.08)', borderRadius: 5, padding: '5px 7px', textAlign: 'center' }}>
+          <div style={{ color: '#B464FF', fontSize: 12, fontWeight: 500 }}>{players}</div>
+          <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 7, textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 1 }}>Jugadores</div>
+        </div>
+        <div style={{ flex: 1, background: 'rgba(180,100,255,0.08)', borderRadius: 5, padding: '5px 7px', textAlign: 'center' }}>
+          <div style={{ color: '#B464FF', fontSize: 12, fontWeight: 500 }}>{countries}</div>
+          <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 7, textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 1 }}>Países</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HeroRight() {
+  return (
+    <div style={{ paddingTop: 20, paddingLeft: 16, position: 'relative', minHeight: 500 }}>
+      {/* Col layout: two staggered columns */}
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+
+        {/* LEFT column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 }}>
+          <PlayerCard
+            name="Lucas Ferreira"
+            position="Enganche"
+            country="Argentina"
+            age={23}
+            animated={false}
+            stats={[
+              { value: '91', label: 'Regate' },
+              { value: '90', label: 'Visión' },
+              { value: '88', label: 'Ritmo' },
+              { value: '87', label: 'OVR' },
+            ]}
+          />
+          <PlayerChip name="Camila Ríos" pos="Mediocampista" country="URU" overall={84} rotate={-1} animClass="fade-card" />
+          <ClubChip name="San Lorenzo" liga="Primera División · ARG" players={3} rotate={1} animClass="fade-coach" />
+        </div>
+
+        {/* RIGHT column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 40 }}>
+          <CoachCard name="Martín Álvarez" role="DT" country="Uruguay" years={12} animated={false} />
+          <PlayerChip name="Diego Méndez" pos="Arquero" country="BRA" overall={79} accent="#5A8FFF" rotate={1.5} animClass="fade-mini" />
+          <RepChip name="Carlos Vega" players={18} countries={5} rotate={-1} animClass="fade-card" />
+          <PlayerChip name="Valentina Soto" pos="Lateral" country="CHI" overall={82} rotate={-1} animClass="fade-coach" />
+        </div>
+      </div>
+
+      {/* Floating mini badges */}
+      <div style={{ position: 'absolute', bottom: 10, left: 0 }}>
+        <MiniBadge icon="🌎" label="Alcance" value="14 países" animated={false} />
+      </div>
+    </div>
+  );
+}
+
+// Modal for registration
+function Modal({ onClose }) {
+  const [step, setStep] = useState(0);
+  const [role, setRole] = useState(null);
+  const roles = [
+    { icon: '⚽', label: 'Jugador / Jugadora' },
+    { icon: '📋', label: 'Técnico / Entrenador' },
+    { icon: '🏟️', label: 'Club' },
+    { icon: '🤝', label: 'Representante' },
+  ];
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={onClose}>
+      <div style={{ background: '#0C1F12', border: '0.5px solid rgba(0,200,83,0.25)', borderRadius: 16, padding: 32, width: 380, position: 'relative' }} onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 16, background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 18, cursor: 'pointer' }}>×</button>
+        {step === 0 && (
+          <>
+            <div style={{ color: '#00C853', fontSize: 10, letterSpacing: '0.07em', marginBottom: 8 }}>CREAR PERFIL</div>
+            <div style={{ color: '#fff', fontSize: 20, fontWeight: 500, letterSpacing: '-0.02em', marginBottom: 6 }}>¿Quién sos?</div>
+            <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, marginBottom: 24 }}>Elegí tu rol en el fútbol para continuar.</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {roles.map(r => (
+                <button key={r.label} onClick={() => { setRole(r.label); setStep(1); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: 9, padding: '12px 16px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}>
+                  <span style={{ fontSize: 18 }}>{r.icon}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>{r.label}</span>
+                  <span style={{ marginLeft: 'auto', color: 'rgba(255,255,255,0.2)', fontSize: 12 }}>→</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        {step === 1 && (
+          <>
+            <div style={{ color: '#00C853', fontSize: 10, letterSpacing: '0.07em', marginBottom: 8 }}>CREAR PERFIL · {role?.toUpperCase()}</div>
+            <div style={{ color: '#fff', fontSize: 20, fontWeight: 500, letterSpacing: '-0.02em', marginBottom: 20 }}>Tu información</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+              {['Nombre completo', 'Correo electrónico', 'País'].map(placeholder => (
+                <input key={placeholder} placeholder={placeholder} style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 14px', color: '#fff', fontSize: 13, fontFamily: 'inherit', outline: 'none', width: '100%' }} />
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setStep(0)} style={{ flex: 1, background: 'transparent', border: '0.5px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', padding: '11px', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>Atrás</button>
+              <button onClick={() => setStep(2)} style={{ flex: 2, background: '#00C853', color: '#002A12', fontWeight: 500, padding: '11px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>Continuar →</button>
+            </div>
+          </>
+        )}
+        {step === 2 && (
+          <div style={{ textAlign: 'center', padding: '16px 0' }}>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>⚽</div>
+            <div style={{ color: '#00C853', fontSize: 18, fontWeight: 500, marginBottom: 8 }}>¡Perfil creado!</div>
+            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 24, lineHeight: 1.6 }}>Ya sos parte de One Chance.<br/>Pronto los scouts te van a encontrar.</div>
+            <button onClick={onClose} style={{ background: '#00C853', color: '#002A12', fontWeight: 500, padding: '12px 32px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>Ir a mi perfil</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [showModal, setShowModal] = useState(false);
+
+  return (
+    <div style={{ background: '#050A14', minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
+      <Background />
+
+      {/* Nav */}
+      <Nav onLogin={() => setShowModal(true)} onRegister={() => setShowModal(true)} />
+
+      {/* Hero */}
+      <div style={{ position: 'relative', zIndex: 10, display: 'grid', gridTemplateColumns: '1fr 44px 1fr', minHeight: 520, padding: '0 40px' }}>
+        <HeroLeft onCTA={() => setShowModal(true)} />
+        <HeroDivider />
+        <HeroRight />
+      </div>
+
+      {/* Role strip */}
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        <RoleStrip onSelect={() => setShowModal(true)} />
+      </div>
+
+      {/* Ticker */}
+      <div style={{ position: 'relative', zIndex: 20, marginTop: 20 }}>
+        <Ticker />
+      </div>
+
+      {/* Modal */}
+      {showModal && <Modal onClose={() => setShowModal(false)} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+<div id="root"></div>
+</body>
+</html>

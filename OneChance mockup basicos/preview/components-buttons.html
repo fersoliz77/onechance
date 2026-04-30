@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #050A14; font-family: 'DM Sans', sans-serif; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.label { color: rgba(255,255,255,0.2); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* Primary CTA */
+.btn-primary { background: #00C853; color: #002A12; font-size: 13px; font-weight: 500; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,200,83,0.35); background: #00E660; }
+
+/* Ghost */
+.btn-ghost { color: rgba(255,255,255,0.45); font-size: 13px; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif; transition: color 0.2s; }
+.btn-ghost:hover { color: #fff; }
+.play-icon { width: 26px; height: 26px; border-radius: 50%; border: 0.5px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 9px; color: rgba(255,255,255,0.4); }
+
+/* Outline */
+.btn-outline { background: transparent; border: 0.5px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); font-size: 12px; padding: 8px 16px; border-radius: 7px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.btn-outline:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+
+/* Nav CTA */
+.btn-nav { background: #00C853; color: #002A12; font-size: 12px; font-weight: 500; padding: 8px 18px; border-radius: 7px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+/* Disabled state */
+.btn-disabled { background: rgba(0,200,83,0.2); color: rgba(0,200,83,0.4); font-size: 13px; font-weight: 500; padding: 12px 24px; border-radius: 8px; border: none; cursor: not-allowed; font-family: 'DM Sans', sans-serif; }
+</style>
+</head><body>
+<div>
+  <div class="label">Primary</div>
+  <div class="row">
+    <button class="btn-primary">Crear mi perfil →</button>
+    <button class="btn-primary" style="transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,200,83,0.35);background:#00E660">Hover state</button>
+  </div>
+</div>
+<div>
+  <div class="label">Ghost / Secondary</div>
+  <div class="row">
+    <button class="btn-ghost"><div class="play-icon">▶</div> Ver la plataforma</button>
+    <button class="btn-ghost" style="color:#fff">Hover state</button>
+  </div>
+</div>
+<div>
+  <div class="label">Outline (Nav)</div>
+  <div class="row">
+    <button class="btn-outline">Ingresar</button>
+    <button class="btn-nav">Publicar perfil</button>
+  </div>
+</div>
+<div>
+  <div class="label">Disabled</div>
+  <div class="row">
+    <button class="btn-disabled">Crear mi perfil →</button>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,239 @@
+/* ============================================================
+   ONE CHANCE — Design Tokens
+   Source: change mockup basicos/ (landing mockups)
+   Font: DM Sans (Google Fonts) — substituted for var(--font-sans)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+/* ── BASE ── */
+:root {
+
+  /* Fonts */
+  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ── COLORS: Base ── */
+  --bg-base:          #050A14;
+  --bg-alt:           #060D18;
+  --bg-card-green:    #0C1F12;
+  --bg-card-blue:     #0B1A2E;
+  --bg-card-surface:  #080F1C;
+
+  /* Brand Green */
+  --green-primary:    #00C853;
+  --green-hover:      #00E660;
+  --green-dark:       #002A12;
+  --green-deep:       #003A18;
+  --green-dim:        rgba(0, 200, 83, 0.08);
+  --green-border:     rgba(0, 200, 83, 0.25);
+  --green-border-lo:  rgba(0, 200, 83, 0.12);
+  --green-glow:       rgba(0, 200, 83, 0.30);
+
+  /* Blue Accent (coaches / secondary) */
+  --blue-accent:      #5A8FFF;
+  --blue-alt:         #4A9FFF;
+  --blue-dim:         rgba(80, 140, 255, 0.08);
+  --blue-border:      rgba(80, 140, 255, 0.20);
+
+  /* Text */
+  --text-primary:     #FFFFFF;
+  --text-secondary:   rgba(255, 255, 255, 0.60);
+  --text-muted:       rgba(255, 255, 255, 0.35);
+  --text-dim:         rgba(255, 255, 255, 0.20);
+  --text-green:       #00C853;
+  --text-blue:        #5A8FFF;
+  --text-on-green:    #002A12;
+
+  /* Borders */
+  --border-subtle:    rgba(255, 255, 255, 0.05);
+  --border-low:       rgba(255, 255, 255, 0.08);
+  --border-mid:       rgba(255, 255, 255, 0.15);
+  --border-green:     rgba(0, 200, 83, 0.25);
+  --border-blue:      rgba(80, 140, 255, 0.20);
+
+  /* ── COLORS: Semantic ── */
+  --color-bg:         var(--bg-base);
+  --color-surface:    var(--bg-card-green);
+  --color-accent:     var(--green-primary);
+  --color-accent-2:   var(--blue-accent);
+  --color-fg:         var(--text-primary);
+  --color-fg-muted:   var(--text-muted);
+  --color-border:     var(--border-subtle);
+  --color-cta-bg:     var(--green-primary);
+  --color-cta-fg:     var(--green-dark);
+  --color-stat:       var(--green-primary);
+
+  /* ── TYPOGRAPHY ── */
+
+  /* Scale */
+  --text-hero:        58px;
+  --text-hero-sm:     52px;
+  --text-h2:          36px;
+  --text-h3:          24px;
+  --text-body-lg:     15px;
+  --text-body:        13px;
+  --text-small:       12px;
+  --text-xs:          11px;
+  --text-xxs:         10px;
+  --text-label:       9px;
+
+  /* Tracking */
+  --tracking-tight:   -0.04em;
+  --tracking-snug:    -0.03em;
+  --tracking-normal:  -0.02em;
+  --tracking-loose:   0.04em;
+  --tracking-wide:    0.07em;
+  --tracking-widest:  0.08em;
+
+  /* Leading */
+  --leading-hero:     0.95;
+  --leading-tight:    1.1;
+  --leading-body:     1.7;
+
+  /* Weights */
+  --weight-regular:   400;
+  --weight-medium:    500;
+  --weight-semibold:  600;
+
+  /* ── SPACING ── */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-7:   28px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+
+  /* ── RADIUS ── */
+  --radius-sm:   6px;
+  --radius-md:   9px;
+  --radius-lg:   10px;
+  --radius-card: 16px;
+  --radius-pill: 20px;
+
+  /* Card cut-corner shape (top-right) */
+  --card-clip: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+
+  /* ── SHADOWS / GLOW ── */
+  --shadow-green-sm:  0 6px 20px rgba(0, 200, 83, 0.25);
+  --shadow-green-lg:  0 10px 28px rgba(0, 200, 83, 0.35);
+  --shadow-blue-sm:   0 4px 16px rgba(80, 140, 255, 0.20);
+
+  /* ── ANIMATION ── */
+  --ease-default:     cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:         0.15s;
+  --dur-base:         0.20s;
+  --dur-slow:         0.50s;
+}
+
+/* ── SEMANTIC TYPE STYLES ── */
+
+h1, .h1 {
+  font-family: var(--font-sans);
+  font-size: var(--text-hero);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-hero);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+}
+
+h2, .h2 {
+  font-family: var(--font-sans);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-snug);
+  color: var(--text-primary);
+}
+
+h3, .h3 {
+  font-family: var(--font-sans);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-normal);
+  color: var(--text-primary);
+}
+
+p, .body {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--text-muted);
+}
+
+.label {
+  font-family: var(--font-sans);
+  font-size: var(--text-label);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.stat-value {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-snug);
+  color: var(--green-primary);
+  line-height: 1;
+}
+
+/* ── TITLE TREATMENT HELPERS ── */
+.t-outline {
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.25);
+  color: transparent;
+}
+.t-green { color: var(--green-primary); }
+.t-dim   { color: rgba(255, 255, 255, 0.20); }
+.t-slash {
+  color: var(--green-primary);
+  display: inline-block;
+  transform: skewX(-10deg);
+  font-style: normal;
+}
+
+/* ── GLOBAL BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes oc-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes oc-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes oc-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50%       { transform: scale(1.15); opacity: 1; }
+}
+@keyframes oc-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+@keyframes oc-grid {
+  from { transform: translateY(0); }
+  to   { transform: translateY(48px); }
+}
+@keyframes oc-ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}

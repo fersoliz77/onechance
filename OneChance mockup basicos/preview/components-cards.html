@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #050A14; font-family: 'DM Sans', sans-serif; padding: 20px; display: flex; gap: 16px; align-items: flex-start; }
+
+/* Player card */
+.card-player {
+  width: 200px;
+  background: linear-gradient(145deg, #0C1F12, #060F09);
+  border: 0.5px solid rgba(0,200,83,0.22);
+  border-radius: 16px 4px 16px 16px;
+  overflow: hidden;
+  position: relative;
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+  animation: float 6s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.card-bar { height: 2px; background: linear-gradient(90deg, #00C853, rgba(0,200,83,0.15)); }
+.card-body { padding: 14px 16px 16px; }
+.badge { background: #00C853; color: #002A12; font-size: 8px; font-weight: 500; padding: 3px 10px; border-radius: 10px; letter-spacing: 0.07em; display: inline-block; margin-bottom: 12px; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #00C853, #003A18); display: flex; align-items: center; justify-content: center; font-size: 16px; border: 1.5px solid rgba(0,200,83,0.35); margin-bottom: 8px; }
+.pname { color: #fff; font-size: 14px; font-weight: 500; }
+.ppos { color: rgba(0,200,83,0.75); font-size: 10px; margin-top: 2px; margin-bottom: 12px; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.stat { background: rgba(0,200,83,0.06); border-radius: 6px; padding: 7px 9px; }
+.sn { color: #00C853; font-size: 13px; font-weight: 500; }
+.sl { color: rgba(255,255,255,0.25); font-size: 8px; margin-top: 1px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* Coach card */
+.card-coach {
+  width: 170px;
+  background: #0B1A2E;
+  border: 0.5px solid rgba(80,140,255,0.2);
+  border-radius: 4px 14px 14px 14px;
+  padding: 14px;
+  transform: rotate(-1.5deg);
+}
+.coach-label { color: rgba(100,160,255,0.65); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 7px; }
+.coach-name { color: #fff; font-size: 13px; font-weight: 500; }
+.coach-sub { color: rgba(255,255,255,0.3); font-size: 10px; margin-top: 2px; margin-bottom: 10px; }
+.avail { display: flex; align-items: center; gap: 6px; background: rgba(80,140,255,0.08); border-radius: 6px; padding: 6px 8px; }
+.adot { width: 5px; height: 5px; border-radius: 50%; background: #5A8FFF; }
+.aval { color: #5A8FFF; font-size: 10px; font-weight: 500; }
+
+/* Mini badge */
+.card-mini {
+  background: rgba(255,255,255,0.04);
+  border: 0.5px solid rgba(255,255,255,0.09);
+  border-radius: 10px;
+  padding: 9px 13px;
+  display: flex; align-items: center; gap: 8px;
+  align-self: flex-end;
+}
+.mini-ico { font-size: 13px; }
+.mini-txt { color: rgba(255,255,255,0.35); font-size: 10px; }
+.mini-val { color: #fff; font-size: 11px; font-weight: 500; }
+</style>
+</head><body>
+<div class="card-player">
+  <div class="card-bar"></div>
+  <div class="card-body">
+    <div class="badge">★ DESTACADO</div>
+    <div class="avatar">⚽</div>
+    <div class="pname">Lucas Ferreira</div>
+    <div class="ppos">Enganche · Argentina · 23</div>
+    <div class="stats">
+      <div class="stat"><div class="sn">91</div><div class="sl">Regate</div></div>
+      <div class="stat"><div class="sn">90</div><div class="sl">Visión</div></div>
+      <div class="stat"><div class="sn">88</div><div class="sl">Ritmo</div></div>
+      <div class="stat"><div class="sn">87</div><div class="sl">Overall</div></div>
+    </div>
+  </div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;padding-top:20px">
+  <div class="card-coach">
+    <div class="coach-label">Técnico verificado</div>
+    <div class="coach-name">Martín Álvarez</div>
+    <div class="coach-sub">DT · Uruguay · 12 años exp.</div>
+    <div class="avail"><div class="adot"></div><span class="aval">Disponible</span></div>
+  </div>
+  <div class="card-mini">
+    <span class="mini-ico">🌎</span>
+    <span class="mini-txt">Alcance</span>
+    <span class="mini-val">14 países</span>
+  </div>
+</div>
+</body></html>

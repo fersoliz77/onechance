@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #050A14; font-family: 'DM Sans', sans-serif; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.label { color: rgba(255,255,255,0.2); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+.row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.token { display: flex; align-items: center; gap: 6px; padding: 5px 10px; background: rgba(255,255,255,0.03); border: 0.5px solid rgba(255,255,255,0.06); border-radius: 6px; }
+.box { border-radius: 3px; flex-shrink: 0; }
+.tname { color: rgba(255,255,255,0.5); font-size: 9px; }
+.tval { color: rgba(255,255,255,0.2); font-size: 9px; margin-left: 4px; }
+.radius-row { display: flex; gap: 10px; align-items: flex-end; }
+.r-demo { background: rgba(0,200,83,0.1); border: 0.5px solid rgba(0,200,83,0.2); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+.r-label { color: rgba(255,255,255,0.3); font-size: 8px; text-align: center; margin-top: 3px; }
+</style>
+</head><body>
+<div>
+  <div class="label">Spacing Scale</div>
+  <div class="row">
+    <div class="token"><div class="box" style="width:4px;height:14px;background:#00C853"></div><span class="tname">space-1</span><span class="tval">4px</span></div>
+    <div class="token"><div class="box" style="width:8px;height:14px;background:#00C853"></div><span class="tname">space-2</span><span class="tval">8px</span></div>
+    <div class="token"><div class="box" style="width:12px;height:14px;background:#00C853"></div><span class="tname">space-3</span><span class="tval">12px</span></div>
+    <div class="token"><div class="box" style="width:16px;height:14px;background:#00C853"></div><span class="tname">space-4</span><span class="tval">16px</span></div>
+    <div class="token"><div class="box" style="width:20px;height:14px;background:#00C853"></div><span class="tname">space-5</span><span class="tval">20px</span></div>
+    <div class="token"><div class="box" style="width:24px;height:14px;background:#00C853"></div><span class="tname">space-6</span><span class="tval">24px</span></div>
+    <div class="token"><div class="box" style="width:28px;height:14px;background:#00C853"></div><span class="tname">space-7</span><span class="tval">28px</span></div>
+    <div class="token"><div class="box" style="width:32px;height:14px;background:#00C853"></div><span class="tname">space-8</span><span class="tval">32px</span></div>
+    <div class="token"><div class="box" style="width:48px;height:14px;background:#00C853"></div><span class="tname">space-12</span><span class="tval">48px</span></div>
+  </div>
+</div>
+<div>
+  <div class="label">Border Radius</div>
+  <div class="radius-row">
+    <div><div class="r-demo" style="border-radius:6px"></div><div class="r-label">sm<br>6px</div></div>
+    <div><div class="r-demo" style="border-radius:9px"></div><div class="r-label">md<br>9px</div></div>
+    <div><div class="r-demo" style="border-radius:10px"></div><div class="r-label">lg<br>10px</div></div>
+    <div><div class="r-demo" style="border-radius:16px 4px 16px 16px;clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)"></div><div class="r-label">card<br>cut</div></div>
+    <div><div class="r-demo" style="border-radius:20px;width:60px;height:24px"></div><div class="r-label">pill<br>20px</div></div>
+  </div>
+</div>
+<div>
+  <div class="label">Shadows / Glow</div>
+  <div class="row">
+    <div style="padding:8px 16px;background:#00C853;color:#002A12;font-size:11px;font-weight:500;border-radius:8px;box-shadow:0 6px 20px rgba(0,200,83,0.25)">Glow sm</div>
+    <div style="padding:8px 16px;background:#00C853;color:#002A12;font-size:11px;font-weight:500;border-radius:8px;box-shadow:0 10px 28px rgba(0,200,83,0.35)">Glow lg</div>
+    <div style="padding:8px 16px;background:#0B1A2E;color:#5A8FFF;font-size:11px;border-radius:8px;border:0.5px solid rgba(80,140,255,0.2);box-shadow:0 4px 16px rgba(80,140,255,0.2)">Blue glow</div>
+  </div>
+</div>
+</body></html>
