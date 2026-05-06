@@ -12,7 +12,7 @@ export default function ClubCard({ club, onClick }: Props) {
     : 'Sin busqueda activa'
 
   return (
-    <EntityCardShell onClick={onClick} tone="yellow" className="min-h-0 p-0 overflow-hidden">
+    <EntityCardShell onClick={onClick} tone="yellow" className="min-h-0 overflow-hidden rounded-[var(--oc-radius-xl)] bg-[rgba(7,20,24,0.78)] p-0 shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
       <div className="grid lg:grid-cols-[240px_1fr_260px]">
         <div
           className="relative flex min-h-[130px] items-center justify-center border-b border-[var(--oc-border-soft)] px-5 py-5 lg:min-h-[158px] lg:border-b-0 lg:border-r"

@@ -9,11 +9,11 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { getDatabase } from 'firebase-admin/database'
 import fs from 'node:fs'
 
-const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
-const databaseURL = process.env.FIREBASE_DATABASE_URL
+const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.FIREBASE_SERVICE_ACCOUNT_PATH
+const databaseURL = process.env.FIREBASE_DATABASE_URL || process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL
 
 if (!serviceAccountPath || !databaseURL) {
-  throw new Error('Set GOOGLE_APPLICATION_CREDENTIALS and FIREBASE_DATABASE_URL')
+  throw new Error('Missing env vars. Set GOOGLE_APPLICATION_CREDENTIALS (or FIREBASE_SERVICE_ACCOUNT_PATH) and FIREBASE_DATABASE_URL (or NEXT_PUBLIC_FIREBASE_DATABASE_URL).')
 }
 
 const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'))

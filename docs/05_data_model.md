@@ -126,6 +126,12 @@ EXCEPCIÓN: si isMinor === true
   [usuario envía] → pending (siempre, sin importar reglas globales)
 ```
 
+## Politica de visibilidad publica (implementada)
+
+- Las rutas publicas de detalle (`/jugadores/[id]`, `/tecnicos/[id]`, `/clubes/[id]`, `/representantes/[id]`) solo muestran perfil cuando `status === 'published'`.
+- Excepciones permitidas: duenio del perfil y roles de sistema `admin` / `super_admin`.
+- El boton de contacto se rige por `profiles/{uid}/visibility/showContact`.
+
 ---
 
 ## Posiciones disponibles

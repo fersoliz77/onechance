@@ -11,7 +11,7 @@ export default function PlayerCard({ player, onClick }: Props) {
   const accent = isFemale ? '#B464FF' : '#00C853'
 
   return (
-    <EntityCardShell onClick={onClick} tone="green">
+    <EntityCardShell onClick={onClick} tone="green" className="rounded-[var(--oc-radius-xl)] bg-[rgba(7,20,24,0.78)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
       {player.isFeatured && <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-oc-green to-[rgba(0,200,83,0.2)]" />}
       <div className="flex items-start gap-3 lg:gap-3.5 mb-3 lg:mb-3.5">
         <div

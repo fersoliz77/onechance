@@ -1,77 +1,64 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
     }
 
     function systemRole() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.systemRole;
+      return isSignedIn()
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.systemRole
+        : null;
     }
 
     function isAdmin() {
-      return isSignedIn() && (systemRole() == 'admin' || systemRole() == 'super_admin');
+      return systemRole() == 'admin' || systemRole() == 'super_admin';
     }
 
-    function isSuperAdmin() {
-      return isSignedIn() && systemRole() == 'super_admin';
+    function canReadPublicOrPrivileged(uid) {
+      return resource.data.status == 'published' || isOwner(uid) || isAdmin();
     }
 
-    function isPublished(resource) {
-      return resource.data.status == 'published';
+    match /users/{uid} {
+      allow create: if isOwner(uid);
+      allow read: if isOwner(uid) || isAdmin();
+      allow update, delete: if isOwner(uid) || isAdmin();
     }
 
-    // Public profile collections — published profiles readable by anyone,
-    // all profiles readable by admin and owner
-    match /players/{userId} {
-      allow read: if isPublished(resource) || isOwner(userId) || isAdmin();
-      allow update: if isOwner(userId)
-        && request.resource.data.status == resource.data.status
-        && request.resource.data.isFeatured == resource.data.isFeatured
-        || isAdmin();
-      allow create: if isOwner(userId) || isAdmin();
+    match /players/{uid} {
+      allow read: if canReadPublicOrPrivileged(uid);
+      allow create, update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
     }
 
-    match /coaches/{userId} {
-      allow read: if isPublished(resource) || isOwner(userId) || isAdmin();
-      allow update: if isOwner(userId)
-        && request.resource.data.status == resource.data.status
-        || isAdmin();
-      allow create: if isOwner(userId) || isAdmin();
+    match /coaches/{uid} {
+      allow read: if canReadPublicOrPrivileged(uid);
+      allow create, update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
     }
 
-    match /clubs/{userId} {
-      allow read: if isPublished(resource) || isOwner(userId) || isAdmin();
-      allow update: if isOwner(userId)
-        && request.resource.data.status == resource.data.status
-        || isAdmin();
-      allow create: if isOwner(userId) || isAdmin();
+    match /clubs/{uid} {
+      allow read: if canReadPublicOrPrivileged(uid);
+      allow create, update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
     }
 
-    match /agents/{userId} {
-      allow read: if isPublished(resource) || isOwner(userId) || isAdmin();
-      allow update: if isOwner(userId)
-        && request.resource.data.status == resource.data.status
-        || isAdmin();
-      allow create: if isOwner(userId) || isAdmin();
+    match /agents/{uid} {
+      allow read: if canReadPublicOrPrivileged(uid);
+      allow create, update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
     }
 
-    // User records — owner reads their own, admin reads all
-    match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId)
-        && request.resource.data.systemRole == 'user'
-        || isSuperAdmin();
-      allow update: if isOwner(userId)
-        && request.resource.data.systemRole == resource.data.systemRole
-        && request.resource.data.permissions == resource.data.permissions
-        && request.resource.data.isActive == resource.data.isActive
-        || isSuperAdmin();
+    match /admin_audit_logs/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    match /admin_audit_meta/{id} {
+      allow read, write: if isAdmin();
     }
   }
 }

@@ -6,21 +6,40 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import ContactModal from '@/components/ui/ContactModal'
 import { getCoach } from '@/lib/firestore'
+import { getProfileState, getVideos } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
-import type { CoachProfile } from '@/types'
+import { canViewProfile } from '@/lib/publicProfileAccess'
+import type { CoachProfile, VideoEntry } from '@/types'
 
 export default function CoachProfilePage() {
   const { id } = useParams<{ id: string }>()
   const [coach, setCoach] = useState<CoachProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [showContact, setShowContact] = useState(false)
+  const [showContactCta, setShowContactCta] = useState(false)
+  const [videos, setVideos] = useState<VideoEntry[]>([])
   const router = useRouter()
   const { user } = useAuth()
 
-  useEffect(() => { getCoach(id).then(c => { setCoach(c); setLoading(false) }) }, [id])
+  useEffect(() => {
+    Promise.all([getCoach(id), getProfileState(id), getVideos(id)]).then(([c, s, v]) => {
+      setCoach(c)
+      setShowContactCta(Boolean(s?.visibility?.showContact))
+      setVideos(v.filter((entry) => entry.status === 'active'))
+      setLoading(false)
+    })
+  }, [id])
 
   if (loading) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Cargando…</div></div>
   if (!coach) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Técnico no encontrado.</div></div>
+
+  const canView = canViewProfile({
+    profileStatus: coach.status,
+    profileUid: coach.uid,
+    viewerUid: user?.uid,
+    viewerSystemRole: user?.systemRole,
+  })
+  if (!canView) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Este perfil no esta disponible publicamente.</div></div>
 
   const accent = '#5A8FFF'
 
@@ -30,18 +49,19 @@ export default function CoachProfilePage() {
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-[var(--oc-bg-base)] text-white">
       <Background />
+      <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(circle_at_50%_15%,rgba(90,143,255,0.11),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(0,195,255,0.07),transparent_30%)]" />
       {showContact && coach && (
         <ContactModal toUid={id} toName={coach.fullName} accent={accent} onClose={() => setShowContact(false)} />
       )}
       <div className="relative z-[2] oc-main-offset">
-        <div className="oc-shell-detail oc-page-block">
+        <div className="oc-shell oc-page-block">
           <Button variant="ghost" onClick={() => router.push('/tecnicos')} className="mb-5 text-[11px]">← Volver al listado</Button>
 
           {/* Hero card */}
           <div
-            className="mb-4 overflow-hidden"
+            className="mb-1 overflow-hidden"
             style={{
               background: 'linear-gradient(135deg,#0B1428,#060A18)',
               border: `0.5px solid ${accent}40`,
@@ -50,10 +70,10 @@ export default function CoachProfilePage() {
             }}
           >
             <div className="h-[2px]" style={{ background: `linear-gradient(90deg,${accent},rgba(0,0,0,0))` }} />
-            <div className="flex flex-col md:flex-row items-stretch">
+            <div className="grid md:grid-cols-[260px_1fr]">
               {/* Left panel */}
-              <div className="w-full md:w-[220px] shrink-0 p-8 flex flex-col items-center justify-center relative"
-                style={{ background: `linear-gradient(160deg,${accent}18,rgba(0,0,0,0))`, borderRight: `0.5px solid ${accent}22` }}>
+              <div className="relative flex min-h-[220px] flex-col items-center justify-center border-b border-[rgba(255,255,255,0.1)] px-6 py-7 md:border-b-0 md:border-r md:border-[rgba(255,255,255,0.1)]"
+                style={{ background: `linear-gradient(160deg,${accent}18,rgba(0,0,0,0))` }}>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140px] h-[140px] opacity-[0.07]">
                   <svg viewBox="0 0 100 110" fill={accent}><path d="M50 2 L95 20 L95 55 C95 80 72 98 50 108 C28 98 5 80 5 55 L5 20 Z" /></svg>
                 </div>
@@ -71,7 +91,7 @@ export default function CoachProfilePage() {
                 </div>
               </div>
               {/* Right panel */}
-              <div className="flex-1 p-6">
+              <div className="p-5 md:p-6">
                 <div className="flex items-center gap-2 mb-4 flex-wrap">
                   <Badge status={coach.status} />
                   <span className="text-[rgba(255,255,255,0.25)] text-[11px]">{coach.nationality}</span>
@@ -82,7 +102,9 @@ export default function CoachProfilePage() {
                     </>
                   )}
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-5">
+                <h1 className="text-[30px] leading-[1.03] font-semibold tracking-[-0.04em] text-white">Perfil tecnico</h1>
+                <p className="mt-2 text-[13px] leading-[1.65] text-[var(--oc-text-muted)]">Informacion profesional del tecnico, su experiencia y enfoque de trabajo.</p>
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 mb-5">
                   {[['Experiencia',`${coach.years || '—'} años`],['Edad',coach.age ? `${coach.age} años` : '—'],['Club',coach.currentClub || 'Libre']].map(([l,v]) => (
                     <div key={l} className="rounded-[9px] p-[10px_12px] text-center" style={{ background:`${accent}08`, border:`0.5px solid ${accent}20` }}>
                       <div className="text-[13px] font-medium leading-none truncate" style={{ color: accent }}>{v}</div>
@@ -110,17 +132,23 @@ export default function CoachProfilePage() {
             </div>
           </div>
 
+          <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[12px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
+            {['Resumen', 'Trayectoria', 'Habilidades', 'Videos', 'Contacto', 'Estado'].map((tab, i) => (
+              <div key={tab} className={`flex items-center justify-center border-b-2 ${i === 0 ? 'border-[var(--oc-blue)] text-[var(--oc-blue)]' : 'border-transparent'}`}>{tab}</div>
+            ))}
+          </nav>
+
           {/* Two-col */}
-          <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
+          <div className="grid gap-[var(--oc-space-4)] lg:grid-cols-[1fr_300px]">
             <div className="flex flex-col gap-3.5">
               {coach.bio && (
-                <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-[18px_20px]">
+                <div className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-5)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
                   <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2.5">Sobre el técnico</div>
                   <p className="text-[rgba(255,255,255,0.5)] text-[12px] leading-[1.8]">{coach.bio}</p>
                 </div>
               )}
               {coach.career && coach.career.length > 0 && (
-                <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-[18px_20px]">
+                <div className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-5)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
                   <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2.5">Trayectoria</div>
                   <div className="flex flex-col gap-2">
                     {coach.career.map((c, i) => (
@@ -135,7 +163,7 @@ export default function CoachProfilePage() {
                 </div>
               )}
               {coach.trophies && coach.trophies.length > 0 && (
-                <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-[18px_20px]">
+                <div className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-5)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
                   <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2.5">Palmarés</div>
                   <div className="flex flex-col gap-1.5">
                     {coach.trophies.map((t, i) => (
@@ -147,20 +175,24 @@ export default function CoachProfilePage() {
                   </div>
                 </div>
               )}
-              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-[18px_20px]">
+              <div className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-5)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
                 <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2.5">Videos</div>
-                <div className="grid sm:grid-cols-2 gap-2.5">
-                  {[0, 1].map(i => (
-                    <div key={i} className="relative overflow-hidden rounded-[9px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] aspect-video flex items-center justify-center">
-                      <div className="absolute inset-0 bg-[rgba(0,0,0,0.25)]" />
-                      <div className="relative z-[2] w-9 h-9 rounded-full border border-[rgba(255,255,255,0.5)] flex items-center justify-center text-white text-[12px]">▶</div>
-                    </div>
-                  ))}
-                </div>
+                {videos.length === 0 ? (
+                  <p className="text-[12px] text-[rgba(255,255,255,0.35)]">Este tecnico aun no publico videos.</p>
+                ) : (
+                  <div className="grid sm:grid-cols-2 gap-2.5">
+                    {videos.map((video) => (
+                      <a key={video.id} href={video.url ?? '#'} target="_blank" rel="noopener noreferrer" className="relative overflow-hidden rounded-[9px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] aspect-video flex items-center justify-center">
+                        <div className="absolute inset-0 bg-[rgba(0,0,0,0.25)]" />
+                        <div className="relative z-[2] w-9 h-9 rounded-full border border-[rgba(255,255,255,0.5)] flex items-center justify-center text-white text-[12px]">▶</div>
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex flex-col gap-3">
-              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-4">
+              <div className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-4)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
                 <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2">Club actual</div>
                 <div className="text-white text-[14px] font-medium">{coach.currentClub || 'Sin club'}</div>
               </div>
@@ -169,7 +201,11 @@ export default function CoachProfilePage() {
                 <p className="text-[rgba(255,255,255,0.35)] text-[11px] leading-[1.6] mb-3">
                   {user ? 'Enviá un mensaje directo a este técnico.' : 'Para contactar a este técnico, iniciá sesión o registrá tu institución.'}
                 </p>
-                <Button variant="primary" size="sm" className="w-full justify-center" onClick={handleContact}>Contactar</Button>
+                {showContactCta ? (
+                  <Button variant="primary" size="sm" className="w-full justify-center" onClick={handleContact}>Contactar</Button>
+                ) : (
+                  <div className="text-[11px] text-[rgba(255,255,255,0.22)]">El contacto directo esta desactivado por este perfil.</div>
+                )}
               </div>
             </div>
           </div>

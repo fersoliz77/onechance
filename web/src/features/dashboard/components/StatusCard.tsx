@@ -1,0 +1,90 @@
+'use client'
+
+import { useMemo } from 'react'
+import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
+import SurfaceCard from '@/components/ui/SurfaceCard'
+import { calcCompletion } from '@/lib/profileCompletion'
+import { MIN_COMPLETION_TO_SUBMIT } from '@/lib/constants'
+import type { ProfileState, Role } from '@/types'
+import type { AnyProfile } from '@/features/dashboard/types'
+
+function CompletionBar({ pct }: { pct: number }) {
+  const color = pct >= 80 ? '#00C853' : pct >= 50 ? '#FFB400' : '#FF6060'
+  return (
+    <div>
+      <div className="flex justify-between mb-1.5">
+        <span className="text-[rgba(255,255,255,0.35)] text-[11px]">Completud del perfil</span>
+        <span className="text-[11px]" style={{ color }}>{pct}%</span>
+      </div>
+      <div className="h-[4px] rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
+      </div>
+    </div>
+  )
+}
+
+export default function StatusCard({
+  profile, role, onSubmit,
+}: { profile: AnyProfile; state: ProfileState | null; role: Role; onSubmit: () => void }) {
+  const status = profile.status
+  const { pct, missing } = useMemo(() => calcCompletion(profile, role), [profile, role])
+  const canSubmit = pct >= MIN_COMPLETION_TO_SUBMIT
+
+  return (
+    <SurfaceCard>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-white text-[13px] font-medium">Estado del perfil</span>
+        <Badge status={status} />
+      </div>
+      <CompletionBar pct={pct} />
+
+      {missing.length > 0 && (
+        <div className="mt-3 rounded-[8px] bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] px-3 py-2.5">
+          <div className="text-[rgba(255,255,255,0.3)] text-[9px] uppercase tracking-[0.07em] mb-1.5">Falta completar</div>
+          <div className="flex flex-col gap-1">
+            {missing.slice(0, 5).map(m => (
+              <div key={m} className="flex items-center gap-2 text-[11px] text-[rgba(255,255,255,0.45)]">
+                <span className="w-[5px] h-[5px] rounded-full bg-[rgba(255,100,100,0.6)] shrink-0" />
+                {m}
+              </div>
+            ))}
+            {missing.length > 5 && (
+              <div className="text-[10px] text-[rgba(255,255,255,0.25)] mt-0.5">+{missing.length - 5} mas</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {(status === 'draft' || status === 'rejected') && (
+        <div className="mt-4">
+          {status === 'rejected' && (
+            <p className="text-[rgba(255,60,60,0.7)] text-[12px] mb-3">Tu perfil fue rechazado. Corregi los datos y volve a enviarlo.</p>
+          )}
+          {status === 'draft' && (
+            <p className="text-[rgba(255,255,255,0.35)] text-[12px] mb-3">
+              {canSubmit
+                ? 'Tu perfil esta listo para enviarse a revision.'
+                : `Completa al menos el ${MIN_COMPLETION_TO_SUBMIT}% del perfil antes de enviar.`}
+            </p>
+          )}
+          <Button
+            variant="primary" size="sm"
+            onClick={onSubmit}
+            disabled={!canSubmit}
+            className="w-full justify-center"
+            title={!canSubmit ? `Necesitas ${MIN_COMPLETION_TO_SUBMIT}% de completud para enviar` : undefined}
+          >
+            {status === 'rejected' ? 'Reenviar a revision ->' : 'Enviar a revision ->'}
+          </Button>
+        </div>
+      )}
+      {status === 'pending' && (
+        <p className="text-[rgba(255,180,0,0.7)] text-[12px] mt-3">Tu perfil esta siendo revisado. Te notificaremos cuando sea aprobado.</p>
+      )}
+      {status === 'published' && (
+        <p className="text-[rgba(0,200,83,0.7)] text-[12px] mt-3">Tu perfil esta publicado y visible en la plataforma.</p>
+      )}
+    </SurfaceCard>
+  )
+}

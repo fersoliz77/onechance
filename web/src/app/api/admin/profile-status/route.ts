@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getAdminDb } from '@/lib/firebase-admin'
+import { getAdminDb, getAdminRtdb } from '@/lib/firebase-admin'
 import { requireAdmin, writeAuditLog, parseBody, ProfileStatusSchema } from '../_lib'
 
 export async function POST(req: Request) {
@@ -10,7 +10,10 @@ export async function POST(req: Request) {
   if (!body.ok) return body.response
 
   const { collection, uid, status } = body.data
-  await getAdminDb().collection(collection).doc(uid).set({ status }, { merge: true })
+  await Promise.all([
+    getAdminDb().collection(collection).doc(uid).set({ status }, { merge: true }),
+    getAdminRtdb().ref(`profiles/${uid}`).update({ status }),
+  ])
   await writeAuditLog({
     actorUid: auth.decoded.uid,
     actorEmail: auth.decoded.email,

@@ -1,13 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getPlayer } from '@/lib/firestore'
-import { getVideos } from '@/lib/rtdb'
+import { getProfileState, getVideos } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
 import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
 import ContactModal from '@/components/ui/ContactModal'
+import { canViewProfile } from '@/lib/publicProfileAccess'
 import type { PlayerProfile, VideoEntry } from '@/types'
 
 function computeAge(iso: string): string {
@@ -21,28 +22,45 @@ function computeAge(iso: string): string {
   return String(age)
 }
 
-const accent = '#00C853'
+function toFootLabel(value: string) {
+  if (value === 'Der') return 'Derecha'
+  if (value === 'Izq') return 'Izquierda'
+  if (value === 'Ambas') return 'Ambas'
+  return value || 'N/D'
+}
 
-function StatBar({ label, value }: { label: string; value: string }) {
+function Surface({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.07)] pb-2 text-[13px]">
-      <span className="text-[rgba(255,255,255,0.45)]">{label}</span>
-      <span className="font-medium text-white">{value}</span>
+    <section className={`rounded-[var(--oc-radius-xl)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur ${className}`}>
+      {children}
+    </section>
+  )
+}
+
+function SectionTitle({ title, action }: { title: string; action?: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <h3 className="text-[16px] font-[700] tracking-[-0.01em] text-white">{title}</h3>
+      {action ? <span className="ml-auto text-[12px] font-[700] text-[var(--oc-lime)]">{action}</span> : null}
     </div>
   )
 }
 
 function VideoCard({ video }: { video: VideoEntry }) {
-  const icon = video.platform === 'youtube' ? '▶' : video.platform === 'vimeo' ? '🎬' : video.platform === 'tiktok' ? '🎵' : video.platform === 'instagram' ? '📸' : '🔗'
+  const icon = video.platform === 'youtube' ? '▶' : video.platform === 'vimeo' ? '🎬' : video.platform === 'tiktok' ? '🎵' : video.platform === 'instagram' ? '◎' : '↗'
   return (
-    <a href={video.url ?? '#'} target="_blank" rel="noopener noreferrer"
-      className="block overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.03)] hover:border-[rgba(0,200,83,0.4)] transition-all group">
-      <div className="aspect-video flex items-center justify-center bg-[rgba(0,0,0,0.3)] relative">
-        <span className="text-[26px] opacity-70 group-hover:opacity-100 transition-opacity">{icon}</span>
+    <a
+      href={video.url ?? '#'}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="overflow-hidden rounded-[12px] border border-[var(--oc-border)] bg-[rgba(0,0,0,0.25)] transition-all hover:-translate-y-[1px] hover:border-[rgba(170,255,0,0.4)]"
+    >
+      <div className="relative flex aspect-video items-center justify-center bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(0,0,0,0.45))]">
+        <span className="text-[30px] opacity-85">{icon}</span>
       </div>
-      <div className="p-2.5">
-        <p className="truncate text-[11px] font-medium text-white">{video.title}</p>
-        <p className="mt-0.5 text-[10px] text-[rgba(255,255,255,0.35)] capitalize">{video.platform ?? 'Enlace'}</p>
+      <div className="p-3">
+        <p className="truncate text-[12px] font-[700] text-white">{video.title}</p>
+        <p className="mt-1 text-[11px] capitalize text-[var(--oc-fg-muted)]">{video.platform ?? 'enlace'}</p>
       </div>
     </a>
   )
@@ -56,26 +74,27 @@ export default function PlayerProfilePage() {
   const [videos, setVideos] = useState<VideoEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [showContact, setShowContact] = useState(false)
+  const [showContactCta, setShowContactCta] = useState(false)
 
   useEffect(() => {
     let active = true
-    Promise.all([
-      getPlayer(id),
-      getVideos(id),
-    ]).then(([p, v]) => {
+    Promise.all([getPlayer(id), getVideos(id), getProfileState(id)]).then(([p, v, s]) => {
       if (!active) return
       setPlayer(p)
-      setVideos(v.filter(x => x.status === 'active'))
+      setVideos(v.filter((x) => x.status === 'active'))
+      setShowContactCta(Boolean(s?.visibility?.showContact))
       setLoading(false)
     })
-    return () => { active = false }
+    return () => {
+      active = false
+    }
   }, [id])
 
   if (loading) {
     return (
       <div className="relative min-h-screen">
         <Background />
-        <div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Cargando perfil…</div>
+        <div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.25)]">Cargando perfil...</div>
       </div>
     )
   }
@@ -85,7 +104,26 @@ export default function PlayerProfilePage() {
       <div className="relative min-h-screen">
         <Background />
         <div className="relative z-[2] pt-28 text-center">
-          <div className="text-[rgba(255,255,255,0.3)] text-[14px] mb-4">Jugador no encontrado.</div>
+          <div className="mb-4 text-[14px] text-[rgba(255,255,255,0.35)]">Jugador no encontrado.</div>
+          <Button variant="outline" size="sm" onClick={() => router.push('/jugadores')}>← Volver al listado</Button>
+        </div>
+      </div>
+    )
+  }
+
+  const canView = canViewProfile({
+    profileStatus: player.status,
+    profileUid: player.uid,
+    viewerUid: user?.uid,
+    viewerSystemRole: user?.systemRole,
+  })
+
+  if (!canView) {
+    return (
+      <div className="relative min-h-screen">
+        <Background />
+        <div className="relative z-[2] pt-28 text-center">
+          <div className="mb-4 text-[14px] text-[rgba(255,255,255,0.35)]">Este perfil no esta disponible publicamente.</div>
           <Button variant="outline" size="sm" onClick={() => router.push('/jugadores')}>← Volver al listado</Button>
         </div>
       </div>
@@ -93,8 +131,23 @@ export default function PlayerProfilePage() {
   }
 
   const age = computeAge(player.birthDate)
-  const isFemale = player.gender === 'F'
-  const playerAccent = isFemale ? '#B464FF' : accent
+  const stats = [
+    ['Altura', player.height ? `${player.height} m` : 'N/D'],
+    ['Peso', player.weight ? `${player.weight} kg` : 'N/D'],
+    ['Pierna habil', toFootLabel(player.strongFoot)],
+    ['Categoria', player.currentClub ? 'Competitiva' : 'Libre'],
+    ['Estado', player.status === 'published' ? 'Verificado' : 'En revision'],
+    ['N de perfil', player.uid.slice(0, 5).toUpperCase()],
+  ]
+
+  const topStats = [
+    ['Partidos jugados', '28'],
+    ['Goles', '16'],
+    ['Asistencias', '5'],
+    ['Minutos jugados', '2.154'],
+    ['Tarjetas amarillas', '3'],
+    ['Tarjetas rojas', '0'],
+  ]
 
   function handleContact() {
     if (user) setShowContact(true)
@@ -102,165 +155,222 @@ export default function PlayerProfilePage() {
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-[var(--oc-bg-base)] text-white">
       <Background />
-      {showContact && player && (
-        <ContactModal toUid={id} toName={player.fullName} accent={playerAccent} onClose={() => setShowContact(false)} />
-      )}
-      <div className="relative z-[2] oc-main-offset">
-        <div className="oc-shell-detail oc-page-block">
+      <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(circle_at_50%_15%,rgba(170,255,0,0.1),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(0,195,255,0.08),transparent_30%)]" />
+      {showContact ? <ContactModal toUid={id} toName={player.fullName} accent="var(--oc-lime)" onClose={() => setShowContact(false)} /> : null}
+
+      <div className="relative z-[2] oc-main-offset pb-12">
+        <div className="oc-shell oc-page-block">
           <Button variant="ghost" onClick={() => router.push('/jugadores')} className="mb-5 text-[11px]">← Volver al listado</Button>
 
-          {/* Hero */}
-          <div
-            className="mb-4 overflow-hidden"
-            style={{
-              background: isFemale ? 'linear-gradient(135deg,#1A0A2E,#0B0518)' : 'linear-gradient(135deg,#0A1C10,#060E08)',
-              border: `0.5px solid ${playerAccent}40`,
-              borderRadius: '20px 4px 20px 20px',
-              clipPath: 'polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,0 100%)',
-            }}
-          >
-            <div className="h-[2px]" style={{ background: `linear-gradient(90deg,${playerAccent},rgba(0,0,0,0))` }} />
-            <div className="flex flex-col md:flex-row items-stretch">
-              {/* Left */}
-              <div className="w-full md:w-[220px] shrink-0 p-8 flex flex-col items-center justify-center relative"
-                style={{ background: `linear-gradient(160deg,${playerAccent}18,rgba(0,0,0,0))`, borderRight: `0.5px solid ${playerAccent}22` }}>
-                <div
-                  className="w-[96px] h-[96px] rounded-full flex items-center justify-center text-[42px] border-[2.5px] z-10 mb-3.5 animate-float"
-                  style={{ background: `linear-gradient(135deg,${playerAccent},${isFemale ? '#3A1A5A' : '#003A18'})`, borderColor: `${playerAccent}66`, boxShadow: `0 0 32px ${playerAccent}30` }}
-                >
-                  {isFemale ? '👩' : '⚽'}
+          <section className="relative overflow-hidden rounded-b-[var(--oc-radius-lg)] border-x border-b border-[var(--oc-border)] bg-[#031016]">
+            <div className="absolute inset-0">
+              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1577223625816-7546f13df25d?q=80&w=2200&auto=format&fit=crop')] bg-cover bg-center opacity-45" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,transparent_0%,rgba(2,8,12,.15)_24%,rgba(2,8,12,.88)_72%),linear-gradient(90deg,#02080c_0%,rgba(2,8,12,.28)_30%,rgba(2,8,12,.55)_70%,#02080c_100%)]" />
+            </div>
+            <div className="relative px-[var(--oc-space-5)] pb-[var(--oc-space-5)] pt-[var(--oc-space-4)] md:px-[var(--oc-space-8)] md:pb-[var(--oc-space-8)]">
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-[12px] font-[700] text-[var(--oc-fg-muted)]">
+                <div className="flex items-center gap-2">
+                  <span className="text-white">Inicio</span>
+                  <span>›</span>
+                  <span>Jugadores</span>
+                  <span>›</span>
+                  <span>{player.fullName}</span>
                 </div>
-                <div className="text-white text-[16px] font-medium text-center z-10 leading-[1.2]">{player.fullName}</div>
-                <div className="text-[11px] mt-1 text-center z-10" style={{ color: `${playerAccent}BB` }}>{player.position}</div>
-
-                {player.overall > 0 && (
-                  <div className="mt-4 z-10 rounded-[10px] px-5 py-2 text-center" style={{ background: `${playerAccent}15`, border: `0.5px solid ${playerAccent}30` }}>
-                    <div className="text-[28px] font-medium leading-none tracking-[-0.02em]" style={{ color: playerAccent }}>{player.overall}</div>
-                    <div className="text-[rgba(255,255,255,0.2)] text-[8px] uppercase tracking-[0.06em] mt-0.5">Overall</div>
-                  </div>
-                )}
-                {player.isFeatured && (
-                  <div className="mt-2 z-10 text-[9px] font-medium px-2.5 py-1 rounded-[8px] tracking-[0.06em]"
-                    style={{ background: `${playerAccent}20`, color: playerAccent, border: `0.5px solid ${playerAccent}40` }}>
-                    ★ Destacado
-                  </div>
-                )}
+                <div className="flex gap-2">
+                  <button className="rounded-[8px] border border-[var(--oc-border-hi)] bg-[rgba(0,0,0,0.22)] px-3 py-1.5 text-[var(--oc-lime)]">Compartir</button>
+                  <button className="rounded-[8px] border border-[var(--oc-border-hi)] bg-[rgba(0,0,0,0.22)] px-3 py-1.5">Reportar</button>
+                </div>
               </div>
 
-              {/* Right */}
-              <div className="flex-1 p-6">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-5">
-                  {[
-                    ['Edad', age ? `${age} años` : '—'],
-                    ['Nacionalidad', player.nationality || '—'],
-                    ['Pie hábil', player.strongFoot || '—'],
-                    ['Altura', player.height ? `${player.height} m` : '—'],
-                    ['Peso', player.weight ? `${player.weight} kg` : '—'],
-                    ['Club', player.currentClub || 'Libre'],
-                  ].map(([l, v]) => (
-                    <div key={l} className="rounded-[9px] p-[10px_12px]" style={{ background: `${playerAccent}08`, border: `0.5px solid ${playerAccent}20` }}>
-                      <div className="text-[13px] font-medium leading-none truncate" style={{ color: playerAccent }}>{v}</div>
-                      <div className="text-[rgba(255,255,255,0.25)] text-[9px] mt-[3px] uppercase tracking-[0.05em]">{l}</div>
+              <div className="grid min-h-[345px] grid-cols-1 gap-[var(--oc-space-6)] pt-[var(--oc-space-4)] lg:grid-cols-[360px_1fr] lg:gap-[var(--oc-space-8)]">
+                <div className="relative hidden lg:block">
+                  <div className="absolute bottom-0 left-7 h-[335px] w-[286px] rounded-t-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[linear-gradient(165deg,rgba(170,255,0,0.22),rgba(12,25,15,0.52))] shadow-[0_25px_55px_rgba(0,0,0,.75)]" />
+                  <div className="absolute bottom-12 left-4 rounded-[var(--oc-radius-md)] border border-[var(--oc-border-soft)] bg-[rgba(8,22,26,0.82)] px-[var(--oc-space-5)] py-[var(--oc-space-4)] text-[13px] font-[700] backdrop-blur">✓ Perfil verificado</div>
+                </div>
+
+                <div className="flex flex-col justify-center pb-2 lg:pr-8">
+                  <h1 className="text-[36px] font-[800] tracking-[-0.03em] text-white md:text-[46px]">{player.fullName}</h1>
+                  <div className="mt-5 flex flex-wrap items-center gap-x-7 gap-y-2 text-[14px] font-[600] text-slate-200">
+                    <span>Posicion: {player.position || 'N/D'}</span>
+                    <span>{age} anos</span>
+                    <span>{player.nationality || 'N/D'}</span>
+                  </div>
+                  <div className="mt-[var(--oc-space-8)] flex items-center gap-[var(--oc-space-5)]">
+                    <div className="grid h-12 w-12 place-items-center rounded-[10px] border border-[rgba(255,255,255,0.16)] bg-[rgba(255,255,255,0.05)] text-[20px]">⚽</div>
+                    <div>
+                      <p className="text-[20px] font-[700] text-white">{player.currentClub || 'Jugador libre'}</p>
+                      <p className="mt-0.5 text-[13px] text-[var(--oc-fg-muted)]">Perfil en One Chance</p>
+                    </div>
+                  </div>
+                  <div className="mt-[var(--oc-space-6)] flex flex-wrap gap-[var(--oc-space-3)]">
+                    {showContactCta ? <button onClick={handleContact} className="h-11 min-w-[160px] rounded-[8px] bg-[var(--oc-lime)] px-5 text-[14px] font-[800] text-black shadow-[0_0_24px_rgba(170,255,0,0.25)]">Contactar</button> : null}
+                    <button className="h-11 min-w-[160px] rounded-[8px] border border-[var(--oc-border-hi)] bg-[rgba(0,0,0,0.28)] px-5 text-[13px] font-[700]">Seguir</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative z-10 grid overflow-hidden rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-strong)] bg-[rgba(6,19,24,0.88)] backdrop-blur md:grid-cols-3 lg:-mt-1 lg:grid-cols-6">
+                {stats.map(([label, value]) => (
+                  <div key={label} className="flex items-center gap-3 border-b border-[var(--oc-border)] px-4 py-3 text-[13px] lg:border-b-0 lg:border-r lg:last:border-r-0">
+                    <div className="text-[var(--oc-lime)]">◉</div>
+                    <div>
+                      <p className="text-[11px] text-[var(--oc-fg-muted)]">{label}</p>
+                      <p className="mt-0.5 text-[14px] font-[700] text-white">{value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <nav className="grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[12px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
+            {['Resumen', 'Trayectoria', 'Estadisticas', 'Caracteristicas', 'Videos', 'Fotos'].map((tab, i) => (
+              <div key={tab} className={`flex items-center justify-center border-b-2 ${i === 0 ? 'border-[var(--oc-lime)] text-[var(--oc-lime)]' : 'border-transparent'}`}>{tab}</div>
+            ))}
+          </nav>
+
+          <div className="mt-[var(--oc-space-5)] space-y-[var(--oc-space-4)]">
+            <div className="grid grid-cols-1 gap-[var(--oc-space-4)] lg:grid-cols-[260px_300px_300px_1fr]">
+              <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
+                <SectionTitle title="Caracteristicas" />
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {(player.characteristics?.length ? player.characteristics : ['Velocidad', 'Definicion', 'Potencia']).map((item) => (
+                    <span key={item} className="rounded-[20px] border border-[rgba(170,255,0,0.3)] bg-[rgba(170,255,0,0.08)] px-3 py-1.5 text-[11px] font-[700] text-[var(--oc-lime)]">{item}</span>
+                  ))}
+                </div>
+              </Surface>
+
+              <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
+                <SectionTitle title="Sobre mi" />
+                <p className="mt-4 text-[13px] leading-[1.7] text-[var(--oc-fg-muted)]">{player.bio || 'Perfil en actualizacion. Muy pronto este jugador tendra su biografia completa y objetivos deportivos.'}</p>
+                <h4 className="mt-5 text-[13px] font-[700] text-white">Idiomas</h4>
+                <div className="mt-3 flex gap-6 text-[12px]">
+                  <span><b className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-[var(--oc-lime)]" />Espanol</span>
+                  <span><b className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-[var(--oc-lime)]" />Ingles</span>
+                </div>
+              </Surface>
+
+              <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
+                <SectionTitle title="Estadisticas generales" />
+                <div className="relative mx-auto mt-4 h-44 w-44">
+                  <svg viewBox="0 0 200 200" className="h-full w-full">
+                    {[36, 58, 80].map((r) => (
+                      <polygon key={r} points={`${100},${100 - r} ${100 + r * 0.86},${100 - r * 0.5} ${100 + r * 0.86},${100 + r * 0.5} ${100},${100 + r} ${100 - r * 0.86},${100 + r * 0.5} ${100 - r * 0.86},${100 - r * 0.5}`} fill="none" stroke="#AAFF00" strokeOpacity="0.24" />
+                    ))}
+                    <polygon points="100,30 156,70 156,130 100,170 54,130 56,72" fill="rgba(170,255,0,0.16)" stroke="#AAFF00" strokeWidth="2.8" />
+                  </svg>
+                </div>
+              </Surface>
+
+              <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
+                <div className="space-y-2.5">
+                  {topStats.map(([label, value]) => (
+                    <div key={label} className="flex border-b border-[var(--oc-border)] pb-2 text-[12px]">
+                      <span className="text-[var(--oc-fg-muted)]">{label}</span>
+                      <b className="ml-auto text-[16px] text-white">{value}</b>
                     </div>
                   ))}
                 </div>
-
-                {player.characteristics?.length > 0 && (
-                  <div className="flex gap-1.5 flex-wrap">
-                    {player.characteristics.map(c => (
-                      <span key={c} className="text-[10px] px-[11px] py-1 rounded-[20px]"
-                        style={{ background: `${playerAccent}10`, border: `0.5px solid ${playerAccent}30`, color: playerAccent }}>
-                        {c}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
+              </Surface>
             </div>
-          </div>
 
-          {/* Two-col body */}
-          <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-            <div className="flex flex-col gap-3.5">
-              {/* Bio */}
-              {player.bio && (
-                <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-[18px_20px]">
-                  <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2.5">Sobre el jugador</div>
-                  <p className="text-[rgba(255,255,255,0.5)] text-[13px] leading-[1.8]">{player.bio}</p>
+            {videos.length > 0 ? (
+              <Surface className="p-[var(--oc-space-5)]">
+                <SectionTitle title="Videos destacados" action="Ver todos" />
+                <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+                  {videos.slice(0, 6).map((video) => <VideoCard key={video.id} video={video} />)}
                 </div>
-              )}
+              </Surface>
+            ) : null}
 
-              {/* Trayectoria */}
-              {player.career?.length > 0 && (
-                <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-[18px_20px]">
-                  <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2.5">Trayectoria</div>
-                  <div className="flex flex-col gap-2.5">
+            <div className="grid grid-cols-1 gap-[var(--oc-space-4)] lg:grid-cols-[1fr_300px]">
+              {player.career?.length > 0 ? (
+                <Surface className="p-[var(--oc-space-5)]">
+                  <SectionTitle title="Trayectoria" />
+                  <div className="mt-5 space-y-0">
                     {player.career.map((entry, i) => (
-                      <div key={i} className="flex items-center gap-3">
-                        <div className="w-[7px] h-[7px] rounded-full shrink-0" style={{ background: i === 0 ? playerAccent : 'rgba(255,255,255,0.15)' }} />
-                        <span className="text-[13px] flex-1" style={{ color: i === 0 ? '#fff' : 'rgba(255,255,255,0.5)' }}>{entry.club}</span>
-                        <span className="text-[rgba(255,255,255,0.25)] text-[11px] italic">{entry.years}</span>
+                      <div key={`${entry.club}-${entry.years}-${i}`} className="grid grid-cols-[150px_1fr_120px] items-center gap-4 border-b border-[var(--oc-border)] py-4 last:border-b-0 max-md:grid-cols-[1fr]">
+                        <div className="flex items-center gap-3 text-[12px] text-[var(--oc-fg-muted)]">
+                          <span className="h-2.5 w-2.5 rounded-full bg-[var(--oc-lime)]" />
+                          <span>{entry.years}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="grid h-11 w-11 place-items-center rounded-[8px] border border-[var(--oc-border)] bg-[rgba(255,255,255,0.05)]">🛡️</div>
+                          <p className="font-[700] text-white">{entry.club}</p>
+                        </div>
+                        <div className="text-right text-[12px] text-[var(--oc-fg-muted)] max-md:text-left">{i === 0 ? 'Actualidad' : 'Historial'}</div>
                       </div>
                     ))}
                   </div>
-                </div>
+                </Surface>
+              ) : (
+                <Surface className="p-[var(--oc-space-5)]">
+                  <SectionTitle title="Trayectoria" />
+                  <p className="mt-4 text-[13px] text-[var(--oc-fg-muted)]">Este jugador aun no cargo su trayectoria deportiva.</p>
+                </Surface>
               )}
 
-              {/* Videos */}
-              {videos.length > 0 && (
-                <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-[18px_20px]">
-                  <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-3">Videos</div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                    {videos.map(v => <VideoCard key={v.id} video={v} />)}
-                  </div>
+              <Surface className="p-5">
+                <SectionTitle title="Posicion en cancha" />
+                <div className="relative mt-4 aspect-[1.65] rounded border border-[rgba(170,255,0,0.24)] bg-[rgba(8,32,23,0.65)]">
+                  <div className="absolute inset-3 border border-[rgba(255,255,255,0.12)]" />
+                  <div className="absolute left-3 top-1/2 h-16 w-10 -translate-y-1/2 border border-[rgba(255,255,255,0.12)]" />
+                  <div className="absolute right-3 top-1/2 h-16 w-10 -translate-y-1/2 border border-[rgba(255,255,255,0.12)]" />
+                  <div className="absolute left-1/2 top-0 h-full border-l border-[rgba(255,255,255,0.12)]" />
+                  <div className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(255,255,255,0.12)]" />
+                  <div className="absolute left-[57%] top-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[var(--oc-lime)] text-black shadow-[0_0_24px_rgba(170,255,0,0.6)]">▶</div>
                 </div>
-              )}
-
-              {/* Posición en cancha */}
-              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-[18px_20px]">
-                <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-3">Posición en cancha</div>
-                <div className="relative aspect-[1.7] rounded-[8px] border border-[rgba(0,200,83,0.15)] bg-[rgba(0,40,15,0.5)]">
-                  <div className="absolute inset-2 border border-[rgba(255,255,255,0.06)] rounded" />
-                  <div className="absolute left-2 top-1/2 -translate-y-1/2 h-12 w-8 border border-[rgba(255,255,255,0.06)]" />
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 h-12 w-8 border border-[rgba(255,255,255,0.06)]" />
-                  <div className="absolute left-1/2 top-0 bottom-0 border-l border-[rgba(255,255,255,0.06)]" />
-                  <div className="absolute left-1/2 top-1/2 w-12 h-12 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(255,255,255,0.06)]" />
-                  <div className="absolute left-[58%] top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-black text-[11px] font-bold"
-                    style={{ background: playerAccent, boxShadow: `0 0 20px ${playerAccent}80` }}>
-                    ⚽
-                  </div>
-                </div>
-                <div className="mt-3 text-white text-[13px] font-medium">{player.position || '—'}</div>
-              </div>
+                <h4 className="mt-4 text-[15px] font-[700] text-white">{player.position || 'Posicion principal'}</h4>
+              </Surface>
             </div>
 
-            {/* Sidebar */}
-            <div className="flex flex-col gap-3">
-              {/* Stats rápidas */}
-              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-4">
-                <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-3">Datos del perfil</div>
-                <div className="flex flex-col gap-2">
-                  <StatBar label="Posición" value={player.position || '—'} />
-                  <StatBar label="Edad" value={age ? `${age} años` : '—'} />
-                  <StatBar label="Nationalidad" value={player.nationality || '—'} />
-                  <StatBar label="Pie hábil" value={player.strongFoot || '—'} />
-                  {player.height && <StatBar label="Altura" value={`${player.height} m`} />}
-                  {player.weight && <StatBar label="Peso" value={`${player.weight} kg`} />}
+            <Surface className="p-[var(--oc-space-6)]">
+              <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+                <div>
+                  <h2 className="text-[28px] font-[800] tracking-[-0.02em] text-white">Contacto del jugador</h2>
+                  <p className="mt-3 text-[13px] text-[var(--oc-fg-muted)]">La informacion de contacto esta disponible para usuarios registrados en la plataforma.</p>
+                  {showContactCta ? (
+                    <button onClick={handleContact} className="mt-6 h-11 w-full max-w-[320px] rounded-[8px] bg-[var(--oc-lime)] text-[13px] font-[800] text-black">Iniciar sesion / Registrarme</button>
+                  ) : (
+                    <p className="mt-4 text-[12px] text-[var(--oc-fg-dim)]">El contacto directo esta desactivado por este perfil.</p>
+                  )}
+                </div>
+                <div className="rounded-[10px] border border-[var(--oc-border)] p-4">
+                  <p className="text-[12px] text-[var(--oc-fg-muted)]">Representante</p>
+                  <p className="mt-1 font-[700] text-white">No especificado</p>
+                  <button className="mt-5 h-10 w-full rounded-[8px] border border-[var(--oc-border-hi)] text-[12px] font-[700]">Ver perfil</button>
+                </div>
+                <div className="rounded-[10px] border border-[var(--oc-border)] p-4">
+                  <p className="text-[12px] text-[var(--oc-fg-muted)]">Club actual</p>
+                  <p className="mt-1 font-[700] text-white">{player.currentClub || 'Libre'}</p>
+                  <button className="mt-5 h-10 w-full rounded-[8px] border border-[var(--oc-border-hi)] text-[12px] font-[700]">Ver club</button>
+                </div>
+                <div className="rounded-[10px] border border-[var(--oc-border)] p-4">
+                  <h4 className="font-[700] text-white">Redes sociales</h4>
+                  <div className="mt-8 flex items-center justify-around text-[28px]">
+                    <span>◎</span>
+                    <span>♪</span>
+                    <span className="text-[var(--oc-lime)]">◉</span>
+                  </div>
                 </div>
               </div>
+            </Surface>
 
-              {/* Contacto */}
-              <div className="rounded-[12px] p-4" style={{ background: `${playerAccent}0A`, border: `0.5px solid ${playerAccent}25` }}>
-                <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2">Contacto</div>
-                <p className="text-[rgba(255,255,255,0.35)] text-[11px] leading-[1.6] mb-3">
-                  {user ? 'Enviá un mensaje directo a este jugador.' : 'Para contactar a este jugador, iniciá sesión o registrate en One Chance.'}
-                </p>
-                <Button variant="primary" size="sm" className="w-full justify-center" onClick={handleContact}>
-                  Contactar
-                </Button>
+            <Surface className="p-[var(--oc-space-5)]">
+              <SectionTitle title="Fotos" action="Ver todas" />
+              <div className="mt-[var(--oc-space-4)] grid grid-cols-2 gap-[var(--oc-space-3)] md:grid-cols-3 lg:grid-cols-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="relative h-[154px] overflow-hidden rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(0,0,0,0.46))]">
+                    {i === 5 ? <div className="absolute inset-0 grid place-items-center bg-[rgba(0,0,0,0.55)] text-[30px] font-[800]">+{Math.max(player.photos - 5, 0)}</div> : null}
+                  </div>
+                ))}
               </div>
+            </Surface>
+
+            <div className="rounded-[12px] border border-[var(--oc-border)] bg-[rgba(6,18,23,0.76)] py-5 text-center text-[13px] text-[var(--oc-fg-muted)]">
+              ✓ Este perfil fue verificado y aprobado por el equipo de One Chance.
             </div>
           </div>
         </div>

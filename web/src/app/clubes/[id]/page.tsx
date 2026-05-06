@@ -5,7 +5,9 @@ import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
 import ContactModal from '@/components/ui/ContactModal'
 import { getClub } from '@/lib/firestore'
+import { getProfileState } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
+import { canViewProfile } from '@/lib/publicProfileAccess'
 import type { ClubProfile } from '@/types'
 
 export default function ClubProfilePage() {
@@ -13,13 +15,28 @@ export default function ClubProfilePage() {
   const [club, setClub] = useState<ClubProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [showContact, setShowContact] = useState(false)
+  const [showContactCta, setShowContactCta] = useState(false)
   const router = useRouter()
   const { user } = useAuth()
 
-  useEffect(() => { getClub(id).then(c => { setClub(c); setLoading(false) }) }, [id])
+  useEffect(() => {
+    Promise.all([getClub(id), getProfileState(id)]).then(([c, s]) => {
+      setClub(c)
+      setShowContactCta(Boolean(s?.visibility?.showContact))
+      setLoading(false)
+    })
+  }, [id])
 
   if (loading) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Cargando…</div></div>
   if (!club) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Club no encontrado.</div></div>
+
+  const canView = canViewProfile({
+    profileStatus: club.status,
+    profileUid: club.uid,
+    viewerUid: user?.uid,
+    viewerSystemRole: user?.systemRole,
+  })
+  if (!canView) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Este perfil no esta disponible publicamente.</div></div>
 
   const accent = '#FFB400'
 
@@ -39,16 +56,17 @@ export default function ClubProfilePage() {
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-[var(--oc-bg-base)] text-white">
       <Background />
+      <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(circle_at_50%_15%,rgba(255,180,0,0.1),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(0,195,255,0.07),transparent_30%)]" />
       {showContact && club && (
         <ContactModal toUid={id} toName={club.name} accent={accent} onClose={() => setShowContact(false)} />
       )}
       <div className="relative z-[2] oc-main-offset">
-        <div className="oc-shell-detail oc-page-block">
+        <div className="oc-shell oc-page-block">
           <Button variant="ghost" onClick={() => router.push('/clubes')} className="mb-5 text-[11px]">← Volver a clubes</Button>
 
-          <div className="mb-4 overflow-hidden rounded-[16px] border border-[rgba(255,180,0,0.28)] bg-[linear-gradient(130deg,#07101a,#111c2a_52%,#201805)] shadow-[0_22px_60px_rgba(0,0,0,0.4)]">
+          <div className="mb-1 overflow-hidden rounded-[16px] border border-[rgba(255,180,0,0.28)] bg-[linear-gradient(130deg,#07101a,#111c2a_52%,#201805)] shadow-[0_22px_60px_rgba(0,0,0,0.4)]">
             <div className="h-[2px]" style={{ background: `linear-gradient(90deg,${accent},transparent)` }} />
             <div className="grid md:grid-cols-[260px_1fr]">
               <div className="relative flex min-h-[220px] flex-col items-center justify-center border-b border-[rgba(255,255,255,0.1)] px-6 py-7 md:border-b-0 md:border-r md:border-[rgba(255,255,255,0.1)]">
@@ -96,14 +114,20 @@ export default function ClubProfilePage() {
             </div>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
+          <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[12px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
+            {['Resumen', 'Institucion', 'Busqueda', 'Logros', 'Contacto', 'Verificacion'].map((tab, i) => (
+              <div key={tab} className={`flex items-center justify-center border-b-2 ${i === 0 ? 'border-[var(--oc-yellow)] text-[var(--oc-yellow)]' : 'border-transparent'}`}>{tab}</div>
+            ))}
+          </nav>
+
+          <div className="grid gap-[var(--oc-space-4)] lg:grid-cols-[1fr_300px]">
             <div className="space-y-4">
-              <section className="rounded-[12px] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.02)] p-5">
+              <section className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-5)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Sobre el club</p>
                 <p className="mt-2 text-[13px] leading-[1.75] text-[var(--oc-text-muted)]">{club.bio || 'Este club aun no cargo una descripcion institucional.'}</p>
               </section>
 
-              <section className="rounded-[12px] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.02)] p-5">
+              <section className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-5)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Busqueda actual de talento</p>
                 {hasSeeking ? (
                   <div className="mt-3 flex flex-wrap gap-1.5">
@@ -116,7 +140,7 @@ export default function ClubProfilePage() {
                 )}
               </section>
 
-              <section className="rounded-[12px] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.02)] p-5">
+              <section className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-5)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Logros destacados</p>
                 {hasAchievements ? (
                   <div className="mt-3 space-y-2">
@@ -134,7 +158,7 @@ export default function ClubProfilePage() {
             </div>
 
             <aside className="space-y-3">
-              <div className="rounded-[12px] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.02)] p-4">
+              <div className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-4)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Cuerpo directivo</p>
                 <div className="mt-3 space-y-2.5">
                   <div>
@@ -157,7 +181,11 @@ export default function ClubProfilePage() {
                 <p className="mt-2 text-[12px] leading-[1.65] text-[var(--oc-text-muted)]">
                   {user ? 'Enviá un mensaje directo a este club.' : 'Para contactar a este club, inicia sesion o registrate en One Chance.'}
                 </p>
-                <Button variant="primary" size="sm" className="w-full justify-center mt-3" onClick={handleContact}>Contactar</Button>
+                {showContactCta ? (
+                  <Button variant="primary" size="sm" className="w-full justify-center mt-3" onClick={handleContact}>Contactar</Button>
+                ) : (
+                  <div className="mt-3 text-[11px] text-[rgba(255,255,255,0.22)]">El contacto directo esta desactivado por este perfil.</div>
+                )}
               </div>
 
               <Button variant="ghost" size="sm" className="w-full justify-center" onClick={() => router.push('/clubes')}>Volver al listado</Button>

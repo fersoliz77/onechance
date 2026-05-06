@@ -55,42 +55,43 @@ export default function ContactModal({ toUid, toName, accent, onClose }: Contact
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-[6px]" />
       <div
-        className="relative z-[1] w-full max-w-[420px] rounded-[16px] border p-6 shadow-[0_32px_80px_rgba(0,0,0,0.6)]"
-        style={{ background: 'linear-gradient(135deg,#0D0F1A,#070810)', borderColor: `${accent}30` }}
+        className="relative z-[1] w-full max-w-[440px] overflow-hidden rounded-[var(--oc-radius-xl)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.9)] p-[var(--oc-space-6)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_24px_64px_rgba(0,0,0,0.5)]"
+        style={{ boxShadow: `0 0 0 1px color-mix(in srgb, ${accent} 16%, transparent), 0 24px 64px rgba(0,0,0,0.5)` }}
         onClick={e => e.stopPropagation()}
       >
-        <div className="h-[2px] absolute top-0 left-0 right-0 rounded-t-[16px]" style={{ background: `linear-gradient(90deg,${accent},transparent)` }} />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.05)_0%,transparent_45%,rgba(255,255,255,0.02)_100%)]" />
+        <div className="h-[2px] absolute top-0 left-3 right-3" style={{ background: `linear-gradient(90deg,transparent,${accent},transparent)` }} />
 
-        <div className="flex items-start justify-between mb-5">
+        <div className="relative z-[1] mb-[var(--oc-space-5)] flex items-start justify-between">
           <div>
-            <h2 className="text-[15px] font-semibold text-white">Enviar mensaje</h2>
-            <p className="text-[11px] mt-0.5" style={{ color: `${accent}99` }}>a {toName}</p>
+            <h2 className="text-[16px] font-[700] tracking-[-0.01em] text-white">Enviar mensaje</h2>
+            <p className="mt-1 text-[11px] text-[var(--oc-fg-muted)]">a <span style={{ color: accent }}>{toName}</span></p>
           </div>
-          <button onClick={onClose} className="text-[rgba(255,255,255,0.3)] hover:text-white transition-colors text-[18px] leading-none -mt-0.5">×</button>
+          <button onClick={onClose} className="-mt-0.5 text-[20px] leading-none text-[var(--oc-fg-dim)] transition-colors hover:text-white">×</button>
         </div>
 
         {sent ? (
-          <div className="text-center py-6">
+          <div className="relative z-[1] py-6 text-center">
             <div className="text-[32px] mb-3">✓</div>
             <p className="text-white text-[14px] font-medium mb-1">Mensaje enviado</p>
             <p className="text-[rgba(255,255,255,0.4)] text-[12px] mb-5">{toName} recibirá una notificación.</p>
             <Button variant="outline" size="sm" onClick={onClose} className="w-full justify-center">Cerrar</Button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+          <form onSubmit={handleSubmit} className="relative z-[1] flex flex-col gap-[var(--oc-space-4)]">
             <div>
-              <label className="text-[10px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)] block mb-1.5">Asunto</label>
+              <label className="mb-1.5 block text-[10px] uppercase tracking-[0.07em] text-[var(--oc-text-label)]">Asunto</label>
               <input
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
                 maxLength={120}
                 required
                 placeholder="Ej: Propuesta de contratación"
-                className="w-full rounded-[8px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5 text-[13px] text-white placeholder-[rgba(255,255,255,0.2)] outline-none focus:border-[rgba(255,255,255,0.2)] transition-colors"
+                className="w-full rounded-[var(--oc-radius-sm)] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5 text-[13px] text-white placeholder-[var(--oc-text-faint)] outline-none transition-colors focus:border-[var(--oc-border-strong)]"
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)] block mb-1.5">Mensaje</label>
+              <label className="mb-1.5 block text-[10px] uppercase tracking-[0.07em] text-[var(--oc-text-label)]">Mensaje</label>
               <textarea
                 value={body}
                 onChange={e => setBody(e.target.value)}
@@ -98,14 +99,14 @@ export default function ContactModal({ toUid, toName, accent, onClose }: Contact
                 required
                 rows={4}
                 placeholder="Describí brevemente tu propuesta o consulta…"
-                className="w-full rounded-[8px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5 text-[13px] text-white placeholder-[rgba(255,255,255,0.2)] outline-none focus:border-[rgba(255,255,255,0.2)] transition-colors resize-none"
+                className="w-full resize-none rounded-[var(--oc-radius-sm)] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5 text-[13px] text-white placeholder-[var(--oc-text-faint)] outline-none transition-colors focus:border-[var(--oc-border-strong)]"
               />
-              <div className="text-[10px] text-[rgba(255,255,255,0.2)] text-right mt-1">{body.length}/1000</div>
+              <div className="mt-1 text-right text-[10px] text-[var(--oc-text-label)]">{body.length}/1000</div>
             </div>
 
             {error && <p className="text-red-400 text-[11px]">{error}</p>}
 
-            <div className="flex gap-2 mt-1">
+            <div className="mt-1 flex gap-2">
               <Button type="button" variant="ghost" size="sm" onClick={onClose} className="flex-1 justify-center">Cancelar</Button>
               <Button
                 type="submit"
@@ -113,7 +114,7 @@ export default function ContactModal({ toUid, toName, accent, onClose }: Contact
                 size="sm"
                 disabled={sending || !subject.trim() || !body.trim()}
                 className="flex-1 justify-center"
-                style={{ background: accent, borderColor: accent }}
+                style={{ background: accent, borderColor: accent, color: '#0A0A0A' }}
               >
                 {sending ? 'Enviando…' : 'Enviar mensaje'}
               </Button>

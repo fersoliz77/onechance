@@ -69,6 +69,15 @@ El sistema detecta automáticamente si `birthDate` corresponde a < 18 años:
 
 ---
 
+## Feature: Privacidad de perfiles
+
+- Los listados publicos muestran solo perfiles `published`.
+- Los detalles por UID tambien validan `published`; perfiles no publicados no se exponen publicamente.
+- Admin/super admin y el duenio del perfil mantienen acceso de gestion.
+- El contacto directo respeta preferencia `showContact` del perfil.
+
+---
+
 ## Feature: Monetización (preparada, no activa en V1)
 
 | Plan | Precio referencia |

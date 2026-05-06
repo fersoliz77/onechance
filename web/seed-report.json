@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-05-06T09:06:12.955Z",
+  "report": [
+    {
+      "uid": "HchK5HvVQrNcJeJhccW7V5EGUo32",
+      "email": "superadmin@onechance.test",
+      "systemRole": "super_admin",
+      "accountRole": "agent"
+    },
+    {
+      "uid": "IjBSWJZVJPXdDYZpFiSEIBZlFsk2",
+      "email": "admin.moderacion@onechance.test",
+      "systemRole": "admin",
+      "accountRole": "coach"
+    },
+    {
+      "uid": "pGdyO9d9NFUKP3310QTxZjnNoWf1",
+      "email": "admin.contenido@onechance.test",
+      "systemRole": "admin",
+      "accountRole": "club"
+    },
+    {
+      "uid": "SvhKwRayiFddTPeYTcsQwgbHSGk1",
+      "email": "player.demo@onechance.test",
+      "systemRole": "user",
+      "accountRole": "player"
+    },
+    {
+      "uid": "I0wHwcUbFEMlWqZa2msjedsXZFE3",
+      "email": "coach.demo@onechance.test",
+      "systemRole": "user",
+      "accountRole": "coach"
+    },
+    {
+      "uid": "pPxJd8Tj6qUHZa55h5oOk2WPIKo1",
+      "email": "club.demo@onechance.test",
+      "systemRole": "user",
+      "accountRole": "club"
+    },
+    {
+      "uid": "BMGQcUR28mU7kDKfkk7WOH9RQsE3",
+      "email": "agent.demo@onechance.test",
+      "systemRole": "user",
+      "accountRole": "agent"
+    }
+  ]
+}

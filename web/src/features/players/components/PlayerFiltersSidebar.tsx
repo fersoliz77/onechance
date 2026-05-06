@@ -30,10 +30,10 @@ export default function PlayerFiltersSidebar({ filters, setFilters, onClear }: P
   )
 
   return (
-    <aside className="w-full md:w-[280px] shrink-0 bg-[var(--oc-surface-1)] border border-[var(--oc-border-soft)] rounded-[12px] p-3 sm:p-4 md:sticky md:top-[calc(var(--oc-nav-height)+var(--oc-space-4))] self-start">
-      <div className="flex justify-between items-center mb-4">
-        <span className="text-white text-[14px] sm:text-[12px] font-medium">Filtros</span>
-        <button onClick={onClear} className="text-[rgba(0,200,83,0.75)] text-[11px] sm:text-[10px] cursor-pointer bg-transparent border-none">Limpiar</button>
+    <aside className="w-full shrink-0 rounded-[var(--oc-radius-xl)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-4)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)] md:sticky md:top-[calc(var(--oc-nav-height)+var(--oc-space-4))] md:w-[300px] self-start">
+      <div className="mb-[var(--oc-space-4)] flex items-center justify-between">
+        <span className="text-[14px] font-[700] text-white">Filtros</span>
+        <button onClick={onClear} className="cursor-pointer border-none bg-transparent text-[11px] text-[var(--oc-lime)]">Limpiar</button>
       </div>
       <div className="mb-3.5">
         <SectionKicker className="mb-1.5">Sexo</SectionKicker>

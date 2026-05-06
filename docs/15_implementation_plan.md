@@ -90,6 +90,15 @@ _Las rutas de técnico, club y representante existen pero no tienen contenido pr
 - [x] **Calcular `completionPct` dinámicamente** en el dashboard — en lugar de un valor estático inicial, calcularlo en base a cuántos campos están completados. Actualizar en RTDB cuando el usuario edita.
 - [x] **Mostrar qué falta completar** — lista de campos vacíos con links directos al campo correspondiente en el formulario de edición.
 
+### 3.5 Carga de datos (escalable)
+
+- [ ] **Definir contrato canónico de ingesta** — normalizar payload por rol con campos comunes (`uid`, `role`, `status`, `createdAt`, `updatedAt`, `schemaVersion`) y `profileData` específico por rol.
+- [ ] **Crear schemas Zod por rol** — `playerSchema`, `coachSchema`, `clubSchema`, `agentSchema`; validar en backend antes de persistir.
+- [ ] **Implementar endpoint `POST /api/admin/profile-upsert`** — alta/actualización individual con resolución de colección por `ROLE_COLLECTION` y guardado de estado dinámico en `RTDB profiles/{uid}`.
+- [ ] **Implementar endpoint `POST /api/admin/profile-import`** — carga batch (CSV/JSON) con chunking, idempotencia por `uid` y resultado parcial (`created`, `updated`, `failed`).
+- [ ] **Persistir auditoría de importación** — colección `import_jobs/{jobId}` con estado, actor, métricas y errores por fila.
+- [ ] **Agregar ejecución segura de seed/import** — script operativo con variables de entorno obligatorias, soporte a dry-run y reporte final.
+
 ---
 
 ## FASE 4 — Constantes y Tipos: Eliminar Duplicación
