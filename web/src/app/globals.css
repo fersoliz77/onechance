@@ -94,6 +94,11 @@
   --oc-text-muted: rgba(255,255,255,0.35);
   --oc-text-faint: rgba(255,255,255,0.25);
   --oc-text-label: rgba(255,255,255,0.2);
+  --oc-overlay: rgba(0,0,0,0.72);
+  --oc-role-player: #00C853;
+  --oc-role-coach: #5A8FFF;
+  --oc-role-club: #FFB400;
+  --oc-role-agent: #B464FF;
 
   --oc-fz-9: 9px;
   --oc-fz-10: 10px;
@@ -344,6 +349,32 @@ input, select, textarea, button { font-family: inherit; }
 .oc-tilt { transform: perspective(1400px) rotateY(-6deg) rotateX(3deg); animation: oc-tilt-float 6s ease-in-out infinite; }
 .oc-tilt-soft { transform: perspective(1200px) rotateY(-5deg) rotateX(5deg); animation: oc-tilt-soft-float 7s ease-in-out infinite; }
 .oc-tilt-soft.oc-tilt--down { transform: perspective(1200px) rotateY(-5deg) rotateX(-2deg); }
+
+.oc-elev-card {
+  border: 1px solid var(--oc-border-soft);
+  background: rgba(7,20,24,0.78);
+  box-shadow: 0 0 0 1px rgba(0,212,255,0.04), 0 18px 50px rgba(0,0,0,0.35);
+}
+
+.oc-detail-hero {
+  overflow: hidden;
+  border-radius: 20px 4px 20px 20px;
+  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
+  border: 1px solid color-mix(in srgb, var(--oc-accent, var(--oc-role-coach)) 26%, transparent);
+  background: linear-gradient(135deg, #0B1428, #060A18);
+}
+
+.oc-detail-hero-accent {
+  height: 2px;
+  background: linear-gradient(90deg, var(--oc-accent, var(--oc-role-coach)), rgba(0,0,0,0));
+}
+
+.oc-role-chip {
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--oc-accent, var(--oc-role-coach)) 42%, transparent);
+  background: color-mix(in srgb, var(--oc-accent, var(--oc-role-coach)) 12%, transparent);
+  color: var(--oc-accent, var(--oc-role-coach));
+}
 
 @keyframes oc-tilt-float {
   0%, 100% { transform: perspective(1400px) rotateY(-6deg) rotateX(3deg) translateY(0); }

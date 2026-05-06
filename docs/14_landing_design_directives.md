@@ -1,6 +1,6 @@
 # Landing design directives applied
 
-This document describes how the new `Diseno/` directives were integrated into the web app.
+This document describes how the new `Diseño/` directives were integrated into the web app.
 
 ## Core decisions
 
@@ -10,7 +10,7 @@ This document describes how the new `Diseno/` directives were integrated into th
 
 ## Asset mapping
 
-- `Diseno/imagenes/hero-stadium.png` was copied to `web/public/images/hero-stadium.png`.
+- `Diseño/imagenes/hero-stadium.png` was copied to `web/public/images/hero-stadium.png`.
 - Landing hero now uses `/images/hero-stadium.png` as primary backdrop to match the provided mockup look.
 
 ## Responsiveness strategy
@@ -25,3 +25,8 @@ This document describes how the new `Diseno/` directives were integrated into th
 - Keep new sections in `web/src/app/page.tsx` as section-level components.
 - Reuse `SectionTitle` and `oc-glass` classes for any future marketing pages.
 - Prefer semantic CSS variables from `:root` over hard-coded colors for consistency.
+
+## Current status note
+
+- Landing already follows the visual direction, but still contains sections with hard-coded values and inline styles in `web/src/app/page.tsx`.
+- Next cleanup step is to split landing into section components and keep style decisions in reusable tokens/classes.

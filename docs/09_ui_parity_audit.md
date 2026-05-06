@@ -3,6 +3,9 @@
 ## Fecha
 2026-04-30
 
+> Nota de actualización (2026-05-06): este documento se mantiene como referencia histórica de la pasada anterior.
+> El estado actual del código todavía presenta deuda de consistencia en tokenización (colores hardcoded, utilidades arbitrarias e inline styles), por lo que la paridad no debe considerarse cerrada al 100%.
+
 ## Objetivo
 Auditar la plataforma completa para detectar desvíos de paridad visual y de interacción contra los mockups oficiales en `OneChance mockup basicos/ui_kits`.
 

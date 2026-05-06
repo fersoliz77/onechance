@@ -78,13 +78,15 @@ export default function PlayerProfilePage() {
 
   useEffect(() => {
     let active = true
-    Promise.all([getPlayer(id), getVideos(id), getProfileState(id)]).then(([p, v, s]) => {
+    ;(async () => {
+      const [pRes, vRes, sRes] = await Promise.allSettled([getPlayer(id), getVideos(id), getProfileState(id)])
       if (!active) return
-      setPlayer(p)
-      setVideos(v.filter((x) => x.status === 'active'))
-      setShowContactCta(Boolean(s?.visibility?.showContact))
+
+      setPlayer(pRes.status === 'fulfilled' ? pRes.value : null)
+      setVideos(vRes.status === 'fulfilled' ? vRes.value.filter((x) => x.status === 'active') : [])
+      setShowContactCta(sRes.status === 'fulfilled' ? Boolean(sRes.value?.visibility?.showContact) : false)
       setLoading(false)
-    })
+    })()
     return () => {
       active = false
     }

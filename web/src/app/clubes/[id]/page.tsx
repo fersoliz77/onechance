@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { type CSSProperties, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
@@ -20,11 +20,19 @@ export default function ClubProfilePage() {
   const { user } = useAuth()
 
   useEffect(() => {
-    Promise.all([getClub(id), getProfileState(id)]).then(([c, s]) => {
-      setClub(c)
-      setShowContactCta(Boolean(s?.visibility?.showContact))
+    let active = true
+    ;(async () => {
+      const [cRes, sRes] = await Promise.allSettled([getClub(id), getProfileState(id)])
+      if (!active) return
+
+      setClub(cRes.status === 'fulfilled' ? cRes.value : null)
+      setShowContactCta(sRes.status === 'fulfilled' ? Boolean(sRes.value?.visibility?.showContact) : false)
       setLoading(false)
-    })
+    })()
+
+    return () => {
+      active = false
+    }
   }, [id])
 
   if (loading) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Cargando…</div></div>
@@ -38,7 +46,7 @@ export default function ClubProfilePage() {
   })
   if (!canView) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Este perfil no esta disponible publicamente.</div></div>
 
-  const accent = '#FFB400'
+  const accent = 'var(--oc-role-club)'
 
   function handleContact() {
     if (user) setShowContact(true)
@@ -66,12 +74,12 @@ export default function ClubProfilePage() {
         <div className="oc-shell oc-page-block">
           <Button variant="ghost" onClick={() => router.push('/clubes')} className="mb-5 text-[11px]">← Volver a clubes</Button>
 
-          <div className="mb-1 overflow-hidden rounded-[16px] border border-[rgba(255,180,0,0.28)] bg-[linear-gradient(130deg,#07101a,#111c2a_52%,#201805)] shadow-[0_22px_60px_rgba(0,0,0,0.4)]">
-            <div className="h-[2px]" style={{ background: `linear-gradient(90deg,${accent},transparent)` }} />
+          <div className="oc-detail-hero mb-1" style={{ '--oc-accent': accent } as CSSProperties}>
+            <div className="oc-detail-hero-accent" />
             <div className="grid md:grid-cols-[260px_1fr]">
-              <div className="relative flex min-h-[220px] flex-col items-center justify-center border-b border-[rgba(255,255,255,0.1)] px-6 py-7 md:border-b-0 md:border-r md:border-[rgba(255,255,255,0.1)]">
+              <div className="relative flex min-h-[220px] flex-col items-center justify-center border-b border-white/10 px-6 py-7 md:border-b-0 md:border-r md:border-white/10">
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(158deg,transparent_0_16px,rgba(255,255,255,0.05)_17px,transparent_18px)] opacity-55" />
-                <div className="relative z-10 grid h-[96px] w-[96px] place-items-center rounded-[22px] border border-[rgba(255,180,0,0.45)] bg-[rgba(255,180,0,0.16)] text-[34px] shadow-[0_18px_48px_rgba(0,0,0,0.45)]">🏟️</div>
+                <div className="relative z-10 grid h-[96px] w-[96px] place-items-center rounded-[22px] border border-[color-mix(in_srgb,var(--oc-accent)_42%,transparent)] bg-[color-mix(in_srgb,var(--oc-accent)_14%,transparent)] text-[34px] shadow-[0_18px_48px_rgba(0,0,0,0.45)]">🏟️</div>
                 <p className="relative z-10 mt-4 text-[20px] font-semibold tracking-[-0.03em] text-white text-center">{club.name}</p>
                 <p className="relative z-10 mt-1 text-[12px] text-oc-yellow">{club.division || 'Sin categoria'}</p>
                 {club.founded > 0 && <p className="relative z-10 mt-3 text-[11px] text-[var(--oc-text-muted)]">Fundado en {club.founded}</p>}
@@ -79,7 +87,7 @@ export default function ClubProfilePage() {
 
               <div className="p-5 md:p-6">
                 <div className="mb-4 flex flex-wrap items-center gap-2">
-                  <span className="rounded-[20px] border border-[rgba(255,180,0,0.35)] bg-[rgba(255,180,0,0.1)] px-2.5 py-1 text-[10px] tracking-[0.07em] text-oc-yellow">{statusLabel[club.status]}</span>
+                  <span className="oc-role-chip px-2.5 py-1 text-[10px] tracking-[0.07em]" style={{ '--oc-accent': accent } as CSSProperties}>{statusLabel[club.status]}</span>
                   <span className="text-[12px] text-[var(--oc-text-faint)]">{club.country || 'Sin pais'} · {club.city || 'Sin ciudad'}</span>
                 </div>
 
@@ -93,7 +101,7 @@ export default function ClubProfilePage() {
                     ['Division', club.division || '—'],
                     ['Provincia', club.province || '—'],
                   ].map(([l,v]) => (
-                    <div key={l} className="rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5">
+                    <div key={l} className="rounded-[10px] border border-[color-mix(in_srgb,var(--oc-accent)_15%,var(--oc-border-soft))] bg-[color-mix(in_srgb,var(--oc-accent)_5%,rgba(255,255,255,0.03))] px-3 py-2.5">
                       <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">{l}</p>
                       <p className="mt-1 truncate text-[13px] text-white">{v}</p>
                     </div>
@@ -101,11 +109,11 @@ export default function ClubProfilePage() {
                 </div>
 
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  <div className="rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5">
+                  <div className="rounded-[10px] border border-[color-mix(in_srgb,var(--oc-accent)_15%,var(--oc-border-soft))] bg-[color-mix(in_srgb,var(--oc-accent)_5%,rgba(255,255,255,0.03))] px-3 py-2.5">
                     <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Presidente</p>
                     <p className="mt-1 text-[13px] text-white">{club.president || 'No informado'}</p>
                   </div>
-                  <div className="rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5">
+                  <div className="rounded-[10px] border border-[color-mix(in_srgb,var(--oc-accent)_15%,var(--oc-border-soft))] bg-[color-mix(in_srgb,var(--oc-accent)_5%,rgba(255,255,255,0.03))] px-3 py-2.5">
                     <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Director tecnico</p>
                     <p className="mt-1 text-[13px] text-white">{club.currentCoach || 'No informado'}</p>
                   </div>
@@ -122,17 +130,17 @@ export default function ClubProfilePage() {
 
           <div className="grid gap-[var(--oc-space-4)] lg:grid-cols-[1fr_300px]">
             <div className="space-y-4">
-              <section className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-5)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
+              <section className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Sobre el club</p>
                 <p className="mt-2 text-[13px] leading-[1.75] text-[var(--oc-text-muted)]">{club.bio || 'Este club aun no cargo una descripcion institucional.'}</p>
               </section>
 
-              <section className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-5)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
+              <section className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Busqueda actual de talento</p>
                 {hasSeeking ? (
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {club.seeking.map(s => (
-                      <span key={s} className="rounded-[20px] border border-[rgba(255,180,0,0.35)] bg-[rgba(255,180,0,0.12)] px-[11px] py-1 text-[10px] text-oc-yellow">{s}</span>
+                      <span key={s} className="oc-role-chip px-[11px] py-1 text-[10px]" style={{ '--oc-accent': accent } as CSSProperties}>{s}</span>
                     ))}
                   </div>
                 ) : (
@@ -140,7 +148,7 @@ export default function ClubProfilePage() {
                 )}
               </section>
 
-              <section className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-5)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
+              <section className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Logros destacados</p>
                 {hasAchievements ? (
                   <div className="mt-3 space-y-2">
@@ -158,7 +166,7 @@ export default function ClubProfilePage() {
             </div>
 
             <aside className="space-y-3">
-              <div className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-4)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
+              <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-4)]">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Cuerpo directivo</p>
                 <div className="mt-3 space-y-2.5">
                   <div>
@@ -176,7 +184,7 @@ export default function ClubProfilePage() {
                 </div>
               </div>
 
-              <div className="rounded-[12px] border border-[rgba(255,180,0,0.3)] bg-[rgba(255,180,0,0.08)] p-4">
+              <div className="rounded-[12px] border border-[color-mix(in_srgb,var(--oc-accent)_28%,transparent)] bg-[color-mix(in_srgb,var(--oc-accent)_8%,transparent)] p-4">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Contacto</p>
                 <p className="mt-2 text-[12px] leading-[1.65] text-[var(--oc-text-muted)]">
                   {user ? 'Enviá un mensaje directo a este club.' : 'Para contactar a este club, inicia sesion o registrate en One Chance.'}

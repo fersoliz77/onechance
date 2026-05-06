@@ -28,8 +28,8 @@ export default function AgentCard({ agent, onClick }: Props) {
         )}
       </div>
       <div className="flex gap-1.5 flex-wrap mb-2.5">
-        {[agent.nationality, ...(agent.markets || []).slice(0, 2)].filter(Boolean).map(t => (
-          <span key={t} className="oc-meta-chip">{t}</span>
+        {[agent.nationality, ...(agent.markets || []).slice(0, 2)].filter(Boolean).map((t, i) => (
+          <span key={`${t}-${i}`} className="oc-meta-chip">{t}</span>
         ))}
       </div>
       <div className="flex justify-between items-center">

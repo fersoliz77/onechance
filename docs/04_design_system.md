@@ -1,7 +1,13 @@
 # OneChance — Design System
 
-Todos los tokens están definidos en `OneChance mockup basicos/colors_and_type.css`.
-Los componentes de referencia están en `ui_kits/platform/Shared.jsx`.
+Fuente de verdad en código: `web/src/app/globals.css`.
+
+Los mockups de `OneChance mockup basicos/*` se usan como referencia visual, no como fuente contractual de tokens.
+
+Estado actual (2026-05):
+- Existe una base de tokens semánticos consolidada en `:root`.
+- Todavía hay deuda de migración en componentes con colores hardcoded e inline styles.
+- Nuevas piezas recomendadas para reutilización: `.oc-elev-card`, `.oc-detail-hero`, `.oc-detail-hero-accent`, `.oc-role-chip`.
 
 ## Colores
 

@@ -49,7 +49,7 @@ function NotificationBell({ uid }: { uid: string }) {
         aria-label="Notificaciones"
         className="relative flex items-center justify-center w-9 h-9 rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] transition-colors cursor-pointer"
       >
-        <svg className="w-[17px] h-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} style={{ color: 'rgba(255,255,255,0.55)' }}>
+        <svg className="h-[17px] w-[17px] text-white/55" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
@@ -103,7 +103,7 @@ function UserMenu({ name, role, systemRole }: { name: string; role: Role | null;
   const ref = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
-  const accent = role ? ROLE_ACCENT[role] : '#00C853'
+  const accent = role ? ROLE_ACCENT[role] : 'var(--oc-role-player)'
   const initial = name ? name.charAt(0).toUpperCase() : '?'
   const roleLabel = role ? ROLE_LABELS[role] : 'Usuario'
 
@@ -124,7 +124,7 @@ function UserMenu({ name, role, systemRole }: { name: string; role: Role | null;
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-2 rounded-[10px] border px-3 py-1.5 transition-all duration-200 cursor-pointer"
+        className="flex cursor-pointer items-center gap-2 rounded-[10px] border px-3 py-1.5 transition-all duration-200"
         style={{
           borderColor: open ? `${accent}55` : 'rgba(255,255,255,0.12)',
           background: open ? `${accent}10` : 'rgba(255,255,255,0.04)',
@@ -137,7 +137,7 @@ function UserMenu({ name, role, systemRole }: { name: string; role: Role | null;
           <span className="text-black">{initial}</span>
         </div>
         <span className="text-white text-[12px] font-medium hidden sm:block max-w-[110px] truncate">{name}</span>
-        <svg className="w-3 h-3 shrink-0 hidden sm:block" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={2} style={{ color: 'rgba(255,255,255,0.4)' }}>
+        <svg className="hidden h-3 w-3 shrink-0 text-white/40 sm:block" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={2}>
           <path d={open ? 'M2 8l4-4 4 4' : 'M2 4l4 4 4-4'} />
         </svg>
       </button>

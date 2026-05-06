@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { type CSSProperties, useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { sendMessage, addNotification } from '@/lib/rtdb'
 import Button from './Button'
@@ -53,19 +53,19 @@ export default function ContactModal({ toUid, toName, accent, onClose }: Contact
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-[6px]" />
+      <div className="absolute inset-0 bg-[var(--oc-overlay)] backdrop-blur-[6px]" />
       <div
         className="relative z-[1] w-full max-w-[440px] overflow-hidden rounded-[var(--oc-radius-xl)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.9)] p-[var(--oc-space-6)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_24px_64px_rgba(0,0,0,0.5)]"
-        style={{ boxShadow: `0 0 0 1px color-mix(in srgb, ${accent} 16%, transparent), 0 24px 64px rgba(0,0,0,0.5)` }}
+        style={{ '--oc-accent': accent, boxShadow: `0 0 0 1px color-mix(in srgb, var(--oc-accent) 16%, transparent), 0 24px 64px rgba(0,0,0,0.5)` } as CSSProperties}
         onClick={e => e.stopPropagation()}
       >
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.05)_0%,transparent_45%,rgba(255,255,255,0.02)_100%)]" />
-        <div className="h-[2px] absolute top-0 left-3 right-3" style={{ background: `linear-gradient(90deg,transparent,${accent},transparent)` }} />
+        <div className="absolute left-3 right-3 top-0 h-[2px] bg-[linear-gradient(90deg,transparent,var(--oc-accent),transparent)]" />
 
         <div className="relative z-[1] mb-[var(--oc-space-5)] flex items-start justify-between">
           <div>
             <h2 className="text-[16px] font-[700] tracking-[-0.01em] text-white">Enviar mensaje</h2>
-            <p className="mt-1 text-[11px] text-[var(--oc-fg-muted)]">a <span style={{ color: accent }}>{toName}</span></p>
+            <p className="mt-1 text-[11px] text-[var(--oc-fg-muted)]">a <span className="text-[var(--oc-accent)]">{toName}</span></p>
           </div>
           <button onClick={onClose} className="-mt-0.5 text-[20px] leading-none text-[var(--oc-fg-dim)] transition-colors hover:text-white">×</button>
         </div>
@@ -113,8 +113,7 @@ export default function ContactModal({ toUid, toName, accent, onClose }: Contact
                 variant="primary"
                 size="sm"
                 disabled={sending || !subject.trim() || !body.trim()}
-                className="flex-1 justify-center"
-                style={{ background: accent, borderColor: accent, color: '#0A0A0A' }}
+                className="flex-1 justify-center border-[var(--oc-accent)] bg-[var(--oc-accent)] text-[#0A0A0A]"
               >
                 {sending ? 'Enviando…' : 'Enviar mensaje'}
               </Button>
