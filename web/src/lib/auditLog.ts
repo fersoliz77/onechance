@@ -1,4 +1,4 @@
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
 /**
@@ -30,6 +30,47 @@ export interface AuditEntry {
  * @example
  * await logAudit(firebaseUser, 'approve_profile', profile.uid, 'player', { name: profile.fullName })
  */
+export interface RecentActivity {
+  id: string
+  action: AuditAction
+  adminEmail: string
+  targetType: string
+  timestamp: string | null
+}
+
+const ACTION_LABEL: Record<AuditAction, string> = {
+  approve_profile: 'Perfil aprobado',
+  reject_profile:  'Perfil rechazado',
+  delete_video:    'Video eliminado',
+  toggle_video:    'Video moderado',
+  set_featured:    'Jugador destacado',
+  set_role:        'Rol de usuario cambiado',
+  export_csv:      'Exportación de datos',
+}
+
+export async function getRecentAuditLogs(n = 5): Promise<RecentActivity[]> {
+  try {
+    const q = query(collection(db, 'adminAuditLog'), orderBy('timestamp', 'desc'), limit(n))
+    const snap = await getDocs(q)
+    return snap.docs.map(d => {
+      const data = d.data()
+      const ts = data.timestamp?.toDate?.()?.toISOString() ?? null
+      return {
+        id: d.id,
+        action: data.action as AuditAction,
+        adminEmail: data.adminEmail ?? '',
+        targetType: data.targetType ?? '',
+        timestamp: ts,
+        label: ACTION_LABEL[data.action as AuditAction] ?? data.action,
+      }
+    })
+  } catch {
+    return []
+  }
+}
+
+export { ACTION_LABEL }
+
 export async function logAudit(
   admin: { uid: string; email: string | null },
   action: AuditAction,

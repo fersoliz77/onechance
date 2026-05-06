@@ -1,10 +1,10 @@
 'use client'
-import type { UserRecord } from '@/types'
+import Image from 'next/image'
 
 export type Density = 'comfortable' | 'compact'
 
 interface Props {
-  user: UserRecord
+  user: { name?: string; email?: string | null } | null
   photoURL?: string | null
   pendingCount: number
   density: Density
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export default function AdminHeader({ user, photoURL, pendingCount, density, onDensityToggle, onViewSite, onOpenPalette }: Props) {
-  const initials = (user.name || user.email || 'AD').slice(0, 2).toUpperCase()
+  const initials = (user?.name || user?.email || 'AD').slice(0, 2).toUpperCase()
 
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between gap-4 px-7 py-4 border-b border-[rgba(255,255,255,0.07)] bg-[rgba(10,10,10,0.88)] backdrop-blur-xl">
@@ -70,11 +70,11 @@ export default function AdminHeader({ user, photoURL, pendingCount, density, onD
         {/* User avatar */}
         <div className="flex items-center gap-2.5">
           <div className="text-right hidden sm:block">
-            <p className="text-[13px] font-semibold text-white leading-tight">{user.name || 'Administrador'}</p>
+            <p className="text-[13px] font-semibold text-white leading-tight">{user?.name || 'Administrador'}</p>
             <p className="text-[10px] font-bold text-[#AAFF00]">Super Admin</p>
           </div>
           {photoURL
-            ? <img src={photoURL} alt="Avatar" className="w-9 h-9 rounded-full object-cover ring-2 ring-[rgba(170,255,0,0.3)]" />
+            ? <Image src={photoURL} alt="Avatar" width={36} height={36} className="rounded-full object-cover ring-2 ring-[rgba(170,255,0,0.3)]" />
             : <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#AAFF00] to-[#7B3FF6] flex items-center justify-center text-[11px] font-black text-black shrink-0">
                 {initials}
               </div>

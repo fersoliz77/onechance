@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server'
 import { getAdminDb } from '@/lib/firebase-admin'
-import { requireAdmin, writeAuditLog } from '../_lib'
+import { requireAdmin, writeAuditLog, parseBody, ProfileStatusSchema } from '../_lib'
 
 export async function POST(req: Request) {
   const auth = await requireAdmin(req)
   if (!auth.ok) return auth.response
 
-  const { collection, uid, status } = await req.json()
-  if (!collection || !uid || !status) {
-    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
-  }
+  const body = parseBody(ProfileStatusSchema, await req.json())
+  if (!body.ok) return body.response
 
+  const { collection, uid, status } = body.data
   await getAdminDb().collection(collection).doc(uid).set({ status }, { merge: true })
   await writeAuditLog({
     actorUid: auth.decoded.uid,

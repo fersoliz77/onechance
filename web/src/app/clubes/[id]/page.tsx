@@ -3,14 +3,18 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
+import ContactModal from '@/components/ui/ContactModal'
 import { getClub } from '@/lib/firestore'
+import { useAuth } from '@/context/AuthContext'
 import type { ClubProfile } from '@/types'
 
 export default function ClubProfilePage() {
   const { id } = useParams<{ id: string }>()
   const [club, setClub] = useState<ClubProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showContact, setShowContact] = useState(false)
   const router = useRouter()
+  const { user } = useAuth()
 
   useEffect(() => { getClub(id).then(c => { setClub(c); setLoading(false) }) }, [id])
 
@@ -18,6 +22,12 @@ export default function ClubProfilePage() {
   if (!club) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Club no encontrado.</div></div>
 
   const accent = '#FFB400'
+
+  function handleContact() {
+    if (user) setShowContact(true)
+    else router.push('/auth?tab=register')
+  }
+
   const hasSeeking = club.seeking && club.seeking.length > 0
   const hasAchievements = club.achievements && club.achievements.length > 0
   const statusLabel: Record<ClubProfile['status'], string> = {
@@ -31,6 +41,9 @@ export default function ClubProfilePage() {
   return (
     <div className="relative min-h-screen">
       <Background />
+      {showContact && club && (
+        <ContactModal toUid={id} toName={club.name} accent={accent} onClose={() => setShowContact(false)} />
+      )}
       <div className="relative z-[2] oc-main-offset">
         <div className="oc-shell-detail oc-page-block">
           <Button variant="ghost" onClick={() => router.push('/clubes')} className="mb-5 text-[11px]">← Volver a clubes</Button>
@@ -141,8 +154,10 @@ export default function ClubProfilePage() {
 
               <div className="rounded-[12px] border border-[rgba(255,180,0,0.3)] bg-[rgba(255,180,0,0.08)] p-4">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Contacto</p>
-                <p className="mt-2 text-[12px] leading-[1.65] text-[var(--oc-text-muted)]">Para contactar a este club, inicia sesion o registrate en One Chance.</p>
-                <Button variant="primary" size="sm" className="w-full justify-center" onClick={() => router.push('/auth?tab=register')}>Contactar</Button>
+                <p className="mt-2 text-[12px] leading-[1.65] text-[var(--oc-text-muted)]">
+                  {user ? 'Enviá un mensaje directo a este club.' : 'Para contactar a este club, inicia sesion o registrate en One Chance.'}
+                </p>
+                <Button variant="primary" size="sm" className="w-full justify-center mt-3" onClick={handleContact}>Contactar</Button>
               </div>
 
               <Button variant="ghost" size="sm" className="w-full justify-center" onClick={() => router.push('/clubes')}>Volver al listado</Button>

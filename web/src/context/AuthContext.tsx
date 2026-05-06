@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (fbUser) {
         const record = await getUserRecord(fbUser.uid)
         const token = await fbUser.getIdTokenResult()
-        const claimRole = token.claims.role
+        const claimRole = (token.claims as { role?: string }).role
         const systemRole = claimRole === 'super_admin' || claimRole === 'admin' ? claimRole : (record?.systemRole ?? 'user')
         setUser({
           uid: fbUser.uid,

@@ -6,7 +6,6 @@ import Background from '@/components/layout/Background'
 import { getPendingProfiles, getAllPlayers, getAllUsers } from '@/lib/firestore'
 import { getAllVideos } from '@/lib/rtdb'
 import type { PlayerProfile, VideoEntry, ProfileStatus, UserRecord } from '@/types'
-import { type DocumentData } from 'firebase/firestore'
 import { isAdminRole, isSuperAdminRole } from '@/lib/permissions'
 import { logAudit } from '@/lib/auditLog'
 import { useToastState } from '@/hooks/useToast'
@@ -25,7 +24,18 @@ import ToastStack from '@/components/admin/ui/ToastStack'
 import ConfirmModal from '@/components/admin/ui/ConfirmModal'
 import { SkeletonStat, SkeletonCard } from '@/components/admin/ui/Skeleton'
 
-export type PendingItem = DocumentData & { _col: string }
+export type PendingItem = {
+  uid: string
+  fullName?: string
+  name?: string
+  nationality?: string
+  country?: string
+  position?: string
+  status: ProfileStatus
+  isMinor?: boolean
+  _col: string
+  [key: string]: unknown
+}
 export type AdminTab = 'dashboard' | 'perfiles' | 'usuarios' | 'solicitudes' | 'videos' | 'estadisticas' | 'configuracion' | 'moderacion' | 'suscripciones'
 
 interface ConfirmState {
@@ -52,7 +62,9 @@ export default function AdminPage() {
   const [loadError, setLoadError] = useState('')
 
   const [paletteOpen, setPaletteOpen] = useState(false)
-  const [density, setDensity] = useState<Density>('comfortable')
+  const [density, setDensity] = useState<Density>(() =>
+    (typeof window !== 'undefined' ? localStorage.getItem('oc-admin-density') as Density | null : null) ?? 'comfortable'
+  )
   const [confirm, setConfirm] = useState<ConfirmState>(CONFIRM_CLOSED)
 
   const { toasts, toast, remove: removeToast } = useToastState()
@@ -65,12 +77,6 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) router.push('/')
   }, [user, authLoading, isAdmin, router])
-
-  // Persist density
-  useEffect(() => {
-    const saved = localStorage.getItem('oc-admin-density') as Density | null
-    if (saved) setDensity(saved)
-  }, [])
 
   const toggleDensity = () => setDensity(d => {
     const next = d === 'comfortable' ? 'compact' : 'comfortable'
@@ -92,7 +98,7 @@ export default function AdminPage() {
     if (!user || !isAdmin) return
     Promise.allSettled([getPendingProfiles(), getAllPlayers(), getAllVideos(), getAllUsers()]).then(results => {
       const [p, pl, v, u] = results
-      if (p.status  === 'fulfilled') setPending(p.value)
+      if (p.status  === 'fulfilled') setPending(p.value as PendingItem[])
       if (pl.status === 'fulfilled') setPlayers(pl.value)
       if (v.status  === 'fulfilled') setVideos(v.value)
       if (u.status  === 'fulfilled') setUsers(u.value)

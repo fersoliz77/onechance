@@ -21,6 +21,7 @@
 | [12_delivery_documentation_protocol.md](12_delivery_documentation_protocol.md) | Protocolo de documentación continua por entrega |
 | [13_security_and_operations_runbook.md](13_security_and_operations_runbook.md) | Runbook de seguridad, permisos y rollback operativo |
 | [12_scripts_guide.md](12_scripts_guide.md) | Guía simple de scripts y workflow CI para cualquier perfil |
+| [15_implementation_plan.md](15_implementation_plan.md) | Plan de implementación completo por fases con checkboxes de progreso |
 
 ## Mockups de referencia
 

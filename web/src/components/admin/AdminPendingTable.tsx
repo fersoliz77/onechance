@@ -63,7 +63,7 @@ export default function AdminPendingTable({ items, onApprove, onReject, compact,
       Tipo:     COL_MAP[p._col] ?? p._col,
       Edad:     p.age ?? p.birthYear ?? '',
       País:     p.nationality ?? p.country ?? '',
-      Registro: p.createdAt ? new Date(p.createdAt?.toDate?.() ?? p.createdAt).toLocaleDateString('es-AR') : '',
+      Registro: p.createdAt ? new Date((p.createdAt as { toDate?: () => Date } | string)?.toString?.() ?? String(p.createdAt)).toLocaleDateString('es-AR') : '',
       Motivo:   p.isMinor ? 'Menor de edad' : 'Revisión manual',
     })))
   }
@@ -154,10 +154,10 @@ export default function AdminPendingTable({ items, onApprove, onReject, compact,
                           {COL_MAP[item._col] ?? item._col}
                         </span>
                       </td>
-                      <td style={{ padding:`${py} 16px` }} className="text-[rgba(255,255,255,0.45)]">{item.age ?? item.birthYear ?? '—'}</td>
-                      <td style={{ padding:`${py} 16px` }} className="text-[rgba(255,255,255,0.45)]">{item.nationality ?? item.country ?? '—'}</td>
+                      <td style={{ padding:`${py} 16px` }} className="text-[rgba(255,255,255,0.45)]">{String(item.age ?? item.birthYear ?? '—')}</td>
+                      <td style={{ padding:`${py} 16px` }} className="text-[rgba(255,255,255,0.45)]">{String(item.nationality ?? item.country ?? '—')}</td>
                       <td style={{ padding:`${py} 16px` }} className="text-[rgba(255,255,255,0.3)] text-[12px]">
-                        {item.createdAt ? new Date(item.createdAt?.toDate?.() ?? item.createdAt).toLocaleDateString('es-AR') : '—'}
+                        {item.createdAt ? new Date(String(item.createdAt)).toLocaleDateString('es-AR') : '—'}
                       </td>
                       <td style={{ padding:`${py} 16px` }} className="text-[rgba(255,255,255,0.35)] text-[12px]">
                         {item.isMinor ? 'Menor de edad' : 'Revisión manual'}

@@ -29,7 +29,9 @@ export default function CommandPalette({ open, onClose, onNav, extraActions = []
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (open) { setQuery(''); setTimeout(() => inputRef.current?.focus(), 50) }
+    if (open) {
+      setTimeout(() => { setQuery(''); inputRef.current?.focus() }, 50)
+    }
   }, [open])
 
   useEffect(() => {

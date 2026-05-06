@@ -4,14 +4,18 @@ import { useParams, useRouter } from 'next/navigation'
 import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
+import ContactModal from '@/components/ui/ContactModal'
 import { getAgent } from '@/lib/firestore'
+import { useAuth } from '@/context/AuthContext'
 import type { AgentProfile } from '@/types'
 
 export default function AgentProfilePage() {
   const { id } = useParams<{ id: string }>()
   const [agent, setAgent] = useState<AgentProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showContact, setShowContact] = useState(false)
   const router = useRouter()
+  const { user } = useAuth()
 
   useEffect(() => { getAgent(id).then(a => { setAgent(a); setLoading(false) }) }, [id])
 
@@ -20,9 +24,17 @@ export default function AgentProfilePage() {
 
   const accent = '#B464FF'
 
+  function handleContact() {
+    if (user) setShowContact(true)
+    else router.push('/auth?tab=register')
+  }
+
   return (
     <div className="relative min-h-screen">
       <Background />
+      {showContact && agent && (
+        <ContactModal toUid={id} toName={agent.fullName} accent={accent} onClose={() => setShowContact(false)} />
+      )}
       <div className="relative z-[2] oc-main-offset">
         <div className="oc-shell-detail oc-page-block">
           <Button variant="ghost" onClick={() => router.push('/representantes')} className="mb-5 text-[11px]">← Volver al listado</Button>
@@ -148,8 +160,10 @@ export default function AgentProfilePage() {
               </div>
               <div className="rounded-[12px] p-4" style={{ background:`${accent}0A`, border:`0.5px solid ${accent}25` }}>
                 <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2">Contacto</div>
-                <p className="text-[rgba(255,255,255,0.35)] text-[11px] leading-[1.6] mb-3">Para contactar a este representante, iniciá sesión o registrate.</p>
-                <Button variant="primary" size="sm" className="w-full justify-center" onClick={() => router.push('/auth?tab=register')}>Contactar</Button>
+                <p className="text-[rgba(255,255,255,0.35)] text-[11px] leading-[1.6] mb-3">
+                  {user ? 'Enviá un mensaje directo a este representante.' : 'Para contactar a este representante, iniciá sesión o registrate.'}
+                </p>
+                <Button variant="primary" size="sm" className="w-full justify-center" onClick={handleContact}>Contactar</Button>
               </div>
             </div>
           </div>

@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server'
 import { getAdminDb } from '@/lib/firebase-admin'
-import { requireAdmin, writeAuditLog } from '../_lib'
+import { requireAdmin, writeAuditLog, parseBody, FeaturedSchema } from '../_lib'
 
 export async function POST(req: Request) {
   const auth = await requireAdmin(req)
   if (!auth.ok) return auth.response
 
-  const { uid, isFeatured } = await req.json()
-  if (!uid || typeof isFeatured !== 'boolean') {
-    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
-  }
+  const body = parseBody(FeaturedSchema, await req.json())
+  if (!body.ok) return body.response
 
+  const { uid, isFeatured } = body.data
   await getAdminDb().collection('players').doc(uid).set({ isFeatured }, { merge: true })
   await writeAuditLog({
     actorUid: auth.decoded.uid,

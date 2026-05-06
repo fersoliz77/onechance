@@ -1,6 +1,7 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import type { AdminTab } from '@/app/admin/page'
+import { getRecentAuditLogs, ACTION_LABEL, type RecentActivity } from '@/lib/auditLog'
 
 type MenuItem = { id: AdminTab; icon: string; label: string }
 
@@ -16,11 +17,27 @@ const MENU: MenuItem[] = [
   { id: 'configuracion', icon: 'settings',     label: 'Configuración' },
 ]
 
-const LIVE_ITEMS = ['Nuevo jugador registrado', 'Video subido · Tomás L.', 'Perfil aprobado', 'Nuevo club']
-const LIVE_COLORS = ['rgba(255,255,255,0.25)', '#AAFF00', '#22D3EE', '#7B3FF6']
+const ACTION_COLOR: Record<string, string> = {
+  approve_profile: '#00C853',
+  reject_profile:  '#FF3C3C',
+  delete_video:    '#FF6060',
+  toggle_video:    '#22D3EE',
+  set_featured:    '#AAFF00',
+  set_role:        '#7B3FF6',
+  export_csv:      'rgba(255,255,255,0.4)',
+}
+
+function timeAgo(iso: string | null): string {
+  if (!iso) return 'Recién'
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000
+  if (diff < 60) return 'Hace menos de 1 min'
+  if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`
+  if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} h`
+  return `Hace ${Math.floor(diff / 86400)} días`
+}
 
 function OcIcon({ type }: { type: string }) {
-  const map: Record<string, JSX.Element> = {
+  const paths: Record<string, ReactNode> = {
     dashboard:  <><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></>,
     user:       <><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></>,
     users:      <><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 11a4 4 0 0 0-1-7.8"/><path d="M22 21a6 6 0 0 0-5-5.8"/></>,
@@ -36,7 +53,7 @@ function OcIcon({ type }: { type: string }) {
   return (
     <svg className="w-[18px] h-[18px] shrink-0" viewBox="0 0 24 24" fill="none"
       stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      {map[type] ?? map.dashboard}
+      {paths[type] ?? paths.dashboard}
     </svg>
   )
 }
@@ -49,13 +66,16 @@ interface Props {
 }
 
 export default function AdminSidebar({ tab, onTab, pendingCount }: Props) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(() =>
+    typeof window !== 'undefined' && localStorage.getItem('oc-admin-sidebar') === 'collapsed'
+  )
+  const [activity, setActivity] = useState<RecentActivity[]>([])
 
-  // Persist collapse state
   useEffect(() => {
-    const saved = localStorage.getItem('oc-admin-sidebar')
-    if (saved === 'collapsed') setCollapsed(true)
-  }, [])
+    if (collapsed) return
+    getRecentAuditLogs(5).then(setActivity)
+  }, [collapsed])
+
   const toggleCollapse = () => {
     setCollapsed(c => {
       localStorage.setItem('oc-admin-sidebar', !c ? 'collapsed' : 'expanded')
@@ -67,7 +87,6 @@ export default function AdminSidebar({ tab, onTab, pendingCount }: Props) {
 
   return (
     <>
-      {/* Spacer so main content shifts */}
       <div style={{ width: w, flexShrink: 0, transition: 'width 0.3s ease' }} />
 
       <aside
@@ -76,7 +95,7 @@ export default function AdminSidebar({ tab, onTab, pendingCount }: Props) {
 
         {/* Logo */}
         <div className="flex items-center justify-between px-4 pt-6 pb-5 shrink-0" style={{ minHeight: 80 }}>
-          {!collapsed && (
+          {!collapsed ? (
             <div className="text-[20px] font-black leading-[0.85] tracking-[0.07em] text-white whitespace-nowrap overflow-hidden">
               ONE<br/><span className="text-[#AAFF00]">CHANCE</span>
               <div className="mt-1.5 flex items-center gap-1.5">
@@ -84,8 +103,7 @@ export default function AdminSidebar({ tab, onTab, pendingCount }: Props) {
                 <span className="text-[9px] text-[rgba(255,255,255,0.3)] tracking-widest uppercase">Admin</span>
               </div>
             </div>
-          )}
-          {collapsed && (
+          ) : (
             <div className="w-8 h-8 rounded-lg bg-[rgba(170,255,0,0.12)] border border-[rgba(170,255,0,0.25)] flex items-center justify-center mx-auto">
               <span className="text-[#AAFF00] text-[10px] font-black">OC</span>
             </div>
@@ -126,24 +144,33 @@ export default function AdminSidebar({ tab, onTab, pendingCount }: Props) {
           })}
         </nav>
 
-        {/* Live widget — only when expanded */}
+        {/* Live activity widget */}
         {!collapsed && (
           <div className="mx-2 mb-3 rounded-xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] p-4 shrink-0">
-            <p className="text-[11px] font-semibold text-white mb-3">Actividad en vivo</p>
-            <div className="space-y-3">
-              {LIVE_ITEMS.map((text, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <span className="mt-0.5 w-5 h-5 shrink-0 rounded-full border flex items-center justify-center"
-                    style={{ borderColor: LIVE_COLORS[i] + '60' }}>
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: LIVE_COLORS[i] }} />
-                  </span>
-                  <div>
-                    <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.75)] leading-tight">{text}</p>
-                    <p className="text-[9px] text-[rgba(255,255,255,0.25)] mt-0.5">Hace {(i+1)*3} min</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <p className="text-[11px] font-semibold text-white mb-3">Actividad reciente</p>
+            {activity.length === 0 ? (
+              <p className="text-[10px] text-[rgba(255,255,255,0.25)]">Sin actividad registrada.</p>
+            ) : (
+              <div className="space-y-3">
+                {activity.map(item => {
+                  const color = ACTION_COLOR[item.action] ?? 'rgba(255,255,255,0.3)'
+                  return (
+                    <div key={item.id} className="flex items-start gap-2">
+                      <span className="mt-0.5 w-5 h-5 shrink-0 rounded-full border flex items-center justify-center"
+                        style={{ borderColor: color + '60' }}>
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.75)] leading-tight truncate">
+                          {ACTION_LABEL[item.action] ?? item.action}
+                        </p>
+                        <p className="text-[9px] text-[rgba(255,255,255,0.25)] mt-0.5">{timeAgo(item.timestamp)}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         )}
 

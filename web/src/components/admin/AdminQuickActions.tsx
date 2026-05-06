@@ -1,4 +1,5 @@
 'use client'
+import type { ReactNode } from 'react'
 
 const ACTIONS = [
   { icon: 'megaphone', label: 'Crear anuncio' },
@@ -10,7 +11,7 @@ const ACTIONS = [
 ]
 
 function QIcon({ type }: { type: string }) {
-  const icons: Record<string, JSX.Element> = {
+  const icons: Record<string, ReactNode> = {
     megaphone: <path d="M3 11v2a2 2 0 0 0 2 2h2l3 4h2l-1-4c4-.5 7-3 9-4V5c-2 1-5 3.5-9 4H5a2 2 0 0 0-2 2z"/>,
     mail:      <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></>,
     download:  <><path d="M12 3v11"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></>,

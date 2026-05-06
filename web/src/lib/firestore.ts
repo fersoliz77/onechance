@@ -1,7 +1,6 @@
 import {
   collection, doc, getDoc, getDocs, updateDoc, setDoc,
   query, where, serverTimestamp,
-  type DocumentData,
 } from 'firebase/firestore'
 import { db } from './firebase'
 import type { PlayerProfile, CoachProfile, ClubProfile, AgentProfile, Role, ProfileStatus, UserRecord } from '@/types'
@@ -99,11 +98,11 @@ export async function getPendingProfiles() {
     getDocs(query(collection(db, 'agents'),  where('status', '==', 'pending'))),
   ])
   return [
-    ...players.docs.map(d => ({ ...d.data(), _col: 'players' })),
-    ...coaches.docs.map(d => ({ ...d.data(), _col: 'coaches' })),
-    ...clubs.docs.map(d => ({ ...d.data(), _col: 'clubs' })),
-    ...agents.docs.map(d => ({ ...d.data(), _col: 'agents' })),
-  ] as (DocumentData & { _col: string })[]
+    ...players.docs.map(d => ({ ...d.data(), _col: 'players' as const })),
+    ...coaches.docs.map(d => ({ ...d.data(), _col: 'coaches' as const })),
+    ...clubs.docs.map(d => ({ ...d.data(), _col: 'clubs' as const })),
+    ...agents.docs.map(d => ({ ...d.data(), _col: 'agents' as const })),
+  ]
 }
 
 export async function setProfileStatus(col: string, uid: string, status: string) {
