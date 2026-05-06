@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
-import Badge from '@/components/ui/Badge'
 import { getClub } from '@/lib/firestore'
 import type { ClubProfile } from '@/types'
 
@@ -19,149 +18,135 @@ export default function ClubProfilePage() {
   if (!club) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Club no encontrado.</div></div>
 
   const accent = '#FFB400'
+  const hasSeeking = club.seeking && club.seeking.length > 0
+  const hasAchievements = club.achievements && club.achievements.length > 0
+  const statusLabel: Record<ClubProfile['status'], string> = {
+    published: 'Publicado',
+    pending: 'Pendiente',
+    draft: 'Borrador',
+    rejected: 'Rechazado',
+    hidden: 'Oculto',
+  }
 
   return (
     <div className="relative min-h-screen">
       <Background />
       <div className="relative z-[2] oc-main-offset">
         <div className="oc-shell-detail oc-page-block">
-          <Button variant="ghost" onClick={() => router.push('/clubes')} className="mb-5 text-[11px]">← Volver al listado</Button>
+          <Button variant="ghost" onClick={() => router.push('/clubes')} className="mb-5 text-[11px]">← Volver a clubes</Button>
 
-          {/* Hero card */}
-          <div
-            className="mb-4 overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg,#1A1200,#0A0800)',
-              border: `0.5px solid ${accent}40`,
-              borderRadius: '20px 4px 20px 20px',
-              clipPath: 'polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,0 100%)',
-            }}
-          >
-            <div className="h-[2px]" style={{ background: `linear-gradient(90deg,${accent},rgba(0,0,0,0))` }} />
-            <div className="flex flex-col md:flex-row items-stretch">
-              {/* Left panel */}
-              <div className="w-full md:w-[220px] shrink-0 p-8 flex flex-col items-center justify-center relative"
-                style={{ background: `linear-gradient(160deg,${accent}18,rgba(0,0,0,0))`, borderRight: `0.5px solid ${accent}22` }}>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140px] h-[140px] opacity-[0.07]">
-                  <svg viewBox="0 0 100 110" fill={accent}><path d="M50 2 L95 20 L95 55 C95 80 72 98 50 108 C28 98 5 80 5 55 L5 20 Z" /></svg>
-                </div>
-                <div
-                  className="w-[96px] h-[96px] rounded-full flex items-center justify-center text-[40px] border-[2.5px] z-10 mb-3.5 animate-float"
-                  style={{ background: `linear-gradient(135deg,${accent},#3A2800)`, borderColor: `${accent}66`, boxShadow: `0 0 32px ${accent}30` }}
-                >
-                  🏟️
-                </div>
-                <div className="text-white text-[15px] font-medium text-center z-10 leading-[1.2]">{club.name}</div>
-                <div className="text-[11px] mt-1 text-center z-10" style={{ color: `${accent}BB` }}>{club.division || 'Sin categoría'}</div>
-                {club.founded > 0 && (
-                  <div className="mt-4 z-10 rounded-[10px] px-5 py-2 text-center" style={{ background: `${accent}15`, border: `0.5px solid ${accent}30` }}>
-                    <div className="text-[28px] font-medium leading-none tracking-[-0.02em]" style={{ color: accent }}>{club.founded}</div>
-                    <div className="text-[rgba(255,255,255,0.2)] text-[8px] uppercase tracking-[0.06em] mt-0.5">Fundación</div>
-                  </div>
-                )}
+          <div className="mb-4 overflow-hidden rounded-[16px] border border-[rgba(255,180,0,0.28)] bg-[linear-gradient(130deg,#07101a,#111c2a_52%,#201805)] shadow-[0_22px_60px_rgba(0,0,0,0.4)]">
+            <div className="h-[2px]" style={{ background: `linear-gradient(90deg,${accent},transparent)` }} />
+            <div className="grid md:grid-cols-[260px_1fr]">
+              <div className="relative flex min-h-[220px] flex-col items-center justify-center border-b border-[rgba(255,255,255,0.1)] px-6 py-7 md:border-b-0 md:border-r md:border-[rgba(255,255,255,0.1)]">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(158deg,transparent_0_16px,rgba(255,255,255,0.05)_17px,transparent_18px)] opacity-55" />
+                <div className="relative z-10 grid h-[96px] w-[96px] place-items-center rounded-[22px] border border-[rgba(255,180,0,0.45)] bg-[rgba(255,180,0,0.16)] text-[34px] shadow-[0_18px_48px_rgba(0,0,0,0.45)]">🏟️</div>
+                <p className="relative z-10 mt-4 text-[20px] font-semibold tracking-[-0.03em] text-white text-center">{club.name}</p>
+                <p className="relative z-10 mt-1 text-[12px] text-oc-yellow">{club.division || 'Sin categoria'}</p>
+                {club.founded > 0 && <p className="relative z-10 mt-3 text-[11px] text-[var(--oc-text-muted)]">Fundado en {club.founded}</p>}
               </div>
-              {/* Right panel */}
-              <div className="flex-1 p-6">
-                <div className="flex items-center gap-2 mb-4 flex-wrap">
-                  <Badge status={club.status} />
-                  <span className="text-[rgba(255,255,255,0.25)] text-[11px]">{club.country}</span>
-                  {club.city && (
-                    <>
-                      <span className="text-[rgba(255,255,255,0.1)]">·</span>
-                      <span className="text-[rgba(255,255,255,0.25)] text-[11px]">{club.city}</span>
-                    </>
-                  )}
+
+              <div className="p-5 md:p-6">
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  <span className="rounded-[20px] border border-[rgba(255,180,0,0.35)] bg-[rgba(255,180,0,0.1)] px-2.5 py-1 text-[10px] tracking-[0.07em] text-oc-yellow">{statusLabel[club.status]}</span>
+                  <span className="text-[12px] text-[var(--oc-text-faint)]">{club.country || 'Sin pais'} · {club.city || 'Sin ciudad'}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 mb-5">
+
+                <h1 className="text-[30px] leading-[1.03] font-semibold tracking-[-0.04em] text-white">Perfil institucional</h1>
+                <p className="mt-2 text-[13px] leading-[1.65] text-[var(--oc-text-muted)]">Informacion oficial del club, su estructura y necesidades deportivas actuales.</p>
+
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
                   {[
-                    ['País', club.country || '—'],
+                    ['Pais', club.country || '—'],
                     ['Ciudad', club.city || '—'],
-                    ['División', club.division || '—'],
+                    ['Division', club.division || '—'],
                     ['Provincia', club.province || '—'],
                   ].map(([l,v]) => (
-                    <div key={l} className="rounded-[9px] p-[10px_12px] text-center" style={{ background:`${accent}08`, border:`0.5px solid ${accent}20` }}>
-                      <div className="text-[13px] font-medium leading-none truncate" style={{ color: accent }}>{v}</div>
-                      <div className="text-[rgba(255,255,255,0.25)] text-[9px] mt-[3px] uppercase tracking-[0.05em]">{l}</div>
+                    <div key={l} className="rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5">
+                      <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">{l}</p>
+                      <p className="mt-1 truncate text-[13px] text-white">{v}</p>
                     </div>
                   ))}
                 </div>
-                {club.seeking && club.seeking.length > 0 && (
-                  <div className="mb-4">
-                    <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.07em] mb-2">Busca incorporar</div>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {club.seeking.map(s => (
-                        <span key={s} className="text-[10px] px-[11px] py-1 rounded-[20px]" style={{ background:`${accent}10`, border:`0.5px solid ${accent}30`, color:accent }}>{s}</span>
-                      ))}
-                    </div>
+
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5">
+                    <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Presidente</p>
+                    <p className="mt-1 text-[13px] text-white">{club.president || 'No informado'}</p>
                   </div>
-                )}
-                {club.currentCoach && (
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-[6px] h-[6px] rounded-full" style={{ background: accent, boxShadow: `0 0 6px ${accent}` }} />
-                    <span className="text-[rgba(255,255,255,0.5)] text-[12px]">DT: {club.currentCoach}</span>
+                  <div className="rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5">
+                    <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Director tecnico</p>
+                    <p className="mt-1 text-[13px] text-white">{club.currentCoach || 'No informado'}</p>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Two-col */}
-          <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-            <div className="flex flex-col gap-3.5">
-              {club.bio && (
-                <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-[18px_20px]">
-                  <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2.5">Sobre el club</div>
-                  <p className="text-[rgba(255,255,255,0.5)] text-[12px] leading-[1.8]">{club.bio}</p>
-                </div>
-              )}
-              {club.achievements && club.achievements.length > 0 && (
-                <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-[18px_20px]">
-                  <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2.5">Logros</div>
-                  <div className="flex flex-col gap-1.5">
-                    {club.achievements.map((a, i) => (
-                      <div key={i} className="flex items-center gap-2.5">
-                        <span className="text-[14px]">🏆</span>
-                        <span className="text-[rgba(255,255,255,0.5)] text-[12px]">{a}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-[18px_20px]">
-                <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2.5">Plantel buscado</div>
-                {club.seeking && club.seeking.length > 0 ? (
-                  <div className="flex gap-1.5 flex-wrap">
+          <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
+            <div className="space-y-4">
+              <section className="rounded-[12px] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.02)] p-5">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Sobre el club</p>
+                <p className="mt-2 text-[13px] leading-[1.75] text-[var(--oc-text-muted)]">{club.bio || 'Este club aun no cargo una descripcion institucional.'}</p>
+              </section>
+
+              <section className="rounded-[12px] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.02)] p-5">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Busqueda actual de talento</p>
+                {hasSeeking ? (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
                     {club.seeking.map(s => (
-                      <span key={s} className="text-[10px] px-[11px] py-1 rounded-[20px]" style={{ background:`${accent}10`, border:`0.5px solid ${accent}30`, color:accent }}>{s}</span>
+                      <span key={s} className="rounded-[20px] border border-[rgba(255,180,0,0.35)] bg-[rgba(255,180,0,0.12)] px-[11px] py-1 text-[10px] text-oc-yellow">{s}</span>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-[rgba(255,255,255,0.25)] text-[11px]">Sin posiciones abiertas publicadas.</div>
+                  <p className="mt-2 text-[12px] text-[var(--oc-text-faint)]">Sin posiciones abiertas publicadas.</p>
                 )}
-              </div>
+              </section>
+
+              <section className="rounded-[12px] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.02)] p-5">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Logros destacados</p>
+                {hasAchievements ? (
+                  <div className="mt-3 space-y-2">
+                    {club.achievements.map((a, i) => (
+                      <div key={`${a}-${i}`} className="flex items-center gap-2.5 text-[13px] text-[var(--oc-text-muted)]">
+                        <span className="text-[15px]">🏆</span>
+                        <span>{a}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-[12px] text-[var(--oc-text-faint)]">Aun no hay logros cargados.</p>
+                )}
+              </section>
             </div>
-            <div className="flex flex-col gap-3">
-              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[12px] p-4">
-                <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-3">Cuerpo directivo</div>
-                {club.president && (
-                  <div className="mb-2">
-                    <div className="text-[rgba(255,255,255,0.2)] text-[9px]">Presidente</div>
-                    <div className="text-white text-[13px]">{club.president}</div>
-                  </div>
-                )}
-                {club.currentDirector && (
+
+            <aside className="space-y-3">
+              <div className="rounded-[12px] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.02)] p-4">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Cuerpo directivo</p>
+                <div className="mt-3 space-y-2.5">
                   <div>
-                    <div className="text-[rgba(255,255,255,0.2)] text-[9px]">Director deportivo</div>
-                    <div className="text-white text-[13px]">{club.currentDirector}</div>
+                    <p className="text-[10px] text-[var(--oc-text-faint)]">Presidente</p>
+                    <p className="text-[13px] text-white">{club.president || 'No informado'}</p>
                   </div>
-                )}
+                  <div>
+                    <p className="text-[10px] text-[var(--oc-text-faint)]">Director deportivo</p>
+                    <p className="text-[13px] text-white">{club.currentDirector || 'No informado'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[var(--oc-text-faint)]">Director tecnico</p>
+                    <p className="text-[13px] text-white">{club.currentCoach || 'No informado'}</p>
+                  </div>
+                </div>
               </div>
-              <div className="rounded-[12px] p-4" style={{ background:`${accent}0A`, border:`0.5px solid ${accent}25` }}>
-                <div className="text-[rgba(255,255,255,0.2)] text-[9px] uppercase tracking-[0.08em] mb-2">Contacto</div>
-                <p className="text-[rgba(255,255,255,0.35)] text-[11px] leading-[1.6] mb-3">Para contactar a este club, iniciá sesión o registrate.</p>
+
+              <div className="rounded-[12px] border border-[rgba(255,180,0,0.3)] bg-[rgba(255,180,0,0.08)] p-4">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Contacto</p>
+                <p className="mt-2 text-[12px] leading-[1.65] text-[var(--oc-text-muted)]">Para contactar a este club, inicia sesion o registrate en One Chance.</p>
                 <Button variant="primary" size="sm" className="w-full justify-center" onClick={() => router.push('/auth?tab=register')}>Contactar</Button>
               </div>
-            </div>
+
+              <Button variant="ghost" size="sm" className="w-full justify-center" onClick={() => router.push('/clubes')}>Volver al listado</Button>
+            </aside>
           </div>
         </div>
       </div>
