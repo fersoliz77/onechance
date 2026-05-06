@@ -227,7 +227,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white" style={{ fontFamily: 'var(--font-dm-sans), system-ui, sans-serif' }}>
+    <div className="flex min-h-screen bg-[#0A0A0A] text-white" style={{ fontFamily: 'var(--font-dm-sans), system-ui, sans-serif' }}>
       {/* Ambient */}
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_0%,rgba(170,255,0,0.07),transparent_50%),radial-gradient(ellipse_at_10%_30%,rgba(123,63,246,0.06),transparent_40%)]" />
@@ -248,7 +248,7 @@ export default function AdminPage() {
       <AdminSidebar tab={tab} onTab={setTab} pendingCount={pending.length} isSuperAdmin={isSuperAdmin} />
 
       {/* Main — shifts with sidebar via the spacer inside AdminSidebar */}
-      <main className="relative z-10 min-h-screen flex flex-col">
+      <main className="relative z-10 flex min-h-screen min-w-0 flex-1 flex-col">
         <AdminHeader
           user={user}
           photoURL={firebaseUser?.photoURL}

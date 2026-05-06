@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { type MouseEvent } from 'react'
+import ProPlayerCard from '@/components/ui/ProPlayerCard'
 import SectionHeading from './SectionHeading'
 
 type Props = {
@@ -10,12 +11,12 @@ type Props = {
 }
 
 const talents = [
-  { name: 'Mateo R.', role: 'Delantero', age: 19, country: 'Argentina', photo: 'https://images.unsplash.com/photo-1583195764036-6dc248ac07d9?auto=format&fit=crop&w=600&q=80' },
-  { name: 'Lucia M.', role: 'Mediocampista', age: 18, country: 'Uruguay', photo: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=600&q=80' },
-  { name: 'Thiago P.', role: 'Defensor', age: 20, country: 'Brasil', photo: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=600&q=80' },
-  { name: 'Sofia G.', role: 'Delantera', age: 17, country: 'Colombia', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80' },
-  { name: 'Tomas L.', role: 'Arquero', age: 21, country: 'Chile', photo: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=600&q=80' },
-  { name: 'Valentina D.', role: 'Extremo', age: 16, country: 'Argentina', photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Mateo R.', role: 'Delantero', age: 19, country: 'Argentina', rating: '8.8', photo: 'https://images.unsplash.com/photo-1583195764036-6dc248ac07d9?auto=format&fit=crop&w=900&q=80' },
+  { name: 'Lucia M.', role: 'Mediocampista', age: 18, country: 'Uruguay', rating: '8.4', photo: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=900&q=80' },
+  { name: 'Thiago P.', role: 'Defensor', age: 20, country: 'Brasil', rating: '8.6', photo: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=900&q=80' },
+  { name: 'Sofia G.', role: 'Delantera', age: 17, country: 'Colombia', rating: '8.7', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=900&q=80' },
+  { name: 'Tomas L.', role: 'Arquero', age: 21, country: 'Chile', rating: '8.3', photo: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=900&q=80' },
+  { name: 'Valentina D.', role: 'Extremo', age: 16, country: 'Argentina', rating: '8.5', photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=900&q=80' },
 ]
 
 export default function LandingSections({ ctaParallaxY, onOpenModal, onCardMove }: Props) {
@@ -60,19 +61,33 @@ export default function LandingSections({ ctaParallaxY, onOpenModal, onCardMove 
 
       <section className="oc-shell py-24 md:py-28" id="talentos" data-reveal>
         <SectionHeading title="Talentos listos para ser descubiertos." />
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 justify-items-center gap-4 md:grid-cols-3 lg:grid-cols-6">
           {talents.map((talent, index) => (
-            <article key={talent.name} data-reveal className="oc-reveal oc-hover-card overflow-hidden rounded-[12px] border border-[var(--oc-border)] bg-[var(--oc-bg-card)] transition hover:-translate-y-0.5 hover:border-[rgba(170,255,0,0.35)]" style={{ transitionDelay: `${Math.min(index * 45, 220)}ms` }} onMouseMove={onCardMove}>
-              <div className="relative aspect-[3/4]">
-                <Image src={talent.photo} alt={talent.name} fill className="object-cover" sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw" />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(0,0,0,0.72)_100%)]" />
-                <span className="absolute left-2 top-2 rounded-[4px] bg-[rgba(0,0,0,0.55)] px-2 py-1 text-[10px] font-[700] text-[var(--oc-lime)]">N#{index + 10}</span>
-              </div>
-              <div className="p-4">
-                <div className="text-[15px] font-[700]">{talent.name}</div>
-                <div className="mt-0.5 text-[12px] text-[var(--oc-fg-muted)]">{talent.role}</div>
-                <div className="mt-2 text-[11px] text-[var(--oc-fg-dim)]">{talent.age} años · {talent.country}</div>
-              </div>
+            <article
+              key={talent.name}
+              data-reveal
+              className="oc-reveal"
+              style={{ transitionDelay: `${Math.min(index * 45, 220)}ms` }}
+              onMouseMove={onCardMove}
+            >
+              <ProPlayerCard
+                rating={talent.rating}
+                name={talent.name}
+                roleText={`${talent.role} · ${talent.age} años · ${talent.country}`}
+                imageUrl={talent.photo}
+                compact
+                stats={[
+                  { value: String(7 + index), label: 'GOLES' },
+                  { value: String(4 + (index % 4)), label: 'ASISTENCIAS' },
+                  { value: `${(1.7 + index * 0.15).toFixed(1)}`, label: 'TIROS / PARTIDO' },
+                  { value: `${84 + (index % 6)}%`, label: 'PASES COMPLETADOS' },
+                  { value: `${(2.4 + index * 0.2).toFixed(1)}`, label: 'PASES CLAVE' },
+                  { value: `${(1.3 + index * 0.12).toFixed(1)}`, label: 'OCASIONES CREADAS' },
+                  { value: String(20 + index), label: 'PARTIDOS' },
+                  { value: String(1620 + index * 70), label: 'MINUTOS' },
+                  { value: talent.rating, label: 'RATING PROMEDIO' },
+                ]}
+              />
             </article>
           ))}
         </div>

@@ -1,0 +1,494 @@
+.scene {
+  position: relative;
+  width: min(92vw, 420px);
+  perspective: 1100px;
+}
+
+.sceneCompact {
+  width: 192px;
+  max-width: 100%;
+}
+
+.sceneCompact .card {
+  min-height: 378px;
+  height: 378px;
+  padding: 12px;
+  border-radius: 14px;
+}
+
+.sceneCompact .card::after {
+  inset: 8px;
+  border-radius: 10px;
+}
+
+.sceneCompact .topBar {
+  align-items: center;
+}
+
+.sceneCompact .rating {
+  gap: 3px;
+}
+
+.sceneCompact .ratingValue {
+  font-size: 22px;
+  border-radius: 10px;
+  padding: 4px 8px;
+}
+
+.sceneCompact .ratingLabel {
+  font-size: 8px;
+  letter-spacing: 0.6px;
+  padding: 3px 7px;
+}
+
+.sceneCompact .clubBadge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+
+.sceneCompact .clubBadge svg {
+  width: 20px;
+}
+
+.sceneCompact .playerArea {
+  height: 170px;
+  margin-top: -2px;
+}
+
+.sceneCompact .playerArea::before {
+  width: 132px;
+  height: 132px;
+}
+
+.sceneCompact .playerArea::after {
+  width: 98px;
+  height: 98px;
+}
+
+.sceneCompact .playerImg {
+  width: 128px;
+  height: 160px;
+  border-radius: 16px 16px 8px 8px;
+}
+
+.sceneCompact .info {
+  margin-top: -8px;
+}
+
+.sceneCompact .playerName {
+  font-size: 17px;
+}
+
+.sceneCompact .playerRole {
+  margin-top: 4px;
+  font-size: 10px;
+}
+
+.sceneCompact .meta {
+  margin-top: 8px;
+  gap: 4px;
+}
+
+.sceneCompact .pill {
+  padding: 4px 7px;
+  font-size: 8px;
+  letter-spacing: 0.3px;
+}
+
+.sceneCompact .stats {
+  margin-top: 10px;
+  gap: 5px;
+}
+
+.sceneCompact .stat {
+  padding: 7px 4px;
+  border-radius: 9px;
+}
+
+.sceneCompact .statValue {
+  font-size: 12px;
+}
+
+.sceneCompact .statLabel {
+  margin-top: 4px;
+  font-size: 7px;
+  letter-spacing: 0.3px;
+}
+
+.sceneCompact .footer {
+  margin-top: 10px;
+  padding-top: 10px;
+  gap: 8px;
+}
+
+.sceneCompact .signature {
+  font-size: 9px;
+}
+
+.sceneCompact .cta {
+  border-radius: 8px;
+  font-size: 9px;
+  padding: 7px 8px;
+}
+
+.card {
+  --shine-x: 50%;
+  --shine-y: 50%;
+  position: relative;
+  min-height: 620px;
+  border-radius: 28px;
+  padding: 22px;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.025)), var(--oc-bg-card);
+  border: 1px solid var(--oc-border);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.58);
+  transition: transform 160ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+  animation: cardEntrance 700ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+  will-change: transform;
+}
+
+.card:hover {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.03)), var(--oc-bg-card-hi);
+  border-color: color-mix(in srgb, var(--oc-lime) 28%, transparent);
+  box-shadow: 0 8px 32px rgba(170, 255, 0, 0.25), 0 28px 80px rgba(0, 0, 0, 0.58);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at var(--shine-x) var(--shine-y), rgba(255, 255, 255, 0.22), transparent 24%),
+    linear-gradient(90deg, rgba(170, 255, 0, 0.18), transparent 22%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 28%);
+  opacity: 0.72;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 14px;
+  border-radius: 22px;
+  border: 1px solid var(--oc-border);
+  pointer-events: none;
+}
+
+.topBar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.rating {
+  display: grid;
+  gap: 5px;
+  text-align: left;
+}
+
+.ratingValue {
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 16px;
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: -1px;
+  color: var(--oc-bg-base);
+  background: var(--oc-lime);
+  box-shadow: 0 8px 26px rgba(170, 255, 0, 0.18);
+}
+
+.ratingLabel {
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--oc-lime);
+  background: rgba(170, 255, 0, 0.08);
+  border: 1px solid color-mix(in srgb, var(--oc-lime) 28%, transparent);
+}
+
+.clubBadge {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.25);
+}
+
+.clubBadge svg {
+  width: 38px;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+}
+
+.playerArea {
+  position: relative;
+  z-index: 2;
+  height: 305px;
+  margin-top: -10px;
+  display: grid;
+  place-items: end center;
+}
+
+.playerArea::before {
+  content: '';
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(170, 255, 0, 0.16), transparent 62%);
+  border: 1px solid color-mix(in srgb, var(--oc-lime) 28%, transparent);
+  opacity: 0.82;
+}
+
+.playerArea::after {
+  content: '';
+  position: absolute;
+  width: 184px;
+  height: 184px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--oc-blue) 28%, transparent);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.25);
+  opacity: 0.45;
+}
+
+.playerImg {
+  position: relative;
+  z-index: 1;
+  width: 255px;
+  height: 300px;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 28px 28px 10px 10px;
+  filter: drop-shadow(0 25px 26px rgba(0, 0, 0, 0.52)) contrast(1.05) saturate(0.96);
+  mask-image: linear-gradient(to bottom, #000 76%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 76%, transparent 100%);
+  animation: playerReveal 700ms 120ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+.info {
+  position: relative;
+  z-index: 3;
+  margin-top: -12px;
+  text-align: center;
+}
+
+.playerName {
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: 760;
+  letter-spacing: -0.7px;
+  color: var(--oc-fg);
+}
+
+.playerRole {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--oc-fg-muted);
+}
+
+.meta {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  padding: 8px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--oc-border);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.45px;
+}
+
+.pillPlayer {
+  color: var(--oc-role-player);
+  background: color-mix(in srgb, var(--oc-role-player) 12%, transparent);
+  border-color: color-mix(in srgb, var(--oc-role-player) 32%, transparent);
+}
+
+.pillClub {
+  color: var(--oc-role-club);
+  background: color-mix(in srgb, var(--oc-role-club) 12%, transparent);
+  border-color: color-mix(in srgb, var(--oc-role-club) 32%, transparent);
+}
+
+.pillAgent {
+  color: var(--oc-role-agent);
+  background: color-mix(in srgb, var(--oc-role-agent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--oc-role-agent) 32%, transparent);
+}
+
+.stats {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.stat {
+  position: relative;
+  padding: 14px 8px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--oc-border);
+  text-align: center;
+  overflow: hidden;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.stat::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--oc-lime);
+  opacity: 0.9;
+}
+
+.stat:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.055);
+  border-color: color-mix(in srgb, var(--oc-lime) 28%, transparent);
+}
+
+.statValue {
+  display: block;
+  font-size: 21px;
+  line-height: 1;
+  color: var(--oc-fg);
+  font-weight: 760;
+}
+
+.statLabel {
+  display: block;
+  margin-top: 7px;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.55px;
+  color: var(--oc-fg-muted);
+}
+
+.footer {
+  position: relative;
+  z-index: 3;
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--oc-border);
+}
+
+.signature {
+  font-size: 12px;
+  color: var(--oc-fg-dim);
+}
+
+.signature b {
+  color: var(--oc-fg);
+  font-weight: 650;
+}
+
+.cta {
+  border: 1px solid transparent;
+  cursor: pointer;
+  padding: 11px 15px;
+  border-radius: 12px;
+  color: var(--oc-bg-base);
+  font-weight: 800;
+  background: var(--oc-lime);
+  transition: transform 200ms ease, background 200ms ease, box-shadow 200ms ease;
+}
+
+.cta:hover {
+  transform: translateY(-2px);
+  background: var(--oc-lime-hover);
+  box-shadow: 0 8px 32px rgba(170, 255, 0, 0.25);
+}
+
+@keyframes playerReveal {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 440px) {
+  .card {
+    min-height: 590px;
+    padding: 18px;
+  }
+
+  .playerName {
+    font-size: 30px;
+  }
+
+  .playerImg {
+    width: 230px;
+    height: 280px;
+  }
+
+  .ratingValue {
+    font-size: 36px;
+  }
+
+  .stats {
+    gap: 8px;
+  }
+
+  .stat {
+    padding: 12px 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .playerImg,
+  .stat,
+  .cta {
+    animation: none;
+    transition: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .sceneCompact {
+    width: 100%;
+  }
+}

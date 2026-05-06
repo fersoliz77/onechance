@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Card Profesional de Jugador - One Chance</title>
+  <style>
+    :root {
+      --lime: #AAFF00;
+      --lime-hover: #C4FF40;
+      --violet: #7B3FF6;
+      --violet-hover: #9466FF;
+      --blue: #3B82F6;
+      --blue-hover: #60A5FA;
+      --cyan: #22D3EE;
+
+      --bg-base: #0A0A0A;
+      --bg-surface: #111111;
+      --bg-card: #1A1A1A;
+      --bg-card-hover: #1F1F1F;
+
+      --text-primary: #FFFFFF;
+      --text-secondary: #8A8A8A;
+      --text-muted: #5A5A5A;
+
+      --border-default: rgba(255,255,255,0.08);
+      --border-high: rgba(255,255,255,0.14);
+      --border-lime: rgba(170,255,0,0.28);
+      --border-violet: rgba(123,63,246,0.28);
+      --border-blue: rgba(59,130,246,0.28);
+
+      --shadow-lime: 0 8px 32px rgba(170,255,0,0.25);
+      --shadow-violet: 0 8px 32px rgba(123,63,246,0.25);
+      --shadow-blue: 0 8px 32px rgba(59,130,246,0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(170,255,0,0.10), transparent 28%),
+        radial-gradient(circle at 84% 18%, rgba(59,130,246,0.13), transparent 30%),
+        radial-gradient(circle at 54% 92%, rgba(123,63,246,0.10), transparent 34%),
+        var(--bg-base);
+      color: var(--text-primary);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 58px 58px;
+      mask-image: radial-gradient(circle at center, #000 0%, transparent 72%);
+      -webkit-mask-image: radial-gradient(circle at center, #000 0%, transparent 72%);
+      pointer-events: none;
+    }
+
+    .scene {
+      position: relative;
+      width: min(92vw, 420px);
+      perspective: 1100px;
+    }
+
+    .player-card {
+      --rotate-x: 0deg;
+      --rotate-y: 0deg;
+      --card-scale: 1;
+      --shine-x: 50%;
+      --shine-y: 50%;
+      position: relative;
+      min-height: 620px;
+      border-radius: 28px;
+      padding: 22px;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      transform: rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale(var(--card-scale));
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.065), rgba(255,255,255,0.025)),
+        var(--bg-card);
+      border: 1px solid var(--border-default);
+      box-shadow: 0 28px 80px rgba(0,0,0,0.58);
+      transition:
+        transform 160ms ease,
+        border-color 180ms ease,
+        background 180ms ease,
+        box-shadow 180ms ease;
+      animation: cardEntrance 700ms cubic-bezier(.2,.9,.2,1) both;
+      will-change: transform;
+    }
+
+    .player-card:hover {
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.03)),
+        var(--bg-card-hover);
+      border-color: var(--border-lime);
+      box-shadow: var(--shadow-lime), 0 28px 80px rgba(0,0,0,0.58);
+    }
+
+    .player-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at var(--shine-x) var(--shine-y), rgba(255,255,255,0.22), transparent 24%),
+        linear-gradient(90deg, rgba(170,255,0,0.18), transparent 22%),
+        linear-gradient(180deg, rgba(255,255,255,0.04), transparent 28%);
+      opacity: 0.72;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+    }
+
+    .player-card::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border-radius: 22px;
+      border: 1px solid var(--border-default);
+      pointer-events: none;
+    }
+
+    .top-bar {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .rating {
+      display: grid;
+      gap: 5px;
+      text-align: left;
+    }
+
+    .rating strong {
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: 16px;
+      font-size: 40px;
+      line-height: 1;
+      letter-spacing: -1px;
+      color: var(--bg-base);
+      background: var(--lime);
+      box-shadow: 0 8px 26px rgba(170,255,0,0.18);
+    }
+
+    .rating span {
+      width: fit-content;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--lime);
+      background: rgba(170,255,0,0.08);
+      border: 1px solid var(--border-lime);
+    }
+
+    .club-badge {
+      width: 64px;
+      height: 64px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: rgba(59,130,246,0.08);
+      border: 1px solid var(--border-blue);
+      box-shadow: var(--shadow-blue);
+    }
+
+    .club-badge svg {
+      width: 38px;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.35));
+    }
+
+    .player-area {
+      position: relative;
+      z-index: 2;
+      height: 305px;
+      margin-top: -10px;
+      display: grid;
+      place-items: end center;
+    }
+
+    .player-area::before {
+      content: "";
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(170,255,0,0.16), transparent 62%);
+      border: 1px solid var(--border-lime);
+      opacity: 0.82;
+    }
+
+    .player-area::after {
+      content: "";
+      position: absolute;
+      width: 184px;
+      height: 184px;
+      border-radius: 999px;
+      border: 1px solid var(--border-violet);
+      box-shadow: var(--shadow-violet);
+      opacity: 0.45;
+    }
+
+    .player-img {
+      position: relative;
+      z-index: 1;
+      width: 255px;
+      height: 300px;
+      object-fit: cover;
+      object-position: top center;
+      border-radius: 28px 28px 10px 10px;
+      filter: drop-shadow(0 25px 26px rgba(0,0,0,0.52)) contrast(1.05) saturate(0.96);
+      mask-image: linear-gradient(to bottom, #000 76%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, #000 76%, transparent 100%);
+      animation: playerReveal 700ms 120ms cubic-bezier(.2,.9,.2,1) both;
+    }
+
+    .info {
+      position: relative;
+      z-index: 3;
+      margin-top: -12px;
+      text-align: center;
+    }
+
+    .player-name {
+      font-size: 32px;
+      line-height: 1.15;
+      font-weight: 760;
+      letter-spacing: -0.7px;
+      color: var(--text-primary);
+    }
+
+    .player-role {
+      margin-top: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .meta {
+      margin-top: 14px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid var(--border-default);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.45px;
+      color: var(--text-secondary);
+    }
+
+    .pill.is-player {
+      color: var(--lime);
+      background: rgba(170,255,0,0.08);
+      border-color: var(--border-lime);
+    }
+
+    .pill.is-club {
+      color: var(--blue-hover);
+      background: rgba(59,130,246,0.08);
+      border-color: var(--border-blue);
+    }
+
+    .pill.is-agent {
+      color: var(--violet-hover);
+      background: rgba(123,63,246,0.08);
+      border-color: var(--border-violet);
+    }
+
+    .stats {
+      position: relative;
+      z-index: 3;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .stat {
+      position: relative;
+      padding: 14px 8px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border-default);
+      text-align: center;
+      overflow: hidden;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    .stat::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--lime);
+      opacity: 0.9;
+    }
+
+    .stat:hover {
+      transform: translateY(-4px);
+      background: rgba(255,255,255,0.055);
+      border-color: var(--border-lime);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 21px;
+      line-height: 1;
+      color: var(--text-primary);
+      font-weight: 760;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 7px;
+      font-size: 10px;
+      font-weight: 650;
+      letter-spacing: 0.55px;
+      color: var(--text-secondary);
+    }
+
+    .footer {
+      position: relative;
+      z-index: 3;
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-default);
+    }
+
+    .signature {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .signature b {
+      color: var(--text-primary);
+      font-weight: 650;
+    }
+
+    .cta {
+      border: 1px solid transparent;
+      cursor: pointer;
+      padding: 11px 15px;
+      border-radius: 12px;
+      color: var(--bg-base);
+      font-weight: 800;
+      background: var(--lime);
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cta:hover {
+      transform: translateY(-2px);
+      background: var(--lime-hover);
+      box-shadow: var(--shadow-lime);
+    }
+
+    @keyframes playerReveal {
+      from { opacity: 0; transform: translateY(22px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes cardEntrance {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (max-width: 440px) {
+      body { padding: 16px; }
+      .player-card { min-height: 590px; padding: 18px; }
+      .player-name { font-size: 30px; }
+      .player-img { width: 230px; height: 280px; }
+      .rating strong { font-size: 36px; }
+      .stats { gap: 8px; }
+      .stat { padding: 12px 6px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="scene">
+    <article class="player-card" id="card">
+      <header class="top-bar">
+        <div class="rating">
+          <strong>8.7</strong>
+          <span>RATING PROMEDIO</span>
+        </div>
+
+        <div class="club-badge" title="Escudo del club">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M32 4L54 14V30C54 43.8 44.7 56.2 32 60C19.3 56.2 10 43.8 10 30V14L32 4Z" fill="url(#g)"/>
+            <path d="M32 12L45 18V30C45 39.8 39.4 48.3 32 52C24.6 48.3 19 39.8 19 30V18L32 12Z" fill="#07152F" opacity=".72"/>
+            <path d="M32 18L35.5 27.2H45L37.3 33L40.3 42.5L32 36.8L23.7 42.5L26.7 33L19 27.2H28.5L32 18Z" fill="#AAFF00"/>
+            <defs>
+              <linearGradient id="g" x1="10" y1="4" x2="56" y2="58">
+                <stop stop-color="#AAFF00"/>
+                <stop offset="1" stop-color="#3B82F6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </header>
+
+      <section class="player-area">
+        <img
+          class="player-img"
+          src="https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&w=700&q=80"
+          alt="Jugador de fútbol profesional"
+        />
+      </section>
+
+      <section class="info">
+        <h1 class="player-name">Thiago Ríos</h1>
+        <p class="player-role">Perfil verificado · One Chance Talent</p>
+        <div class="meta">
+          <span class="pill is-player">JUGADOR</span>
+          <span class="pill is-club">CLUBES</span>
+          <span class="pill is-agent">REPRESENTANTES</span>
+        </div>
+      </section>
+
+      <section class="stats" aria-label="Scouting del jugador">
+        <div class="stat"><strong>12</strong><span>GOLES</span></div>
+        <div class="stat"><strong>7</strong><span>ASISTENCIAS</span></div>
+        <div class="stat"><strong>2.3</strong><span>TIROS / PARTIDO</span></div>
+
+        <div class="stat"><strong>87%</strong><span>PASES COMPLETADOS</span></div>
+        <div class="stat"><strong>3.1</strong><span>PASES CLAVE</span></div>
+        <div class="stat"><strong>1.8</strong><span>OCASIONES CREADAS</span></div>
+
+        <div class="stat"><strong>24</strong><span>PARTIDOS</span></div>
+        <div class="stat"><strong>1890</strong><span>MINUTOS</span></div>
+        <div class="stat"><strong>8.7</strong><span>RATING PROMEDIO</span></div>
+      </section>
+
+      <footer class="footer">
+        <p class="signature">Temporada <b>2026</b></p>
+        <button class="cta" type="button" id="profileButton">VER PERFIL COMPLETO</button>
+      </footer>
+    </article>
+  </main>
+
+  <script>
+    const card = document.getElementById('card');
+    const profileButton = document.getElementById('profileButton');
+
+    if (!card) {
+      throw new Error('Test fallido: no se encontró la card principal.');
+    }
+
+    if (!profileButton) {
+      throw new Error('Test fallido: no se encontró el botón de perfil.');
+    }
+
+    const statCards = document.querySelectorAll('.stat');
+
+    if (statCards.length !== 9) {
+      throw new Error(`Test fallido: se esperaban 9 estadísticas reales y se encontraron ${statCards.length}.`);
+    }
+
+    let animationFrameId = null;
+
+    function updateCardRotation(event) {
+      const rect = card.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      const xPercent = Math.min(Math.max(x / rect.width, 0), 1);
+      const yPercent = Math.min(Math.max(y / rect.height, 0), 1);
+
+      const rotateY = (xPercent - 0.5) * 36;
+      const rotateX = (0.5 - yPercent) * 26;
+
+      card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.035)`;
+      card.style.setProperty('--shine-x', `${xPercent * 100}%`);
+      card.style.setProperty('--shine-y', `${yPercent * 100}%`);
+    }
+
+    card.addEventListener('pointermove', (event) => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(() => updateCardRotation(event));
+    });
+
+    card.addEventListener('pointerleave', () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      card.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+      card.style.setProperty('--shine-x', '50%');
+      card.style.setProperty('--shine-y', '50%');
+    });
+
+    profileButton.addEventListener('click', () => {
+      profileButton.animate(
+        [
+          { transform: 'scale(1)' },
+          { transform: 'scale(0.96)' },
+          { transform: 'scale(1)' }
+        ],
+        { duration: 220, easing: 'ease-out' }
+      );
+
+      console.info('Abrir perfil completo del jugador. Conectar esta acción con la ruta real del producto.');
+    });
+
+    const supportsPointerEvents = 'onpointermove' in window;
+    if (!supportsPointerEvents) {
+      throw new Error('Test fallido: este navegador no soporta pointer events para la rotación.');
+    }
+
+    console.info('Tests OK: card, botón, 9 estadísticas y rotación por pointermove cargadas correctamente.');
+  </script>
+</body>
+</html>
