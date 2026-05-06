@@ -1,197 +1,392 @@
 "use client"
-import Link from 'next/link'
+
 import Image from 'next/image'
-import { useState } from 'react'
-import Background from '@/components/layout/Background'
+import Link from 'next/link'
+import { type MouseEvent, useEffect, useRef, useState } from 'react'
 import AuthModal from '@/components/landing/AuthModal'
-import { PlayerCard, ClubChip, CoachCard, RepChip } from '@/components/landing/Cards'
 
-const stats = [
-  { value: '1.2k', label: 'Jugadores' },
-  { value: '84',   label: 'Técnicos' },
-  { value: '47',   label: 'Clubes' },
-  { value: '23',   label: 'Representantes' },
+const talents = [
+  { name: 'Mateo R.', role: 'Delantero', age: 19, country: 'Argentina', photo: 'https://images.unsplash.com/photo-1583195764036-6dc248ac07d9?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Lucia M.', role: 'Mediocampista', age: 18, country: 'Uruguay', photo: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Thiago P.', role: 'Defensor', age: 20, country: 'Brasil', photo: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Sofia G.', role: 'Delantera', age: 17, country: 'Colombia', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Tomas L.', role: 'Arquero', age: 21, country: 'Chile', photo: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Valentina D.', role: 'Extremo', age: 16, country: 'Argentina', photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=600&q=80' },
 ]
 
-const roles = [
-  { icon: '⚽', label: 'Soy jugador / jugadora', color: '#00C853' },
-  { icon: '📋', label: 'Soy técnico',            color: '#5A8FFF' },
-  { icon: '🏟️', label: 'Represento un club',     color: '#FFB400' },
-  { icon: '🤝', label: 'Soy representante',      color: '#B464FF' },
-]
-
-const ticker = [
-  'Lucas F. · Enganche · Argentina',
-  'Camila R. · Mediocampista · Uruguay',
-  'Rodrigo P. · Delantero · Colombia',
-  'Valentina S. · Lateral izq. · Chile',
-  'Diego M. · Arquero · Brasil',
-  'Sofía M. · Extremo der. · México',
-]
+function SectionHeading({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div className="mx-auto mb-14 max-w-[760px] text-center md:mb-16">
+      <h2 className="text-[clamp(34px,4.5vw,48px)] font-[800] leading-[1.08] tracking-[-0.03em]">{title}</h2>
+      {subtitle ? <p className="mx-auto mt-4 max-w-[680px] text-[15px] leading-[1.65] text-[var(--oc-fg-muted)]">{subtitle}</p> : null}
+    </div>
+  )
+}
 
 export default function Landing() {
   const [openModal, setOpenModal] = useState(false)
-  const tickerLoop = [...ticker, ...ticker, ...ticker]
+  const [scrollY, setScrollY] = useState(0)
+  const [heroMetrics, setHeroMetrics] = useState({ players: 0, coaches: 0, clubs: 0, agents: 0 })
+  const [metricsVisible, setMetricsVisible] = useState(false)
+  const metricsRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    if (!metricsRef.current) return
+    const node = metricsRef.current
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (entry?.isIntersecting) {
+          setMetricsVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.35 }
+    )
+
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!metricsVisible) return
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReduced) {
+      const reducedFrame = window.requestAnimationFrame(() => {
+        setHeroMetrics({ players: 1200, coaches: 84, clubs: 47, agents: 23 })
+      })
+      return () => window.cancelAnimationFrame(reducedFrame)
+    }
+
+    const duration = 1300
+    const start = performance.now()
+    const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
+
+    let frame = 0
+    const tick = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1)
+      const eased = easeOut(progress)
+      setHeroMetrics({
+        players: Math.round(1200 * eased),
+        coaches: Math.round(84 * eased),
+        clubs: Math.round(47 * eased),
+        agents: Math.round(23 * eased),
+      })
+      if (progress < 1) frame = window.requestAnimationFrame(tick)
+    }
+
+    frame = window.requestAnimationFrame(tick)
+    return () => window.cancelAnimationFrame(frame)
+  }, [metricsVisible])
+
+  useEffect(() => {
+    const nodes = document.querySelectorAll<HTMLElement>('[data-reveal]')
+    if (!nodes.length) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -8% 0px' }
+    )
+
+    nodes.forEach((node) => observer.observe(node))
+    return () => observer.disconnect()
+  }, [])
+
+  const handleCardMove = (e: MouseEvent<HTMLElement>) => {
+    if (window.innerWidth < 1024) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    e.currentTarget.style.setProperty('--mx', `${x}px`)
+    e.currentTarget.style.setProperty('--my', `${y}px`)
+  }
+
+  const parallaxY = Math.min(scrollY * 0.16, 72)
+  const parallaxCards = Math.min(scrollY * 0.08, 36)
+  const ctaParallaxY = Math.min(Math.max((scrollY - 520) * 0.12, 0), 68)
 
   return (
-    <main className="relative min-h-screen overflow-x-clip">
-      <Background scanlines />
-      <div className="absolute inset-0 z-[1] pointer-events-none">
-        <Image
-          src="/images/estadio.png"
-          alt="Estadio nocturno"
-          fill
-          priority
-          className="object-cover opacity-[0.42]"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(108deg,rgba(5,10,20,0.78)_0%,rgba(5,10,20,0.64)_38%,rgba(5,10,20,0.58)_60%,rgba(5,10,20,0.82)_100%)]" />
-      </div>
+    <main className="bg-[var(--oc-bg-base)] text-white">
+      <section className="relative min-h-[100svh] overflow-hidden pt-[calc(var(--oc-nav-height)+56px)]">
+        <div className="absolute inset-0">
+          <div className="absolute inset-0" style={{ transform: `translateY(${parallaxY}px)` }}>
+            <Image src="/images/hero-stadium.png" alt="Estadio hero" fill priority className="object-cover object-[center_30%] opacity-80" />
+          </div>
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,10,0.4)_0%,rgba(10,10,10,0.14)_22%,rgba(10,10,10,0.32)_70%,#0A0A0A_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,10,10,0.46)_0%,rgba(10,10,10,0.14)_36%,rgba(10,10,10,0.4)_100%)]" />
+        </div>
 
-      <div className="relative z-[2] min-h-screen flex flex-col pt-[calc(var(--oc-nav-height)+44px)] md:pt-[calc(var(--oc-nav-height)+56px)] pb-[10vh] md:pb-[9vh]">
-        {/* HERO */}
-        <div className="oc-shell grid grid-cols-1 lg:grid-cols-[1fr_44px_1fr] min-h-[calc(100vh-260px)] lg:min-h-[calc(100vh-250px)] items-center gap-8 lg:gap-0 lg:translate-y-[5vh]">
-
-          {/* LEFT */}
-          <div className="pt-2 lg:pr-8 flex flex-col justify-start max-w-[620px] justify-self-center lg:justify-self-end w-full">
-            <div className="inline-flex items-center gap-2 bg-[rgba(0,200,83,0.08)] border-[0.5px] border-[rgba(0,200,83,0.25)] rounded-[20px] px-[14px] py-[5px] mb-6 w-fit animate-fade-up" style={{ animationDelay: '0.1s' }}>
-              <span className="w-[6px] h-[6px] bg-oc-green rounded-full animate-blink" />
-              <span className="text-oc-green text-[10px] tracking-[0.07em]">PLATAFORMA PROFESIONAL DE FÚTBOL</span>
+        <div className="oc-shell relative z-10 grid min-h-[calc(100svh-120px)] items-center gap-12 py-12 xl:grid-cols-[1.4fr_1fr] xl:gap-12 xl:py-16 2xl:gap-16 2xl:py-20">
+          <div className="xl:self-center">
+            {/* Etiqueta superior (Eyebrow) */}
+            <div className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.04)] px-[14px] py-1.5 text-[12px] font-[500] tracking-[0.02em] text-white/90 backdrop-blur-[4px]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--oc-lime)] shadow-[0_0_0_3px_rgba(170,255,0,0.18)] animate-[oc-pulse_2.4s_infinite]" />
+              Plataforma profesional de fútbol
             </div>
 
-            <h1 className="text-white text-[clamp(46px,6vw,58px)] font-medium leading-[0.92] tracking-[-0.045em] mb-5 animate-fade-up" style={{ animationDelay: '0.2s' }}>
-              Mostrá
-              <br />
-              tu <span className="text-oc-green inline-block" style={{ transform: 'skewX(-10deg)' }}>/</span>
-              <br />
-              <span className="text-transparent [text-shadow:0_0_0_rgba(255,255,255,0)] [WebkitTextStroke:1px_rgba(255,255,255,0.22)]">talento</span>
+            {/* Titulo principal */}
+            <h1 className="text-[clamp(56px,9vw,96px)] font-[800] leading-[0.92] tracking-[-0.04em] [text-shadow:0_2px_40px_rgba(0,0,0,0.6)]">
+              <span className="block">ONE</span>
+              <span className="block bg-[linear-gradient(180deg,#fff_0%,#d8d8d8_100%)] bg-clip-text text-transparent">CHANCE</span>
             </h1>
 
-            <p className="text-[rgba(255,255,255,0.35)] text-[clamp(13px,1.4vw,15px)] leading-[1.65] max-w-[440px] mb-9 animate-fade-up" style={{ animationDelay: '0.3s' }}>
-              La vidriera donde{' '}
-              <strong className="text-[rgba(255,255,255,0.7)] font-normal">clubes, representantes y técnicos</strong>{' '}
-              descubren el talento que están buscando. Creá tu perfil. Hacete ver.
+            {/* Subtitulo */}
+            <p className="mt-4 text-[20px] italic font-[600] tracking-[-0.01em] text-[var(--oc-lime)] xl:mt-3">One opportunity can change everything.</p>
+            {/* Descripcion */}
+            <p className="mt-5 max-w-[480px] text-[15px] leading-[1.7] text-[var(--oc-fg-muted)] xl:mt-4">
+              La vidriera profesional donde jugadores, jugadoras, clubes, técnicos y representantes se conectan con oportunidades reales.
+              Mostrá tu talento con un perfil visual, ordenado y pensado para scouting.
             </p>
 
-             <div className="flex items-center gap-5 mb-0 flex-wrap animate-fade-up group" style={{ animationDelay: '0.4s' }}>
+            {/* Botones (CTA) */}
+            <div className="mt-8 flex flex-wrap items-center gap-3.5 pb-2 xl:mt-6">
               <Link
                 href="/auth?tab=register"
-                onClick={e => { e.preventDefault(); setOpenModal(true) }}
-                className="h-[46px] px-6 rounded-[12px] inline-flex items-center gap-2.5 no-underline text-[13px] font-medium tracking-[-0.01em] text-[#032113] border-[0.5px] border-[rgba(145,255,194,0.55)] bg-[linear-gradient(135deg,#18f17a_0%,#00c853_52%,#00b54b_100%)] shadow-[0_10px_28px_rgba(0,200,83,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_32px_rgba(0,200,83,0.45)] group-hover:block flex"
+                onClick={(e) => {
+                  e.preventDefault()
+                  setOpenModal(true)
+                }}
+                className="inline-flex h-[50px] min-w-[220px] items-center justify-center gap-2.5 rounded-[8px] bg-[var(--oc-lime)] px-6 text-[15px] font-[700] leading-none text-black transition-all hover:-translate-y-[2px] hover:bg-[#C4FF40] hover:shadow-[0_8px_32px_rgba(170,255,0,0.25)] max-sm:w-full group"
               >
                 Crear mi perfil
-                <span className="text-[16px] leading-none transition-transform duration-200 group-hover:translate-x-1">→</span>
+                <span aria-hidden="true" className="transition-transform group-hover:translate-x-[3px]">→</span>
               </Link>
-              <Link href="/jugadores" className="text-[rgba(255,255,255,0.4)] text-[13px] flex items-center gap-2 transition-colors hover:text-white no-underline">
-                <span className="w-8 h-8 rounded-full border-[0.5px] border-[rgba(255,255,255,0.2)] inline-flex items-center justify-center text-[10px] text-[rgba(255,255,255,0.6)]">▶</span>
-                Ver la plataforma
+              <Link href="/jugadores" className="inline-flex h-[50px] min-w-[220px] items-center justify-center rounded-[8px] border border-[var(--oc-border-hi)] bg-transparent px-6 text-[15px] font-[700] leading-none text-white transition-all hover:border-white hover:bg-[rgba(255,255,255,0.05)] max-sm:w-full">
+                Explorar talentos
               </Link>
             </div>
 
-            <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 rounded-[12px] border-[0.5px] border-[rgba(255,255,255,0.1)] bg-[rgba(5,10,20,0.62)] backdrop-blur-[8px] max-w-[620px] overflow-hidden relative z-10 animate-fade-up" style={{ animationDelay: '0.5s' }}>
-              {stats.map(s => (
-                <div key={s.label} className="px-4 py-3.5 sm:px-[16px] sm:py-[13px] border-r-[0.5px] border-b-[0.5px] sm:border-b-0 border-[rgba(255,255,255,0.08)] last:border-r-0 even:sm:border-r-[0.5px]">
-                  <div className="text-oc-green text-[clamp(24px,2.2vw,31px)] font-medium tracking-[-0.03em] leading-[0.95]">{s.value}</div>
-                  <div className="text-[rgba(255,255,255,0.3)] text-[10px] uppercase tracking-[0.05em] mt-1.5">{s.label}</div>
+            {/* Indicadores de ecosistema (Estadisticas) */}
+            <div ref={metricsRef} className="mt-12 flex max-w-[480px] flex-wrap items-center gap-x-6 gap-y-4 rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[linear-gradient(160deg,rgba(255,255,255,0.03)_0%,transparent_100%)] px-6 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-[12px] sm:justify-between xl:mt-8">
+              {[
+                [`${(heroMetrics.players / 1000).toFixed(1)}K+`, 'Jugadores'],
+                [String(heroMetrics.coaches), 'Técnicos'],
+                [String(heroMetrics.clubs), 'Clubes'],
+                [String(heroMetrics.agents), 'Agentes'],
+              ].map((item) => (
+                <div key={item[1]} className="flex flex-col items-start">
+                  <div className="text-[20px] font-[800] leading-none tracking-[-0.02em] text-[var(--oc-lime)]">{item[0]}</div>
+                  <div className="mt-1 text-[11px] font-[500] uppercase tracking-[0.04em] text-[var(--oc-fg-dim)]">{item[1]}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* CENTER DIVIDER */}
-          <div className="hidden lg:flex flex-col items-center py-8">
-            <div className="flex-1 w-px bg-gradient-to-b from-transparent via-[rgba(0,200,83,0.25)] to-transparent" />
-            <div className="w-[8px] h-[8px] bg-oc-green my-2 shadow-[0_0_10px_rgba(0,200,83,0.6)]" style={{ clipPath: 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)' }} />
-            <div className="flex-1 w-px bg-gradient-to-b from-transparent via-[rgba(0,200,83,0.25)] to-transparent" />
-          </div>
+          {/* Columna Derecha (Tarjetas 3D) */}
+          <div className="relative h-[500px] w-full min-w-[280px] [perspective:1400px] xl:mx-0 xl:self-center max-lg:mx-auto max-lg:max-w-[440px]" style={{ transform: `translateY(${parallaxCards}px)` }}>
+            {/* Tarjeta de Jugador Principal */}
+            <article className="absolute inset-[20px_80px_60px_0] overflow-hidden rounded-[12px] border border-[rgba(170,255,0,0.28)] bg-[linear-gradient(165deg,rgba(20,35,18,0.22),rgba(15,22,18,0.3))] p-6 shadow-[0_24px_64px_rgba(0,0,0,0.5),0_0_0_1px_rgba(170,255,0,0.06),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[22px] [transform:perspective(1400px)_rotateY(-6deg)_rotateX(3deg)] [transform-style:preserve-3d] [animation:oc-tilt-float_6s_ease-in-out_infinite] max-lg:inset-[30px_60px_80px_0] max-sm:inset-[30px_40px_100px_0] max-sm:p-5">
+              <div className="absolute left-4 right-4 top-0 h-[2px] bg-[linear-gradient(90deg,transparent,#AAFF00,transparent)] opacity-70" />
+              <div className="absolute inset-0 pointer-events-none rounded-[12px] bg-[linear-gradient(160deg,rgba(255,255,255,0.08)_0%,transparent_30%,transparent_70%,rgba(170,255,0,0.06)_100%)]" />
+              
+              <div className="relative z-10">
+                <div className="flex items-center gap-[14px]">
+                  <div className="h-[56px] w-[56px] shrink-0 rounded-full bg-[#1a1a1a] bg-[url('https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=200&q=80')] bg-cover bg-center shadow-[0_0_0_2px_rgba(170,255,0,0.4),0_0_0_5px_rgba(170,255,0,0.1)]" />
+                  <div>
+                    <div className="text-[18px] font-[700] tracking-[-0.01em]">Mateo R.</div>
+                    <div className="mt-0.5 text-[13px] font-[600] text-[var(--oc-lime)]">Delantero</div>
+                  </div>
+                </div>
 
-          {/* RIGHT — Floating cards */}
-          <div className="flex flex-col items-center lg:items-start justify-center gap-4 sm:gap-5 relative pt-6 lg:pt-10 justify-self-center lg:justify-self-start w-full max-w-[860px]">
-            <div className="flex gap-3 items-start relative z-10 lg:-translate-y-2">
-              <div className="flex flex-col gap-3 lg:translate-y-4">
-                <PlayerCard
-                  name="Lucas Ferreira" position="Enganche" country="ARG" age="23" height="1.78m" overall="87"
-                  rotate={-1} animClass="animate-float"
-                />
-                <ClubChip
-                  name="San Lorenzo" liga="Primera División · ARG" rotate={-1}
-                  animClass="animate-float" delay="-3s"
-                  className="lg:ml-4"
-                />
-                <PlayerCard
-                  name="Camila Ríos" position="Mediocampista" country="URU" age="21" height="1.70m" overall="84" avatar="⚽"
-                  rotate={-1} animClass="animate-float" delay="-2.2s"
-                  className="hidden md:block lg:-ml-3"
-                />
+                <div className="mt-[22px] flex flex-col gap-2.5">
+                  <div className="flex items-center gap-3 rounded-[8px] border border-[rgba(170,255,0,0.14)] bg-[rgba(170,255,0,0.06)] px-3 py-2.5 text-[13px] text-[rgba(255,255,255,0.92)] backdrop-blur-[4px]">
+                    <span className="text-[16px] leading-none">📅</span>19 años
+                  </div>
+                  <div className="flex items-center gap-3 rounded-[8px] border border-[rgba(170,255,0,0.14)] bg-[rgba(170,255,0,0.06)] px-3 py-2.5 text-[13px] text-[rgba(255,255,255,0.92)] backdrop-blur-[4px]">
+                    <span className="text-[16px] leading-none">🌐</span>Argentina
+                  </div>
+                  <div className="flex items-center gap-3 rounded-[8px] border border-[rgba(170,255,0,0.14)] bg-[rgba(170,255,0,0.06)] px-3 py-2.5 text-[13px] text-[rgba(255,255,255,0.92)] backdrop-blur-[4px]">
+                    <span className="text-[16px] leading-none">🎥</span>8 videos
+                  </div>
+                </div>
+
+                <span className="mt-[14px] inline-flex items-center gap-2 rounded-full border border-[rgba(170,255,0,0.3)] bg-[rgba(170,255,0,0.1)] px-[14px] py-2 text-[12px] font-[700] tracking-[0.02em] text-[var(--oc-lime)]">
+                  ✓ Perfil verificado
+                </span>
               </div>
+            </article>
 
-              <div className="hidden sm:flex flex-col gap-3 mt-8 lg:-ml-6">
-                <CoachCard
-                  name="Martín Álvarez" role="Técnico · Uruguay" tags={['4-3-3', 'Ofensivo', '12 años']} rotate={2}
-                  animClass="animate-float" delay="-1s"
-                />
-                <RepChip
-                  name="Carlos Vega" players="18" countries="5" rotate={-1}
-                  animClass="animate-float" delay="-4s"
-                  className="lg:ml-10"
-                />
-                <CoachCard
-                  name="Paula Méndez" role="Técnica · Chile" tags={['Presión alta', 'Juveniles', 'UEFA B']} rotate={-2}
-                  animClass="animate-float" delay="-2.8s"
-                  className="lg:-ml-2"
-                />
+            {/* Mini Tarjeta 1: Rendimiento */}
+            <div className="absolute right-0 top-0 z-30 w-[200px] rounded-[10px] border border-[rgba(255,255,255,0.14)] bg-[rgba(20,22,26,0.3)] p-[14px_16px] shadow-[0_16px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-[24px] [transform-style:preserve-3d] [animation:oc-tilt-soft-float_7s_ease-in-out_infinite] max-lg:right-[-10px] max-sm:right-0 max-sm:top-[-10px] max-sm:w-[170px] max-sm:p-3 overflow-hidden">
+              <div className="absolute inset-0 pointer-events-none rounded-[10px] bg-[linear-gradient(160deg,rgba(255,255,255,0.06),transparent_50%)]" />
+              <div className="relative z-10">
+                <div className="text-[11px] font-[500] tracking-[0.02em] text-[var(--oc-fg-muted)]">Rendimiento</div>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="text-[24px] font-[800] leading-none tracking-[-0.02em]">8.7</span>
+                  <span className="text-[12px] text-[var(--oc-fg-muted)]">/10</span>
+                  <span className="ml-auto rounded-[4px] bg-[rgba(170,255,0,0.1)] px-1.5 py-0.5 text-[11px] font-[700] text-[var(--oc-lime)]">+12%</span>
+                </div>
+                <svg className="mt-2 h-[36px] w-full" viewBox="0 0 200 36" preserveAspectRatio="none" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#AAFF00" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#AAFF00" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,28 L20,22 L40,25 L60,18 L80,20 L100,12 L120,15 L140,8 L160,10 L180,5 L200,2" fill="none" stroke="#AAFF00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M0,28 L20,22 L40,25 L60,18 L80,20 L100,12 L120,15 L140,8 L160,10 L180,5 L200,2 L200,36 L0,36 Z" fill="url(#sparkFill)" />
+                </svg>
               </div>
+            </div>
 
-              <div className="hidden xl:flex flex-col gap-3 mt-4 lg:-ml-8 lg:translate-y-5">
-                <PlayerCard
-                  name="Thiago Lima" position="Extremo" country="BRA" age="19" height="1.74m" overall="82" avatar="⚡"
-                  rotate={2} animClass="animate-float" delay="-1.6s"
-                  className="scale-[0.92]"
-                />
-                <RepChip
-                  name="Lucía Torres" players="12" countries="4" rotate={1}
-                  animClass="animate-float" delay="-3.5s"
-                  className="lg:ml-7"
-                />
+            {/* Mini Tarjeta 2: Visitas */}
+            <div className="absolute bottom-[20px] right-[20px] z-30 w-[200px] rounded-[10px] border border-[rgba(255,255,255,0.14)] bg-[rgba(20,22,26,0.3)] p-[14px_16px] shadow-[0_16px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-[24px] [transform-style:preserve-3d] [animation:oc-tilt-soft-float_7s_ease-in-out_infinite] [animation-delay:-3s] max-lg:bottom-[10px] max-lg:right-0 max-sm:bottom-0 max-sm:right-0 max-sm:w-[170px] max-sm:p-3 overflow-hidden">
+              <div className="absolute inset-0 pointer-events-none rounded-[10px] bg-[linear-gradient(160deg,rgba(255,255,255,0.06),transparent_50%)]" />
+              <div className="relative z-10">
+                <div className="text-[11px] font-[500] tracking-[0.02em] text-[var(--oc-fg-muted)]">Visitas al perfil</div>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="text-[24px] font-[800] leading-none tracking-[-0.02em]">1.245</span>
+                  <span className="ml-auto rounded-[4px] bg-[rgba(170,255,0,0.1)] px-1.5 py-0.5 text-[11px] font-[700] text-[var(--oc-lime)]">+32%</span>
+                </div>
+                <svg className="mt-2 h-[36px] w-full" viewBox="0 0 200 36" preserveAspectRatio="none" aria-hidden="true">
+                  <g fill="#AAFF00">
+                    <rect x="2" y="22" width="14" height="12" rx="1" opacity="0.5" />
+                    <rect x="22" y="18" width="14" height="16" rx="1" opacity="0.55" />
+                    <rect x="42" y="24" width="14" height="10" rx="1" opacity="0.5" />
+                    <rect x="62" y="14" width="14" height="20" rx="1" opacity="0.65" />
+                    <rect x="82" y="20" width="14" height="14" rx="1" opacity="0.55" />
+                    <rect x="102" y="10" width="14" height="24" rx="1" opacity="0.75" />
+                    <rect x="122" y="16" width="14" height="18" rx="1" opacity="0.65" />
+                    <rect x="142" y="6" width="14" height="28" rx="1" opacity="0.85" />
+                    <rect x="162" y="12" width="14" height="22" rx="1" opacity="0.75" />
+                    <rect x="182" y="2" width="14" height="32" rx="1" />
+                  </g>
+                </svg>
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* ROLE STRIP */}
-        <div className="fixed left-0 right-0 bottom-[64px] z-[45] pointer-events-none">
-          <div className="oc-shell flex items-center justify-center gap-2.5 flex-wrap pointer-events-auto">
-            {roles.map(r => (
-              <Link
-                key={r.label}
-                href="/auth?tab=register"
-                onClick={e => { e.preventDefault(); setOpenModal(true) }}
-                className="flex items-center gap-2 rounded-[9px] px-[14px] py-[8px] border whitespace-nowrap cursor-pointer transition-all hover:-translate-y-0.5 no-underline"
-                style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }}
-              >
-                <span className="text-[13px]">{r.icon}</span>
-                <span className="text-[11px] font-medium" style={{ color:r.color }}>{r.label}</span>
-                <span className="text-[rgba(255,255,255,0.2)] text-[10px]">→</span>
-              </Link>
+      <section className="oc-shell py-24 md:py-28" id="valor" data-reveal>
+        <SectionHeading title="Tu talento necesita una vidriera real." subtitle="One Chance es la plataforma profesional que conecta talento con oportunidades reales." />
+        <div className="grid gap-5 md:grid-cols-3">
+          {[
+                ['Jugadores', 'Creá tu perfil, subí datos, videos y trayectoria para mostrar tu juego.'],
+            ['Clubes', 'Descubri talento por edad, puesto, nacionalidad y recorrido deportivo.'],
+                ['Representantes', 'Evaluá perfiles listos para analizar y conectar profesionalmente.'],
+          ].map((card, index) => (
+            <article key={card[0]} data-reveal className="oc-reveal oc-hover-card rounded-[14px] border border-[var(--oc-border)] bg-[var(--oc-bg-card)] px-8 py-8 text-center transition hover:-translate-y-0.5 hover:border-[var(--oc-border-hi)]" style={{ transitionDelay: `${index * 60}ms` }} onMouseMove={handleCardMove}>
+              <div className="oc-content-frame-tight">
+                <h3 className="text-[22px] font-[700] leading-[1.08] tracking-[-0.02em]">{card[0]}</h3>
+                <p className="mt-3 text-[14px] leading-[1.65] text-[var(--oc-fg-muted)]">{card[1]}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="oc-shell py-14 md:py-16" data-reveal>
+        <SectionHeading title="De tu perfil a una oportunidad." />
+        <div className="grid gap-5 md:grid-cols-3">
+          {[
+            ['1', 'Crea tu perfil', 'Completa tus datos y sube videos en minutos.'],
+                ['2', 'Mostrá tu talento', 'Tu perfil llega a clubes y representantes.'],
+            ['3', 'Gana visibilidad', 'Multiplica tus oportunidades con contactos reales.'],
+          ].map((step, index) => (
+            <article key={step[0]} data-reveal className="oc-reveal oc-hover-card rounded-[14px] border border-[var(--oc-border)] bg-[var(--oc-bg-card)] px-8 py-8 text-center transition hover:-translate-y-0.5 hover:border-[var(--oc-border-hi)]" style={{ transitionDelay: `${(index + 1) * 60}ms` }} onMouseMove={handleCardMove}>
+              <div className="oc-content-frame-tight">
+                <div className="text-[64px] font-[800] leading-[0.95] tracking-[-0.05em] text-[var(--oc-lime)]">{step[0]}</div>
+                <h3 className="mt-2 text-[22px] font-[700] leading-[1.1]">{step[1]}</h3>
+                <p className="mt-2 text-[14px] leading-[1.65] text-[var(--oc-fg-muted)]">{step[2]}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="oc-shell py-24 md:py-28" id="talentos" data-reveal>
+        <SectionHeading title="Talentos listos para ser descubiertos." />
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+          {talents.map((talent, index) => (
+            <article key={talent.name} data-reveal className="oc-reveal oc-hover-card overflow-hidden rounded-[12px] border border-[var(--oc-border)] bg-[var(--oc-bg-card)] transition hover:-translate-y-0.5 hover:border-[rgba(170,255,0,0.35)]" style={{ transitionDelay: `${Math.min(index * 45, 220)}ms` }} onMouseMove={handleCardMove}>
+              <div className="relative aspect-[3/4]">
+                <Image src={talent.photo} alt={talent.name} fill className="object-cover" sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(0,0,0,0.72)_100%)]" />
+                <span className="absolute left-2 top-2 rounded-[4px] bg-[rgba(0,0,0,0.55)] px-2 py-1 text-[10px] font-[700] text-[var(--oc-lime)]">N#{index + 10}</span>
+              </div>
+              <div className="p-4">
+                <div className="text-[15px] font-[700]">{talent.name}</div>
+                <div className="mt-0.5 text-[12px] text-[var(--oc-fg-muted)]">{talent.role}</div>
+                <div className="mt-2 text-[11px] text-[var(--oc-fg-dim)]">{talent.age} años · {talent.country}</div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-[var(--oc-border)] bg-[var(--oc-bg-surface)] py-20 md:py-24" id="ecosistema" data-reveal>
+        <div className="oc-shell">
+          <SectionHeading title="Un ecosistema para conectar talento y oportunidad." />
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              ['Jugadores y jugadoras', 'Mostrá tu talento, historia y proyección al mundo profesional.'],
+              ['Técnicos', 'Encontrá perfiles alineados a tus necesidades deportivas.'],
+              ['Clubes', 'Accede a una base de talentos filtrada y actualizada.'],
+              ['Representantes', 'Evaluá y conectá con jugadores comprometidos.'],
+            ].map((item, index) => (
+              <article key={item[0]} data-reveal className="oc-reveal" style={{ transitionDelay: `${index * 60}ms` }}>
+                <h4 className="text-[22px] font-[700] tracking-[-0.01em]">{item[0]}</h4>
+                <p className="mt-3 text-[14px] leading-[1.65] text-[var(--oc-fg-muted)]">{item[1]}</p>
+              </article>
             ))}
           </div>
         </div>
+      </section>
 
-      </div>
-      {/* TICKER */}
-      <div className="fixed bottom-0 left-0 right-0 z-[40] h-[6vh] min-h-[56px] border-t border-b border-[rgba(255,255,255,0.1)] overflow-hidden bg-[rgba(3,7,14,0.9)] backdrop-blur-[2px] flex items-center">
-        <div className="flex w-max animate-ticker-loop">
-          {[0, 1].map(loop => (
-            <div key={loop} className="flex shrink-0 whitespace-nowrap">
-              {tickerLoop.map((t, i) => (
-                <span key={`${loop}-${i}`} className="text-[rgba(255,255,255,0.45)] text-[clamp(10px,0.9vw,14px)] leading-[1] px-6 inline-flex items-center gap-3">
-                  {i > 0 && <span className="w-[4px] h-[4px] rounded-full bg-[rgba(0,200,83,0.72)] shrink-0 mx-1" />}
-                  <span className="leading-[1]">{t}</span>
-                </span>
-              ))}
-            </div>
-          ))}
+      <section className="relative overflow-hidden py-24 text-center" id="cta" data-reveal>
+        <div className="absolute inset-0">
+          <div className="absolute inset-0" style={{ transform: `translateY(${ctaParallaxY}px)` }}>
+            <Image src="/images/cesped-pelota.png" alt="Fondo cesped y pelota" fill className="object-cover object-[center_18%] opacity-78" />
+          </div>
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,10,0.64)_0%,rgba(10,10,10,0.34)_52%,rgba(10,10,10,0.72)_100%)]" />
         </div>
-      </div>
+        <div className="oc-shell relative z-10">
+          <h2 className="mx-auto max-w-[860px] text-[clamp(38px,5.8vw,64px)] font-[800] leading-[1.06] tracking-[-0.03em]">
+            Tu próxima oportunidad puede empezar con un <span className="text-[var(--oc-lime)]">perfil</span>.
+          </h2>
+          <p className="mx-auto mt-5 max-w-[680px] text-[17px] leading-[1.7] text-[var(--oc-fg-muted)]">
+            One Chance es el lugar donde el talento deja de estar oculto y empieza a mostrarse profesionalmente.
+          </p>
+          <Link
+            href="/auth?tab=register"
+            onClick={(e) => {
+              e.preventDefault()
+              setOpenModal(true)
+            }}
+            className="mt-9 inline-flex h-[54px] items-center gap-3 rounded-[8px] bg-[var(--oc-lime)] px-8 text-[17px] font-[700] leading-none text-black transition-all hover:scale-[1.03] hover:bg-[#C4FF40] hover:shadow-[0_8px_32px_rgba(170,255,0,0.25)] group"
+          >
+            Crear mi perfil en One Chance
+            <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
+          </Link>
+        </div>
+      </section>
+
+      <footer className="border-t border-[var(--oc-border)] py-8">
+        <div className="oc-shell flex flex-wrap items-center justify-between gap-4 text-[13px] text-[var(--oc-fg-dim)]">
+          <div>© 2026 One Chance. Todos los derechos reservados.</div>
+          <div className="flex gap-4">
+            <a href="#">Términos</a>
+            <a href="#">Privacidad</a>
+            <a href="#">Contacto</a>
+          </div>
+        </div>
+      </footer>
+
       <AuthModal open={openModal} onClose={() => setOpenModal(false)} />
     </main>
   )

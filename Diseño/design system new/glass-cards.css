@@ -1,0 +1,145 @@
+/* ============================================================
+   ONE CHANCE — Glass Cards (componentes reutilizables)
+   Uso:
+     <link rel="stylesheet" href="components/glass-cards.css">
+
+     <!-- Card grande (perfil) -->
+     <article class="oc-glass oc-glass--lg oc-glass--lime oc-tilt">
+       ...contenido...
+     </article>
+
+     <!-- Card chica (stat / mini KPI) -->
+     <div class="oc-glass oc-glass--sm oc-tilt-soft">
+       <div class="oc-glass__label">Rendimiento</div>
+       <div class="oc-glass__value">8.7 <span>/10</span></div>
+     </div>
+
+   Variantes de color:
+     .oc-glass--lime    (verde neón #AAFF00 — default)
+     .oc-glass--violet  (#7B3FF6)
+     .oc-glass--blue    (#3B82F6)
+     .oc-glass--neutral (sin tinte)
+
+   Variantes de tilt 3D:
+     .oc-tilt        — rotación ligera (-6deg / 3deg) + flotación
+     .oc-tilt-soft   — tilt menor (-5deg / 5deg) + flotación distinta
+     .oc-tilt-flat   — sin rotación, sólo flotación
+   ============================================================ */
+
+.oc-glass {
+  --oc-tint: 170, 255, 0;       /* RGB del acento */
+  --oc-bg-a: 0.22;              /* opacidad del fondo */
+  --oc-border-a: 0.28;          /* opacidad del borde */
+  --oc-blur: 22px;
+  --oc-radius: 14px;
+
+  position: relative;
+  background:
+    linear-gradient(165deg,
+      rgba(var(--oc-tint), calc(var(--oc-bg-a) * 0.6)),
+      rgba(15, 18, 22, calc(var(--oc-bg-a) + 0.08)));
+  border: 1px solid rgba(var(--oc-tint), var(--oc-border-a));
+  border-radius: var(--oc-radius);
+  padding: 16px 18px;
+  color: #fff;
+  backdrop-filter: blur(var(--oc-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--oc-blur)) saturate(160%);
+  box-shadow:
+    0 24px 64px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(var(--oc-tint), 0.06),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+  transform-style: preserve-3d;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Top accent line */
+.oc-glass::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 14px; right: 14px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(var(--oc-tint), 0.9), transparent);
+  opacity: 0.7;
+  z-index: 1;
+}
+
+/* Soft inner highlight (top-left to bottom-right) for glass feel */
+.oc-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(160deg, rgba(255,255,255,0.08) 0%, transparent 30%, transparent 70%, rgba(var(--oc-tint), 0.05) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.oc-glass > * { position: relative; z-index: 1; }
+
+/* ── Sizes ── */
+.oc-glass--sm { padding: 14px 16px; --oc-radius: 10px; --oc-blur: 24px; --oc-bg-a: 0.18; }
+.oc-glass--md { padding: 18px 20px; --oc-radius: 12px; }
+.oc-glass--lg { padding: 24px;      --oc-radius: 16px; }
+
+/* ── Color tints ── */
+.oc-glass--lime    { --oc-tint: 170, 255, 0; }
+.oc-glass--violet  { --oc-tint: 123, 63, 246; }
+.oc-glass--blue    { --oc-tint: 59, 130, 246; }
+.oc-glass--neutral {
+  --oc-tint: 255, 255, 255;
+  --oc-bg-a: 0.10;
+  --oc-border-a: 0.16;
+}
+
+/* ── 3D tilt + float animations ── */
+.oc-tilt        { transform: perspective(1400px) rotateY(-6deg) rotateX(3deg);  animation: oc-tilt-float 6s ease-in-out infinite; }
+.oc-tilt-soft   { transform: perspective(1200px) rotateY(-5deg) rotateX(5deg);  animation: oc-tilt-soft-float 7s ease-in-out infinite; }
+.oc-tilt-soft.oc-tilt--down { transform: perspective(1200px) rotateY(-5deg) rotateX(-2deg); animation: oc-tilt-soft-down-float 7s ease-in-out infinite; animation-delay: -3s; }
+.oc-tilt-flat   { animation: oc-flat-float 6s ease-in-out infinite; }
+
+@keyframes oc-tilt-float {
+  0%, 100% { transform: perspective(1400px) rotateY(-6deg) rotateX(3deg) translateY(0); }
+  50%      { transform: perspective(1400px) rotateY(-6deg) rotateX(3deg) translateY(-8px); }
+}
+@keyframes oc-tilt-soft-float {
+  0%, 100% { transform: perspective(1200px) rotateY(-5deg) rotateX(5deg) translateY(0); }
+  50%      { transform: perspective(1200px) rotateY(-5deg) rotateX(5deg) translateY(-7px); }
+}
+@keyframes oc-tilt-soft-down-float {
+  0%, 100% { transform: perspective(1200px) rotateY(-5deg) rotateX(-2deg) translateY(0); }
+  50%      { transform: perspective(1200px) rotateY(-5deg) rotateX(-2deg) translateY(-9px); }
+}
+@keyframes oc-flat-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oc-tilt, .oc-tilt-soft, .oc-tilt-soft.oc-tilt--down, .oc-tilt-flat { animation: none; }
+}
+
+/* ── Inner helpers ── */
+.oc-glass__label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.oc-glass__value {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+.oc-glass__value span { font-size: 12px; color: rgba(255,255,255,0.55); font-weight: 500; }
+
+.oc-glass__delta {
+  font-size: 11px;
+  color: #AAFF00;
+  font-weight: 700;
+  background: rgba(170, 255, 0, 0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+}

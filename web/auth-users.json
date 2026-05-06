@@ -1,0 +1,82 @@
+{"users": [
+{
+  "localId": "BMGQcUR28mU7kDKfkk7WOH9RQsE3",
+  "email": "agent.demo@onechance.test",
+  "emailVerified": false,
+  "passwordHash": "o1dJHIsapD6iAfTYp/rWfY9dW78fEOXBFm4fCj/OlkcuvqCobUn+zCgUJTEcHUWAxuOS+rzOyPNQX7eFuhnJYg==",
+  "salt": "a7TOtL8fIfU+GA==",
+  "lastSignedInAt": "1777535871649",
+  "createdAt": "1777535871649",
+  "providerUserInfo": []
+},
+{
+  "localId": "I0wHwcUbFEMlWqZa2msjedsXZFE3",
+  "email": "coach.demo@onechance.test",
+  "emailVerified": false,
+  "passwordHash": "BW1qsU3a72hUai9/jCSw71yUQ7MA/umD7T+DOr8lSkobl6KR9tvdHHp0kwcZBuWmkjn/6tj4rdLM5MGY1s9H1g==",
+  "salt": "ff9yu/+4fcNYWA==",
+  "lastSignedInAt": "1777536186034",
+  "createdAt": "1777535870023",
+  "providerUserInfo": []
+},
+{
+  "localId": "IjBSWJZVJPXdDYZpFiSEIBZlFsk2",
+  "email": "admin.moderacion@onechance.test",
+  "emailVerified": false,
+  "passwordHash": "FFYGabkK8rfoxcNIxPVin9wdR5DQGQToDrb0aSvFY39VjJBovhRbfa3LPJlCNwhPQF65pyscQpHliQyw7iJYQg==",
+  "salt": "o8slZpuVI1pCWA==",
+  "lastSignedInAt": "1777536167919",
+  "createdAt": "1777535866515",
+  "providerUserInfo": []
+},
+{
+  "localId": "SvhKwRayiFddTPeYTcsQwgbHSGk1",
+  "email": "player.demo@onechance.test",
+  "emailVerified": false,
+  "passwordHash": "+7fJ8Cdh6ibYAqjRUDsFax644qA5P6KUQyYEv4ea9F51suD4Yi/7aat5Fl2iAn1rRIwgnKNBRBLQ//oJJbIJTA==",
+  "salt": "Lhd0Nx0yUvN4ug==",
+  "lastSignedInAt": "1777536168184",
+  "createdAt": "1777535869234",
+  "providerUserInfo": []
+},
+{
+  "localId": "hiPieyRgcMfSBpBGtiZfDVoBH9g2",
+  "email": "dmconstruccion412@hotmail.com",
+  "emailVerified": false,
+  "passwordHash": "9wxwWJ7TyXj7J5j3QHffjB62c0N0rmSwLY8OT87oGogEbJ3jaIUIbZNzdSAqzRI5t6UYqfQERit9WpVwA/AQLQ==",
+  "salt": "ILJVw28d2zK9ow==",
+  "lastSignedInAt": "1777666151058",
+  "createdAt": "1777666151058",
+  "providerUserInfo": []
+},
+{
+  "localId": "pGdyO9d9NFUKP3310QTxZjnNoWf1",
+  "email": "admin.contenido@onechance.test",
+  "emailVerified": false,
+  "passwordHash": "rwYjk/HtrOKofpiSfTJ14QGTk0wANf3bETYltxzdDtgfGtT9NFIzCpOPPTqV0JIonpcCqz2J47+CSBfccwzAxg==",
+  "salt": "FO/bix8WCFa+Ww==",
+  "lastSignedInAt": "1777535868252",
+  "createdAt": "1777535868252",
+  "providerUserInfo": []
+},
+{
+  "localId": "pPxJd8Tj6qUHZa55h5oOk2WPIKo1",
+  "email": "club.demo@onechance.test",
+  "emailVerified": false,
+  "passwordHash": "/nDxd0hv28oZgu7WajSjm83SifLTBE2SJBR7Toa+LQldv9iWterYrgAW3wLf8wivZ7EAyqNNtJuZiiG9/DeZ1A==",
+  "salt": "6YzkNOQA0h72jA==",
+  "lastSignedInAt": "1777535870859",
+  "createdAt": "1777535870859",
+  "providerUserInfo": []
+},
+{
+  "localId": "tR9w94cVq8cf1lpVvWRcuS0LaNx2",
+  "email": "fer@soliz.com",
+  "emailVerified": false,
+  "passwordHash": "T1Dt0Loe1QxaPSpLczzGfyInw92W8vBGqLK6y6bcpagsaVdSVF+F0KnGDZfIXEdU7R9n44raTp7jhzc5sHu8lg==",
+  "salt": "aBZ/OJohdPlAfg==",
+  "lastSignedInAt": "1777539008707",
+  "createdAt": "1777535560147",
+  "disabled": false,
+  "providerUserInfo": []
+}]}

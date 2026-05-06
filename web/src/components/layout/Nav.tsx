@@ -1,9 +1,10 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { logout } from '@/lib/auth'
-import Button from '@/components/ui/Button'
+import { Button } from '@/components/ui/Button'
 import { isAdminRole } from '@/lib/permissions'
 
 const links = [
@@ -17,6 +18,31 @@ export default function Nav() {
   const { user } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const [navHidden, setNavHidden] = useState(false)
+  const [navCompact, setNavCompact] = useState(false)
+
+  useEffect(() => {
+    let lastY = 0
+    const onScroll = () => {
+      const y = window.scrollY
+      setScrolled(y > 24)
+      setNavCompact(y > 72)
+
+      if (y <= 24 || mobileOpen) {
+        setNavHidden(false)
+      } else {
+        const delta = y - lastY
+        if (delta > 8) setNavHidden(true)
+        if (delta < -8) setNavHidden(false)
+      }
+      lastY = y
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [mobileOpen])
 
   const handleLogout = async () => {
     await logout()
@@ -24,25 +50,31 @@ export default function Nav() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[100] h-[var(--oc-nav-height)] border-b border-[rgba(255,255,255,0.06)] backdrop-blur-[20px] bg-[rgba(5,10,20,0.9)]">
+    <nav
+      className={`fixed top-0 left-0 right-0 z-[100] h-[var(--oc-nav-height)] transition-all duration-300 ${
+        scrolled
+          ? 'border-b border-[var(--oc-border)] bg-[rgba(10,10,10,0.76)] backdrop-blur-[14px]'
+          : 'border-b border-transparent bg-transparent backdrop-blur-0'
+      } ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
+    >
       <div className="oc-shell h-full flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-0.5 cursor-pointer no-underline">
-          <span className="text-white text-[16px] font-medium tracking-[-0.02em]">ONE</span>
-          <span className="w-[4px] h-[4px] bg-oc-green rounded-full mx-[2px] animate-blink" />
-          <span className="text-oc-green text-[16px] font-medium tracking-[-0.02em]">CHANCE</span>
+        <Link href="/" className="flex items-center gap-1 cursor-pointer no-underline">
+          <span className={`text-white font-medium tracking-[-0.02em] transition-all duration-300 ${navCompact ? 'text-[19px]' : 'text-[22px]'}`}>ONE</span>
+          <span className={`bg-oc-green rounded-full mx-[2px] animate-blink transition-all duration-300 ${navCompact ? 'w-[5px] h-[5px]' : 'w-[6px] h-[6px]'}`} />
+          <span className={`text-oc-green font-medium tracking-[-0.02em] transition-all duration-300 ${navCompact ? 'text-[19px]' : 'text-[22px]'}`}>CHANCE</span>
         </Link>
 
         {/* Nav links */}
-        <div className="hidden lg:flex gap-7">
+        <div className={`hidden lg:flex transition-all duration-300 ${navCompact ? 'gap-5' : 'gap-7'}`}>
           {links.map(l => (
             <Link
               key={l.href}
               href={l.href}
-              className={`text-[12px] transition-colors duration-200 no-underline ${
+               className={`oc-nav-link transition-all duration-300 ${navCompact ? 'text-[15px]' : 'text-[16px]'} ${
                 pathname.startsWith(l.href)
-                  ? 'text-white font-medium'
-                  : 'text-[rgba(255,255,255,0.35)] hover:text-white'
+                  ? 'is-active font-semibold'
+                  : 'text-[var(--oc-fg-muted)]'
               }`}
             >
               {l.label}
@@ -68,18 +100,39 @@ export default function Nav() {
             </>
           ) : (
             <>
-              <Button variant="outline" size="sm" onClick={() => router.push('/auth?tab=login')}>
+              <Button variant="outline" size="sm" onClick={() => router.push('/auth?tab=login')} className="hidden sm:inline-flex !px-7">
                 Ingresar
               </Button>
               <button
                 onClick={() => router.push('/auth?tab=register')}
-                className="h-[34px] px-4 rounded-[10px] inline-flex items-center gap-2 no-underline text-[12px] font-medium tracking-[-0.01em] text-[#032113] border border-[rgba(145,255,194,0.55)] bg-[linear-gradient(135deg,#18f17a_0%,#00c853_52%,#00b54b_100%)] shadow-[0_8px_14px_rgba(0,200,83,0.2),inset_0_1px_0_rgba(255,255,255,0.42)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_20px_rgba(0,200,83,0.26)] cursor-pointer"
+                className="h-10 min-w-[140px] px-7 rounded-[8px] inline-flex items-center justify-center gap-2.5 no-underline text-[13px] font-[700] leading-none tracking-[-0.01em] text-black bg-[var(--oc-lime)] shadow-[0_8px_32px_rgba(170,255,0,0.25)] transition-all duration-200 hover:-translate-y-[2px] hover:bg-[#C4FF40] cursor-pointer"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-[#08301A]" />
                 Publicar perfil
+              </button>
+              <button
+                aria-label="Abrir menu"
+                aria-expanded={mobileOpen}
+                className="ml-1 inline-flex h-9 w-9 items-center justify-center rounded-[8px] border border-[var(--oc-border-hi)] text-white lg:hidden"
+                onClick={() => setMobileOpen((prev) => !prev)}
+              >
+                <span className="text-[16px] leading-none">{mobileOpen ? 'x' : '='}</span>
               </button>
             </>
           )}
+        </div>
+      </div>
+      <div className={`border-t border-[var(--oc-border)] bg-[rgba(10,10,10,0.98)] px-5 py-4 lg:hidden ${mobileOpen ? 'block backdrop-blur-[14px]' : 'hidden'}`}>
+        <div className="flex flex-col gap-1">
+          {links.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              onClick={() => setMobileOpen(false)}
+              className={`oc-nav-link rounded-[8px] px-3 py-2 text-[14px] ${pathname.startsWith(l.href) ? 'is-active' : 'text-white'}`}
+            >
+              {l.label}
+            </Link>
+          ))}
         </div>
       </div>
     </nav>

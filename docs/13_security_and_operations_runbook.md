@@ -12,6 +12,44 @@
 2. Toda modificación de rol pasa por endpoint seguro server-side.
 3. Cada cambio queda auditado en `admin_audit_logs`.
 
+## Fuente de verdad de roles
+
+- `role` (tipo de cuenta de producto): se guarda en `Firestore users/{uid}.role`.
+  - Valores: `player | coach | club | agent`.
+- `systemRole` (nivel administrativo): se guarda en dos lugares.
+  - Primario app/API: `Firestore users/{uid}.systemRole`.
+  - Espejo para reglas RTDB: `Realtime Database userRoles/{uid}/systemRole`.
+  - Valores: `user | admin | super_admin`.
+
+## Diferencia operativa entre admin y super_admin
+
+- `admin`
+  - Puede moderar perfiles, destacados y videos.
+  - Puede leer datos administrativos necesarios para operación.
+  - No puede gestionar roles administrativos.
+- `super_admin`
+  - Incluye todo lo de `admin`.
+  - Puede cambiar `systemRole` de usuarios (`/api/admin/system-role`).
+  - Puede ejecutar gobernanza de acceso y configuración global.
+
+## Estado actual del proyecto (2026-05-06)
+
+- Reglas desplegadas activas en `onechance-platform`:
+  - `web/firestore.rules`
+  - `web/database.rules.json`
+- Se eliminó bootstrap por email hardcodeado para super admin.
+- Política vigente:
+  - El owner solo puede auto-crearse como `systemRole='user'`.
+  - Solo `super_admin` puede promover/degradar roles.
+
+## Cómo promover manualmente un super_admin
+
+1. Identificar `uid` del usuario en Firebase Auth.
+2. En Firestore setear `users/{uid}.systemRole = 'super_admin'`.
+3. En RTDB setear `userRoles/{uid}/systemRole = 'super_admin'`.
+4. Cerrar sesión y volver a iniciar para refrescar permisos en cliente.
+5. Verificar acceso al tab de gobernanza en `/admin`.
+
 ## Procedimiento de rollback de permisos (emergencia)
 
 1. Identificar `uid` y rol objetivo.

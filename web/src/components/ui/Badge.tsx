@@ -1,14 +1,33 @@
-import type { ProfileStatus } from '@/types'
-import { STATUS_META } from '@/types'
+import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/cn'
 
-export default function Badge({ status }: { status: ProfileStatus }) {
-  const s = STATUS_META[status]
+const badgeVariants = cva(
+  'inline-flex items-center gap-2 border-[0.5px] px-[14px] py-[5px] text-[10px] tracking-[0.07em] uppercase transition-colors',
+  {
+    variants: {
+      variant: {
+        default:
+          'bg-oc-green/10 border-oc-green/25 text-oc-green rounded-[20px]',
+        outline:
+          'border-white/10 text-white/50 rounded-full',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+)
+
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
+
+function Badge({ className, variant, ...props }: BadgeProps) {
   return (
-    <span
-      className="inline-block text-[9px] font-medium px-[10px] py-[3px] rounded-[10px] tracking-[0.06em] uppercase"
-      style={{ background: s.bg, border: `0.5px solid ${s.border}`, color: s.color }}
-    >
-      {s.label}
-    </span>
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
   )
 }
+
+export default Badge
+export { Badge, badgeVariants }

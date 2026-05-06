@@ -203,7 +203,14 @@ Elevar la plataforma a un estado seguro y operable en producción con:
 - [x] Tab de configuración de plataforma visible solo para `super_admin` en panel admin.
 - [x] Script base de seed (`web/scripts/seed.mjs`) con claims, usuarios y reporte.
 - [x] Protocolo de documentación continua agregado (`docs/12_delivery_documentation_protocol.md`).
-- [x] Alta y verificación end-to-end de `super_admin` (`fer@soliz.com`) en Auth + Firestore + RTDB.
+- [~] Alta y verificación end-to-end de `super_admin` (`fer@soliz.com`) pendiente de promoción manual con credenciales admin (Firestore + RTDB).
+
+### Nota operativa (2026-05-06)
+
+- Se removió la lógica de bootstrap por email hardcodeado (`fer@soliz.com`) en reglas.
+- La promoción de `super_admin` ahora depende únicamente de `systemRole` en datos:
+  - `users/{uid}.systemRole = 'super_admin'` (Firestore)
+  - `userRoles/{uid}/systemRole = 'super_admin'` (RTDB)
 
 ## QA ejecutado (2026-04-30)
 

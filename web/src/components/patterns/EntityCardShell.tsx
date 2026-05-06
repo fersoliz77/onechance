@@ -22,7 +22,7 @@ export default function EntityCardShell({ children, onClick, tone, className = '
     <div
       onClick={onClick}
       className={cn(
-        'group oc-list-card bg-[rgba(8,15,20,0.8)] border border-[var(--oc-border-soft)] transition-colors',
+        'group oc-list-card bg-[rgba(8,15,20,0.8)] border border-[var(--oc-border-soft)] transition-colors px-5 py-5',
         toneClasses[tone],
         className,
       )}

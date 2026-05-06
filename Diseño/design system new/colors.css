@@ -1,0 +1,70 @@
+/* ============================================================
+   ONE CHANCE — Paleta de colores oficial
+   Importar:  <link rel="stylesheet" href="components/colors.css">
+   Usar:      color: var(--oc-lime);  background: var(--oc-bg-card);
+   ============================================================ */
+
+:root {
+  /* ── ACENTOS PRINCIPALES ── */
+  --oc-lime:           #AAFF00;   /* Verde neón — CTA primario, marca */
+  --oc-lime-hover:     #C4FF40;   /* Hover lime */
+  --oc-lime-soft:      rgba(170, 255, 0, 0.12);
+  --oc-lime-glow:      rgba(170, 255, 0, 0.30);
+
+  --oc-violet:         #7B3FF6;   /* Violeta — Representantes */
+  --oc-violet-hover:   #9466FF;
+  --oc-violet-soft:    rgba(123, 63, 246, 0.12);
+  --oc-violet-glow:    rgba(123, 63, 246, 0.30);
+
+  --oc-blue:           #3B82F6;   /* Azul — Clubes */
+  --oc-blue-hover:     #60A5FA;
+  --oc-blue-soft:      rgba(59, 130, 246, 0.12);
+  --oc-blue-glow:      rgba(59, 130, 246, 0.30);
+
+  --oc-cyan:           #22D3EE;   /* Cyan — Técnicos (acento secundario) */
+
+  /* ── BACKGROUNDS (dark mode) ── */
+  --oc-bg-base:        #0A0A0A;   /* Fondo principal body */
+  --oc-bg-surface:     #111111;   /* Sección alterna (Ecosistema) */
+  --oc-bg-card:        #1A1A1A;   /* Cards estándar */
+  --oc-bg-card-hi:     #1F1F1F;   /* Cards elevadas / hover */
+  --oc-bg-navbar:      rgba(13, 13, 13, 0.92);  /* Navbar scrolled */
+
+  /* ── TIPOGRAFÍA ── */
+  --oc-fg:             #FFFFFF;   /* Texto primario */
+  --oc-fg-muted:       #8A8A8A;   /* Texto secundario */
+  --oc-fg-dim:         #5A5A5A;   /* Texto tenue / metadata */
+
+  /* ── BORDES ── */
+  --oc-border:         rgba(255, 255, 255, 0.08);   /* Default */
+  --oc-border-hi:      rgba(255, 255, 255, 0.14);   /* Hover / inputs */
+  --oc-border-lime:    rgba(170, 255, 0, 0.28);
+  --oc-border-violet:  rgba(123, 63, 246, 0.28);
+  --oc-border-blue:    rgba(59, 130, 246, 0.28);
+
+  /* ── SHADOWS / GLOWS ── */
+  --oc-shadow-lime:    0 8px 32px rgba(170, 255, 0, 0.25);
+  --oc-shadow-violet:  0 8px 32px rgba(123, 63, 246, 0.25);
+  --oc-shadow-blue:    0 8px 32px rgba(59, 130, 246, 0.25);
+  --oc-shadow-card:    0 12px 32px rgba(0, 0, 0, 0.40);
+
+  /* ── RADIOS ── */
+  --oc-r-btn:    8px;
+  --oc-r-card:   12px;
+  --oc-r-pill:   999px;
+
+  /* ── TRANSICIÓN ── */
+  --oc-t:        0.2s ease;
+}
+
+/* ── Helpers de texto ── */
+.oc-text-lime   { color: var(--oc-lime); }
+.oc-text-violet { color: var(--oc-violet); }
+.oc-text-blue   { color: var(--oc-blue); }
+.oc-text-muted  { color: var(--oc-fg-muted); }
+.oc-text-dim    { color: var(--oc-fg-dim); }
+
+/* ── Helpers de fondo ── */
+.oc-bg-base    { background: var(--oc-bg-base); }
+.oc-bg-surface { background: var(--oc-bg-surface); }
+.oc-bg-card    { background: var(--oc-bg-card); }

@@ -1,40 +1,51 @@
-'use client'
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 
-type Variant = 'primary' | 'outline' | 'ghost' | 'danger' | 'green_outline'
-type Size = 'sm' | 'md' | 'lg'
-
-interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: Variant
-  size?: Size
-  children: ReactNode
-}
-
-const sizes: Record<Size, string> = {
-  sm: 'text-[12px] lg:text-[13px] h-[var(--oc-control-h-sm)] px-3.5 lg:px-4 rounded-[var(--oc-radius-sm)]',
-  md: 'text-[13px] lg:text-[14px] h-[var(--oc-control-h-md)] px-[18px] lg:px-5 rounded-[var(--oc-radius-sm)]',
-  lg: 'text-[15px] lg:text-[16px] h-[var(--oc-control-h-lg)] px-7 lg:px-8 rounded-[var(--oc-radius-md)]',
-}
-
-export default function Button({ variant = 'primary', size = 'md', children, className = '', disabled, ...props }: Props) {
-  const base = 'inline-flex items-center gap-2 font-medium tracking-[-0.01em] transition-all duration-[180ms] cursor-pointer border-none font-sans disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(0,200,83,0.28)]'
-
-  const variants: Record<Variant, string> = {
-    primary: 'bg-oc-green text-oc-green-dark hover:bg-oc-green-hover hover:shadow-[0_8px_24px_rgba(0,200,83,0.35)] hover:-translate-y-px disabled:hover:shadow-none disabled:hover:translate-y-0',
-    outline: 'bg-transparent border border-[var(--oc-border-strong)] text-[rgba(255,255,255,0.55)] hover:border-[rgba(255,255,255,0.25)] hover:text-white',
-    ghost: 'bg-transparent text-[rgba(255,255,255,0.45)] hover:text-white',
-    danger: 'bg-[rgba(255,60,60,0.1)] border border-[rgba(255,60,60,0.3)] text-[#FF6060] hover:bg-[rgba(255,60,60,0.2)]',
-    green_outline: 'bg-transparent border border-[rgba(0,200,83,0.35)] text-oc-green hover:bg-[rgba(0,200,83,0.1)]',
+const buttonVariants = cva(
+  'inline-flex items-center justify-center whitespace-nowrap rounded-[10px] text-center text-sm font-semibold leading-none tracking-[-0.01em] transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-oc-yellow/50 disabled:pointer-events-none disabled:opacity-50 no-underline cursor-pointer group',
+  {
+    variants: {
+      variant: {
+        primary:
+          'bg-[linear-gradient(135deg,#FFD24A_0%,#FFB400_56%,#F59E0B_100%)] text-[#1A1200] border-[0.5px] border-[rgba(255,205,102,0.65)] shadow-[0_10px_28px_rgba(255,180,0,0.32)] hover:-translate-y-0.5 hover:shadow-[0_16px_32px_rgba(255,180,0,0.42)]',
+        ghost:
+          'bg-transparent border-[0.5px] border-white/20 text-white/40 hover:text-white hover:border-white/40',
+        outline:
+          'border-[0.5px] border-white/20 bg-transparent hover:bg-white/5 text-white',
+      },
+      size: {
+        default: 'h-11 min-w-[130px] px-7 py-2.5 text-[14px]',
+        sm: 'h-10 min-w-[116px] rounded-[9px] px-7 text-[13px]',
+        lg: 'h-[50px] min-w-[220px] px-12 text-[15px]',
+        icon: 'h-10 w-10',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'default',
+    },
   }
+)
 
-  return (
-    <button
-      {...props}
-      disabled={disabled}
-      className={cn(base, sizes[size], variants[variant], className)}
-    >
-      {children}
-    </button>
-  )
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
 }
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    return (
+      <button
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Button.displayName = 'Button'
+
+export { Button, buttonVariants }
+export default Button

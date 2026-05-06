@@ -22,12 +22,6 @@ service cloud.firestore {
       return isSignedIn() && systemRole() == 'super_admin';
     }
 
-    function isBootstrapSuperAdmin() {
-      return isSignedIn()
-        && request.auth.token.email == 'fer@soliz.com'
-        && request.resource.data.systemRole == 'super_admin';
-    }
-
     function isPublished(resource) {
       return resource.data.status == 'published';
     }
@@ -71,10 +65,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId)
-        && (
-          request.resource.data.systemRole == 'user'
-          || isBootstrapSuperAdmin()
-        )
+        && request.resource.data.systemRole == 'user'
         || isSuperAdmin();
       allow update: if isOwner(userId)
         && request.resource.data.systemRole == resource.data.systemRole

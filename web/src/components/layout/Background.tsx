@@ -3,27 +3,9 @@ interface Props { scanlines?: boolean }
 export default function Background({ scanlines = false }: Props) {
   return (
     <>
-      {/* Base */}
-      <div className="fixed inset-0 z-0 bg-oc-bg" />
-      {/* Animated grid */}
-      <div
-        className="fixed inset-0 z-0 pointer-events-none animate-grid-scroll"
-        style={{
-          backgroundImage:
-            'linear-gradient(rgba(0,200,83,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,83,0.03) 1px,transparent 1px)',
-          backgroundSize: '48px 48px',
-        }}
-      />
-      {/* Orb green */}
-      <div
-        className="fixed w-[400px] h-[400px] rounded-full pointer-events-none z-0 animate-pulse-orb"
-        style={{ background: 'rgba(0,200,83,0.07)', filter: 'blur(90px)', top: -100, left: -80 }}
-      />
-      {/* Orb blue */}
-      <div
-        className="fixed w-[260px] h-[260px] rounded-full pointer-events-none z-0 animate-pulse-orb"
-        style={{ background: 'rgba(0,100,255,0.06)', filter: 'blur(70px)', bottom: 60, right: -40, animationDelay: '1s', animationDirection: 'reverse' }}
-      />
+      <div className="fixed inset-0 z-0 bg-[url('/images/hero-stadium.png')] bg-cover bg-[center_30%]" />
+      <div className="fixed inset-0 z-0 bg-[linear-gradient(180deg,rgba(10,10,10,0.4)_0%,rgba(10,10,10,0.14)_22%,rgba(10,10,10,0.32)_70%,#0A0A0A_100%)]" />
+      <div className="fixed inset-0 z-0 bg-[linear-gradient(90deg,rgba(10,10,10,0.46)_0%,rgba(10,10,10,0.14)_36%,rgba(10,10,10,0.4)_100%)]" />
       {/* Scanlines (landing only) */}
       {scanlines && (
         <div

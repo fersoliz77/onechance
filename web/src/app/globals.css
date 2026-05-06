@@ -5,16 +5,16 @@
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;
 
   /* OneChance brand colors */
-  --color-oc-bg:           #050A14;
-  --color-oc-bg-alt:       #060D18;
-  --color-oc-card-green:   #0C1F12;
-  --color-oc-card-blue:    #0B1A2E;
-  --color-oc-green:        #00C853;
-  --color-oc-green-hover:  #00E660;
-  --color-oc-green-dark:   #002A12;
-  --color-oc-green-deep:   #003A18;
-  --color-oc-blue:         #5A8FFF;
-  --color-oc-blue-alt:     #4A9FFF;
+  --color-oc-bg:           #0A0A0A;
+  --color-oc-bg-alt:       #111111;
+  --color-oc-card-green:   #15230D;
+  --color-oc-card-blue:    #142034;
+  --color-oc-green:        #AAFF00;
+  --color-oc-green-hover:  #C4FF40;
+  --color-oc-green-dark:   #24360C;
+  --color-oc-green-deep:   #1C2D0A;
+  --color-oc-blue:         #3B82F6;
+  --color-oc-blue-alt:     #60A5FA;
   --color-oc-yellow:       #FFB400;
   --color-oc-purple:       #B464FF;
   --color-oc-red:          #FF3C3C;
@@ -58,9 +58,25 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 
 :root {
+  --oc-yellow: #FFB400;
+  --oc-lime: #AAFF00;
+  --oc-lime-hover: #C4FF40;
+  --oc-violet: #7B3FF6;
+  --oc-blue: #3B82F6;
+  --oc-cyan: #22D3EE;
+  --oc-bg-base: #0A0A0A;
+  --oc-bg-surface: #111111;
+  --oc-bg-card: #1A1A1A;
+  --oc-bg-card-hi: #1F1F1F;
+  --oc-fg: #FFFFFF;
+  --oc-fg-muted: #8A8A8A;
+  --oc-fg-dim: #5A5A5A;
+  --oc-border: rgba(255,255,255,0.08);
+  --oc-border-hi: rgba(255,255,255,0.14);
+
   /* Semantic color tokens */
   --oc-surface-1: rgba(255,255,255,0.02);
   --oc-surface-2: rgba(255,255,255,0.04);
@@ -128,7 +144,7 @@
 }
 
 body {
-  background: #050A14;
+  background: var(--oc-bg-base);
   color: #fff;
   -webkit-font-smoothing: antialiased;
 }
@@ -188,7 +204,7 @@ input, select, textarea, button { font-family: inherit; }
 .oc-list-card {
   min-height: 176px;
   border-radius: 12px;
-  padding: 16px;
+  padding: 20px;
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
@@ -196,10 +212,20 @@ input, select, textarea, button { font-family: inherit; }
 }
 
 @media (min-width: 1024px) {
-  .oc-list-card {
+.oc-list-card {
     min-height: 198px;
-    padding: 18px;
+    padding: 22px;
   }
+}
+
+.oc-content-frame {
+  width: min(100%, 44ch);
+  margin-inline: auto;
+}
+
+.oc-content-frame-tight {
+  width: min(100%, 34ch);
+  margin-inline: auto;
 }
 
 .oc-meta-chip {
@@ -220,4 +246,125 @@ input, select, textarea, button { font-family: inherit; }
 
 .oc-main-offset {
   padding-top: var(--oc-nav-offset);
+}
+
+.oc-nav-link {
+  display: inline-block;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.oc-nav-link:hover {
+  color: var(--oc-lime);
+  border-bottom-color: var(--oc-lime);
+}
+
+.oc-nav-link.is-active {
+  color: var(--oc-lime);
+  border-bottom-color: var(--oc-lime);
+}
+
+.oc-glass {
+  --oc-tint: 170, 255, 0;
+  --oc-bg-a: 0.22;
+  --oc-border-a: 0.28;
+  --oc-blur: 22px;
+  --oc-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--oc-radius);
+  border: 1px solid rgba(var(--oc-tint), var(--oc-border-a));
+  background: linear-gradient(165deg, rgba(var(--oc-tint), calc(var(--oc-bg-a) * 0.6)), rgba(15, 18, 22, calc(var(--oc-bg-a) + 0.08)));
+  backdrop-filter: blur(var(--oc-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--oc-blur)) saturate(160%);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(var(--oc-tint), 0.06), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.oc-glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(var(--oc-tint), 0.9), transparent);
+  opacity: 0.7;
+}
+
+.oc-glass__label { font-size: 11px; color: rgba(255,255,255,0.55); }
+.oc-glass__value { margin-top: 4px; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+.oc-glass__value span { font-size: 12px; color: rgba(255,255,255,0.55); }
+.oc-glass__delta { display: inline-block; margin-top: 6px; border-radius: 4px; background: rgba(170,255,0,0.12); padding: 2px 6px; font-size: 11px; font-weight: 700; color: var(--oc-lime); }
+.oc-glass--sm { padding: 14px 16px; --oc-radius: 10px; --oc-bg-a: 0.18; }
+.oc-glass--lg { padding: 24px; --oc-radius: 16px; }
+.oc-glass--lime { --oc-tint: 170, 255, 0; }
+.oc-glass--violet { --oc-tint: 123, 63, 246; }
+
+.oc-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.oc-reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.oc-hover-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.oc-hover-card::after {
+  content: '';
+  position: absolute;
+  left: var(--mx, 50%);
+  top: var(--my, 50%);
+  width: 220px;
+  height: 220px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 28%, rgba(255,255,255,0) 72%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .oc-hover-card:hover::after {
+    opacity: 1;
+  }
+}
+
+.oc-tilt { transform: perspective(1400px) rotateY(-6deg) rotateX(3deg); animation: oc-tilt-float 6s ease-in-out infinite; }
+.oc-tilt-soft { transform: perspective(1200px) rotateY(-5deg) rotateX(5deg); animation: oc-tilt-soft-float 7s ease-in-out infinite; }
+.oc-tilt-soft.oc-tilt--down { transform: perspective(1200px) rotateY(-5deg) rotateX(-2deg); }
+
+@keyframes oc-tilt-float {
+  0%, 100% { transform: perspective(1400px) rotateY(-6deg) rotateX(3deg) translateY(0); }
+  50% { transform: perspective(1400px) rotateY(-6deg) rotateX(3deg) translateY(-8px); }
+}
+
+@keyframes oc-tilt-soft-float {
+  0%, 100% { transform: perspective(1200px) rotateY(-5deg) rotateX(5deg) translateY(0); }
+  50% { transform: perspective(1200px) rotateY(-5deg) rotateX(5deg) translateY(-7px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oc-reveal,
+  .oc-reveal.in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .oc-hover-card::after {
+    transition: none;
+  }
+
+  .oc-tilt,
+  .oc-tilt-soft {
+    animation: none;
+  }
 }

@@ -3,7 +3,7 @@
     "userRoles": {
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')",
-        ".write": "auth != null && ((auth.uid === $uid && !data.exists() && auth.token.email === 'fer@soliz.com') || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')"
+        ".write": "auth != null && ((auth.uid === $uid && !data.exists() && newData.child('systemRole').val() === 'user') || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')"
       }
     },
     "profiles": {
