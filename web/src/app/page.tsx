@@ -4,14 +4,41 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { type MouseEvent, useEffect, useRef, useState } from 'react'
 import AuthModal from '@/components/landing/AuthModal'
+import HeroPlayersTicker from '@/components/landing/HeroPlayersTicker'
 import LandingSections from '@/components/landing/LandingSections'
+import { getPublishedPlayers } from '@/lib/firestore'
+import type { PlayerProfile } from '@/types'
 
 export default function Landing() {
   const [openModal, setOpenModal] = useState(false)
   const [scrollY, setScrollY] = useState(0)
   const [heroMetrics, setHeroMetrics] = useState({ players: 0, coaches: 0, clubs: 0, agents: 0 })
   const [metricsVisible, setMetricsVisible] = useState(false)
+  const [heroPlayers, setHeroPlayers] = useState<PlayerProfile[]>([])
+  const [showHeroTicker, setShowHeroTicker] = useState(true)
   const metricsRef = useRef<HTMLDivElement | null>(null)
+  const heroRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    getPublishedPlayers()
+      .then((players) => setHeroPlayers(players))
+      .catch(() => setHeroPlayers([]))
+  }, [])
+
+  useEffect(() => {
+    if (!heroRef.current) return
+    const node = heroRef.current
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        setShowHeroTicker(Boolean(entry?.isIntersecting))
+      },
+      { threshold: 0.08 }
+    )
+
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setScrollY(window.scrollY)
@@ -104,7 +131,7 @@ export default function Landing() {
 
   return (
     <main className="bg-[var(--oc-bg-base)] text-white">
-      <section className="relative min-h-[100svh] overflow-hidden pt-[calc(var(--oc-nav-height)+56px)]">
+      <section ref={heroRef} className="relative min-h-[100svh] overflow-hidden pt-[calc(var(--oc-nav-height)+56px)]">
         <div className="absolute inset-0">
           <div className="absolute inset-0" style={{ transform: `translateY(${parallaxY}px)` }}>
             <Image src="/images/hero-stadium.png" alt="Estadio hero" fill priority className="object-cover object-[center_30%] opacity-80" />
@@ -253,6 +280,8 @@ export default function Landing() {
             </div>
           </div>
         </div>
+
+        <HeroPlayersTicker players={heroPlayers} visible={showHeroTicker} durationSeconds={64} />
       </section>
 
       <LandingSections ctaParallaxY={ctaParallaxY} onOpenModal={() => setOpenModal(true)} onCardMove={handleCardMove} />

@@ -11,6 +11,35 @@ Aplicacion web de scouting futbolistico construida con Next.js + Firebase.
 - `npm run typecheck`: chequeo TypeScript sin emitir.
 - `npm run seed`: carga datos de prueba.
 
+## Setup rapido de seed (demo)
+
+Objetivo: cargar usuarios y perfiles demo completos (incluye fotos/videos) para validar UI realista.
+
+1) Confirmar prerequisitos:
+
+- Tener el JSON de service account de Firebase (en este repo se usa en raiz).
+- Tener `NEXT_PUBLIC_FIREBASE_DATABASE_URL` en `web/.env.local`.
+
+2) Ejecutar seed desde `web/`:
+
+```bash
+GOOGLE_APPLICATION_CREDENTIALS="C:/Users/pikachu/Downloads/OneChance/onechance-platform-firebase-adminsdk-fbsvc-7be594e495.json" FIREBASE_DATABASE_URL="https://onechance-platform-default-rtdb.firebaseio.com" node scripts/seed.mjs
+```
+
+3) Validar resultado:
+
+- Debe imprimir `Seed completed: 7`.
+- Revisar listados y detalle en:
+  - `/jugadores`
+  - `/tecnicos`
+  - `/clubes`
+  - `/representantes`
+
+Notas:
+
+- Si falla con `Missing env vars`, revisar ruta del JSON y URL de RTDB.
+- Si en detalle de jugador no aparecen fotos, re-ejecutar seed y hacer hard refresh del navegador.
+
 ## Flujos por rol
 
 - Registro en `/auth` con 3 pasos: credenciales, rol, datos iniciales.

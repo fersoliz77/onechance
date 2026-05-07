@@ -9,6 +9,38 @@ Este documento es una guia rapida para entender los scripts del repo sin lenguaj
 
 ## Scripts de la app web
 
+### `node scripts/seed.mjs`
+
+- Que hace: crea/actualiza usuarios de prueba y perfiles demo (jugadores, tecnicos, clubes, representantes).
+- Tambien carga media demo:
+  - Fotos y videos en Realtime Database (`/photos/{uid}`, `/videos/{uid}`).
+  - Fallback de galeria en Firestore (`players/{uid}.photoGallery`) para UI publica.
+- Cuando usarlo: despues de clonar el repo, al resetear entorno de pruebas o al mejorar datos mock.
+- Resultado esperado: mensaje `Seed completed: 7`.
+
+Requisitos minimos para ejecutarlo:
+
+- `GOOGLE_APPLICATION_CREDENTIALS` apuntando al JSON de service account.
+- `FIREBASE_DATABASE_URL` (o `NEXT_PUBLIC_FIREBASE_DATABASE_URL`).
+
+Ejemplo (bash):
+
+```bash
+GOOGLE_APPLICATION_CREDENTIALS="C:/ruta/service-account.json" FIREBASE_DATABASE_URL="https://<tu-proyecto>-default-rtdb.firebaseio.com" node scripts/seed.mjs
+```
+
+Si falla con `Missing env vars`:
+
+- Validar que las variables esten en la misma linea del comando (o exportadas en la sesion).
+- Validar que la ruta del JSON exista y sea legible.
+- Validar que la URL RTDB sea la del proyecto correcto.
+
+Si la miniatura aparece pero el detalle del jugador no muestra fotos:
+
+- Re-ejecutar seed para refrescar `photoGallery` en Firestore y `/photos` en RTDB.
+- Verificar que el perfil tenga `status: published`.
+- Hacer hard refresh del navegador para limpiar cache de cliente.
+
 ### `npm run dev`
 
 - Que hace: levanta la app en modo desarrollo.

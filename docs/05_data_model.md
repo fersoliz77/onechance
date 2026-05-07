@@ -29,6 +29,19 @@ players/{uid}
   characteristics: string[]  ← máx 6
   isMinor: boolean
   isFeatured: boolean
+  photos: number
+  videos: number
+  overall: number
+  avatarUrl?: string
+  coverImageUrl?: string
+  preferredFormation?: string
+  languages?: string[]
+  social?: {
+    instagram?: string
+    tiktok?: string
+    youtube?: string
+  }
+  photoGallery?: string[]     ← fallback visual para perfil publico
 ```
 
 ### Colección `coaches`
@@ -44,6 +57,7 @@ coaches/{uid}
   trophies: string[]
   currentClub: string
   years: number              ← años de experiencia
+  avatarUrl?: string
 ```
 
 ### Colección `clubs`
@@ -61,6 +75,9 @@ clubs/{uid}
   seeking: string[]          ← posiciones buscadas
   bio: string
   achievements: string[]
+  stadium?: string
+  capacity?: number
+  imageUrl?: string
 ```
 
 ### Colección `agents`
@@ -75,6 +92,7 @@ agents/{uid}
   bio: string
   career: string
   notableTransfers: string[]
+  avatarUrl?: string
 ```
 
 ---
@@ -104,9 +122,9 @@ agents/{uid}
 
 /photos/{uid}
   /{photoId}
-    storageRef: string
-    order: number
-    createdAt: timestamp
+    url: string
+    storagePath: string
+    createdAt: string
 ```
 
 ---

@@ -3,7 +3,7 @@
 import { type ReactNode, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getPlayer } from '@/lib/firestore'
-import { getProfileState, getVideos } from '@/lib/rtdb'
+import { getPhotos, getProfileState, getVideos, type PhotoEntry } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
 import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
@@ -72,18 +72,24 @@ export default function PlayerProfilePage() {
   const { user } = useAuth()
   const [player, setPlayer] = useState<PlayerProfile | null>(null)
   const [videos, setVideos] = useState<VideoEntry[]>([])
+  const [photos, setPhotos] = useState<PhotoEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [showContact, setShowContact] = useState(false)
   const [showContactCta, setShowContactCta] = useState(false)
 
+  const galleryUrls = photos.length > 0
+    ? photos.map((p) => p.url).filter(Boolean)
+    : (player?.photoGallery || [])
+
   useEffect(() => {
     let active = true
     ;(async () => {
-      const [pRes, vRes, sRes] = await Promise.allSettled([getPlayer(id), getVideos(id), getProfileState(id)])
+      const [pRes, vRes, sRes, phRes] = await Promise.allSettled([getPlayer(id), getVideos(id), getProfileState(id), getPhotos(id)])
       if (!active) return
 
       setPlayer(pRes.status === 'fulfilled' ? pRes.value : null)
       setVideos(vRes.status === 'fulfilled' ? vRes.value.filter((x) => x.status === 'active') : [])
+      setPhotos(phRes.status === 'fulfilled' ? phRes.value.sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : [])
       setShowContactCta(sRes.status === 'fulfilled' ? Boolean(sRes.value?.visibility?.showContact) : false)
       setLoading(false)
     })()
@@ -168,7 +174,10 @@ export default function PlayerProfilePage() {
 
           <section className="relative overflow-hidden rounded-b-[var(--oc-radius-lg)] border-x border-b border-[var(--oc-border)] bg-[#031016]">
             <div className="absolute inset-0">
-              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1577223625816-7546f13df25d?q=80&w=2200&auto=format&fit=crop')] bg-cover bg-center opacity-45" />
+              <div
+                className="absolute inset-0 bg-cover bg-center opacity-45"
+                style={{ backgroundImage: `url(${player.coverImageUrl || 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?q=80&w=2200&auto=format&fit=crop'})` }}
+              />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,transparent_0%,rgba(2,8,12,.15)_24%,rgba(2,8,12,.88)_72%),linear-gradient(90deg,#02080c_0%,rgba(2,8,12,.28)_30%,rgba(2,8,12,.55)_70%,#02080c_100%)]" />
             </div>
             <div className="relative px-[var(--oc-space-5)] pb-[var(--oc-space-5)] pt-[var(--oc-space-4)] md:px-[var(--oc-space-8)] md:pb-[var(--oc-space-8)]">
@@ -187,12 +196,23 @@ export default function PlayerProfilePage() {
               </div>
 
               <div className="grid min-h-[345px] grid-cols-1 gap-[var(--oc-space-6)] pt-[var(--oc-space-4)] lg:grid-cols-[360px_1fr] lg:gap-[var(--oc-space-8)]">
-                <div className="relative hidden lg:block">
-                  <div className="absolute bottom-0 left-7 h-[335px] w-[286px] rounded-t-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[linear-gradient(165deg,rgba(170,255,0,0.22),rgba(12,25,15,0.52))] shadow-[0_25px_55px_rgba(0,0,0,.75)]" />
+                <div className="relative hidden h-[345px] lg:block">
+                  <div className="absolute bottom-0 left-7 h-[335px] w-[286px] overflow-hidden rounded-t-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[linear-gradient(165deg,rgba(170,255,0,0.22),rgba(12,25,15,0.52))] shadow-[0_25px_55px_rgba(0,0,0,.75)]">
+                    {(player.avatarUrl || galleryUrls[0]) ? (
+                      <img src={player.avatarUrl || galleryUrls[0]} alt={`Foto de ${player.fullName}`} className="h-full w-full object-cover object-top" />
+                    ) : null}
+                  </div>
                   <div className="absolute bottom-12 left-4 rounded-[var(--oc-radius-md)] border border-[var(--oc-border-soft)] bg-[rgba(8,22,26,0.82)] px-[var(--oc-space-5)] py-[var(--oc-space-4)] text-[13px] font-[700] backdrop-blur">✓ Perfil verificado</div>
                 </div>
 
                 <div className="flex flex-col justify-center pb-2 lg:pr-8">
+                  <div className="mb-4 lg:hidden">
+                    <div className="h-[180px] w-full overflow-hidden rounded-[12px] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.05)]">
+                      {(player.avatarUrl || galleryUrls[0]) ? (
+                        <img src={player.avatarUrl || galleryUrls[0]} alt={`Foto de ${player.fullName}`} className="h-full w-full object-cover object-top" />
+                      ) : null}
+                    </div>
+                  </div>
                   <h1 className="text-[36px] font-[800] tracking-[-0.03em] text-white md:text-[46px]">{player.fullName}</h1>
                   <div className="mt-5 flex flex-wrap items-center gap-x-7 gap-y-2 text-[14px] font-[600] text-slate-200">
                     <span>Posicion: {player.position || 'N/D'}</span>
@@ -363,9 +383,10 @@ export default function PlayerProfilePage() {
             <Surface className="p-[var(--oc-space-5)]">
               <SectionTitle title="Fotos" action="Ver todas" />
               <div className="mt-[var(--oc-space-4)] grid grid-cols-2 gap-[var(--oc-space-3)] md:grid-cols-3 lg:grid-cols-6">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="relative h-[154px] overflow-hidden rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(0,0,0,0.46))]">
-                    {i === 5 ? <div className="absolute inset-0 grid place-items-center bg-[rgba(0,0,0,0.55)] text-[30px] font-[800]">+{Math.max(player.photos - 5, 0)}</div> : null}
+                {(galleryUrls.length > 0 ? galleryUrls.slice(0, 6).map((url, i) => ({ id: `photo-${i}`, url })) : Array.from({ length: 6 }).map((_, i) => ({ id: `placeholder-${i}`, url: '' }))).map((photo, i) => (
+                  <div key={photo.id} className="relative h-[154px] overflow-hidden rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(0,0,0,0.46))]">
+                    {photo.url ? <img src={photo.url} alt={`Foto ${i + 1} de ${player.fullName}`} className="h-full w-full object-cover" /> : null}
+                    {i === 5 && galleryUrls.length > 6 ? <div className="absolute inset-0 grid place-items-center bg-[rgba(0,0,0,0.55)] text-[30px] font-[800]">+{Math.max(galleryUrls.length - 6, 0)}</div> : null}
                   </div>
                 ))}
               </div>

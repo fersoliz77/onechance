@@ -7,14 +7,15 @@ type Props = {
 }
 
 export default function AgentCard({ agent, onClick }: Props) {
+  const avatar = agent.avatarUrl || ''
   return (
     <EntityCardShell onClick={onClick} tone="purple" className="rounded-[var(--oc-radius-xl)] bg-[rgba(7,20,24,0.78)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)]">
       <div className="flex items-start gap-3 lg:gap-3.5 mb-3 lg:mb-3.5">
         <div
-          className="w-[52px] h-[52px] lg:w-[58px] lg:h-[58px] rounded-full flex items-center justify-center text-[20px] lg:text-[22px] border-[1.5px] shrink-0"
-          style={{ background: 'linear-gradient(135deg,#B464FF,#2A0A4A)', borderColor: 'rgba(180,100,255,0.4)' }}
+          className="w-[52px] h-[52px] lg:w-[58px] lg:h-[58px] rounded-full flex items-center justify-center text-[20px] lg:text-[22px] border-[1.5px] shrink-0 bg-cover bg-center"
+          style={{ background: avatar ? `url(${avatar}) center/cover` : 'linear-gradient(135deg,#B464FF,#2A0A4A)', borderColor: 'rgba(180,100,255,0.4)' }}
         >
-          🤝
+          {!avatar ? '🤝' : null}
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-white text-[14px] lg:text-[15px] font-medium truncate">{agent.fullName}</div>

@@ -40,6 +40,16 @@ export interface PlayerProfile {
   photos: number
   videos: number
   overall: number
+  avatarUrl?: string
+  coverImageUrl?: string
+  preferredFormation?: string
+  languages?: string[]
+  social?: {
+    instagram?: string
+    tiktok?: string
+    youtube?: string
+  }
+  photoGallery?: string[]
 }
 
 export interface CoachProfile {
@@ -55,6 +65,7 @@ export interface CoachProfile {
   career: CareerEntryWithRole[]
   trophies: string[]
   status: ProfileStatus
+  avatarUrl?: string
 }
 
 export interface ClubProfile {
@@ -72,6 +83,9 @@ export interface ClubProfile {
   bio: string
   achievements: string[]
   status: ProfileStatus
+  stadium?: string
+  capacity?: number
+  imageUrl?: string
 }
 
 export interface AgentProfile {
@@ -86,6 +100,7 @@ export interface AgentProfile {
   career: string
   notableTransfers: string[]
   status: ProfileStatus
+  avatarUrl?: string
 }
 
 export interface ProfileState {
