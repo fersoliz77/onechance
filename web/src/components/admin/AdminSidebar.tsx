@@ -63,9 +63,11 @@ interface Props {
   onTab: (t: AdminTab) => void
   pendingCount: number
   isSuperAdmin: boolean
+  mobileOpen?: boolean
+  onMobileClose?: () => void
 }
 
-export default function AdminSidebar({ tab, onTab, pendingCount }: Props) {
+export default function AdminSidebar({ tab, onTab, pendingCount, mobileOpen = false, onMobileClose }: Props) {
   const [collapsed, setCollapsed] = useState(() =>
     typeof window !== 'undefined' && localStorage.getItem('oc-admin-sidebar') === 'collapsed'
   )
@@ -87,11 +89,31 @@ export default function AdminSidebar({ tab, onTab, pendingCount }: Props) {
 
   return (
     <>
-      <div style={{ width: w, flexShrink: 0, transition: 'width 0.3s ease' }} />
+      {/* Spacer: only on desktop so sidebar doesn't collapse main content on mobile */}
+      <div className="hidden lg:block" style={{ width: w, flexShrink: 0, transition: 'width 0.3s ease' }} />
+
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-[19] bg-black/60 backdrop-blur-sm lg:hidden"
+          onClick={onMobileClose}
+          aria-hidden="true"
+        />
+      )}
 
       <aside
-        className="fixed left-0 top-0 z-20 h-screen flex flex-col border-r border-[rgba(255,255,255,0.07)] bg-[rgba(10,10,10,0.93)] backdrop-blur-xl overflow-hidden"
-        style={{ width: w, transition: 'width 0.3s ease' }}>
+        className={`fixed left-0 top-0 z-20 h-screen flex flex-col border-r border-[rgba(255,255,255,0.07)] bg-[rgba(10,10,10,0.93)] backdrop-blur-xl overflow-hidden lg:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        style={{ width: w, transition: 'width 0.3s ease, transform 0.3s ease' }}
+        aria-label="Menú de administración"
+      >
+        {/* Overlay close button on mobile */}
+        <button
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-lg text-[rgba(255,255,255,0.4)] hover:text-white hover:bg-[rgba(255,255,255,0.08)] transition-all cursor-pointer bg-transparent border-none lg:hidden"
+          onClick={onMobileClose}
+          aria-label="Cerrar menú"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
 
         {/* Logo */}
         <div className="flex items-center justify-between px-4 pt-6 pb-5 shrink-0" style={{ minHeight: 80 }}>

@@ -39,7 +39,7 @@ function Sparkline() {
 export default function AdminStats(props: Props) {
   const stats = STATS(props)
   return (
-    <div className="grid grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
       {stats.map((s, i) => (
         <div key={s.label} className="relative overflow-hidden rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-5 hover:border-[rgba(255,255,255,0.13)] transition-colors">
           {/* Glow top-right */}

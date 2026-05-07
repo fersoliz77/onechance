@@ -66,6 +66,7 @@ export default function AdminPage() {
   const [loadError, setLoadError] = useState('')
 
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [density, setDensity] = useState<Density>(() =>
     (typeof window !== 'undefined' ? localStorage.getItem('oc-admin-density') as Density | null : null) ?? 'comfortable'
   )
@@ -219,9 +220,9 @@ export default function AdminPage() {
     return (
       <div className="relative min-h-screen bg-[#0A0A0A] flex items-start">
         <Background />
-        <div className="relative z-10 w-60 h-screen border-r border-[rgba(255,255,255,0.07)] bg-[rgba(10,10,10,0.9)] shrink-0" />
-        <div className="relative z-10 flex-1 p-7 space-y-6">
-          <div className="grid grid-cols-3 gap-4">{[1,2,3,4,5,6].map(i => <SkeletonStat key={i} />)}</div>
+        <div className="relative z-10 hidden lg:block w-60 h-screen border-r border-[rgba(255,255,255,0.07)] bg-[rgba(10,10,10,0.9)] shrink-0" />
+        <div className="relative z-10 flex-1 p-4 md:p-7 space-y-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">{[1,2,3,4,5,6].map(i => <SkeletonStat key={i} />)}</div>
           <SkeletonCard />
           <SkeletonCard />
         </div>
@@ -258,7 +259,14 @@ export default function AdminPage() {
       <ToastStack toasts={toasts} onRemove={removeToast} />
 
       {/* Sidebar */}
-      <AdminSidebar tab={tab} onTab={setTab} pendingCount={pending.length} isSuperAdmin={isSuperAdmin} />
+      <AdminSidebar
+        tab={tab}
+        onTab={(t) => { setTab(t); setMobileSidebarOpen(false) }}
+        pendingCount={pending.length}
+        isSuperAdmin={isSuperAdmin}
+        mobileOpen={mobileSidebarOpen}
+        onMobileClose={() => setMobileSidebarOpen(false)}
+      />
 
       {/* Main — shifts with sidebar via the spacer inside AdminSidebar */}
       <main className="relative z-10 flex min-h-screen min-w-0 flex-1 flex-col">
@@ -270,9 +278,10 @@ export default function AdminPage() {
           onDensityToggle={toggleDensity}
           onViewSite={() => window.open('/', '_blank')}
           onOpenPalette={() => setPaletteOpen(true)}
+          onMobileMenu={() => setMobileSidebarOpen(o => !o)}
         />
 
-        <div className="flex-1 px-7 pb-12 pt-6 space-y-6">
+        <div className="flex-1 px-4 md:px-7 pb-12 pt-6 space-y-6">
           {loadError && (
             <div className="rounded-xl border border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.07)] px-5 py-3 text-sm text-[rgba(245,200,80,0.95)] flex items-center gap-3">
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
@@ -285,11 +294,11 @@ export default function AdminPage() {
             <>
               <AdminStats totalUsers={users.length} published={publishedPlayers.length} pending={pending.length} videos={videos.length} roleDistribution={roleDistribution} deltas={metrics.deltas} />
               <AdminCharts roleDistribution={roleDistribution} totalUsers={users.length} months={metrics.months} roleSeries={metrics.roleSeries} pendingSeries={metrics.pendingSeries} monthRange={monthRange} onMonthRangeChange={setMonthRange} />
-              <div className="grid grid-cols-[1fr_360px] gap-6">
+              <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
                 <AdminPendingTable items={pending.slice(0,6)} onApprove={i => handleStatus(i,'published')} onReject={confirmReject} compact density={density} />
                 <AdminActivity pending={pending} players={players} videos={videos} />
               </div>
-              <div className="grid grid-cols-[1fr_360px] gap-6">
+              <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
                 <AdminVideos videos={videos.slice(0,3)} onToggle={handleToggleVideo} onRemove={confirmRemoveVideo} compact />
                 <AdminQuickActions />
               </div>
@@ -306,7 +315,8 @@ export default function AdminPage() {
             <div className="space-y-4">
               <SectionHeader title="Gestión de perfiles" subtitle={`${publishedPlayers.length} publicados · ${featuredPlayers.length} destacados`} />
               <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] overflow-hidden">
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[640px]">
                   <thead>
                     <tr className="border-b border-[rgba(255,255,255,0.07)]">
                       {['Jugador','Posición','Nacionalidad','Estado','Destacado','Acciones'].map(h => (
@@ -348,6 +358,7 @@ export default function AdminPage() {
                     ))}
                   </tbody>
                 </table>
+                </div>
                 {publishedPlayers.length === 0 && (
                   <div className="py-16 text-center text-[rgba(255,255,255,0.2)] text-sm">No hay perfiles publicados.</div>
                 )}
@@ -360,7 +371,8 @@ export default function AdminPage() {
             <div className="space-y-4">
               <SectionHeader title="Gestión de usuarios" subtitle={`${users.length} usuarios registrados`} />
               <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] overflow-hidden">
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[520px]">
                   <thead>
                     <tr className="border-b border-[rgba(255,255,255,0.07)]">
                       {['Usuario','Rol','Sistema','Acciones'].map(h => (
@@ -403,6 +415,7 @@ export default function AdminPage() {
                     ))}
                   </tbody>
                 </table>
+                </div>
                 {users.length === 0 && <div className="py-16 text-center text-[rgba(255,255,255,0.2)] text-sm">No hay usuarios registrados.</div>}
               </div>
             </div>

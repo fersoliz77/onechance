@@ -26,7 +26,7 @@ export default function HeroPlayersTicker({
   return (
     <div
       className={[
-        'fixed inset-x-0 bottom-0 z-30 border-t border-white/10 max-md:absolute',
+        'fixed inset-x-0 bottom-0 z-30 border-t border-white/10',
         'bg-[linear-gradient(180deg,rgba(12,12,12,0.36)_0%,rgba(8,8,8,0.46)_100%)] backdrop-blur-[10px]',
         'transition-all duration-500 ease-out',
         visible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-5 opacity-0',
@@ -35,9 +35,9 @@ export default function HeroPlayersTicker({
       aria-label="Galeria movil de jugadores"
     >
       <div className="oc-shell">
-        <div className="group overflow-hidden py-3 [mask-image:linear-gradient(90deg,transparent,black_7%,black_93%,transparent)]">
+        <div className="group overflow-hidden py-3 max-sm:py-2.5 [mask-image:linear-gradient(90deg,transparent,black_7%,black_93%,transparent)]">
           <div
-            className="flex w-max items-center gap-3 whitespace-nowrap text-[13px] font-[500] tracking-[0.005em] text-white/80 motion-reduce:animate-none md:text-[14px] md:group-hover:[animation-play-state:paused]"
+            className="flex w-max items-center gap-3 whitespace-nowrap text-[12px] font-[500] tracking-[0.005em] text-white/72 motion-reduce:animate-none md:text-[14px] md:text-white/80 md:group-hover:[animation-play-state:paused]"
             style={{ animation: `oc-ticker-loop ${durationSeconds}s linear infinite` }}
           >
             {track.map((player, index) => (

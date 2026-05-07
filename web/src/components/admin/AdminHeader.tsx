@@ -11,16 +11,27 @@ interface Props {
   onDensityToggle: () => void
   onViewSite: () => void
   onOpenPalette: () => void
+  onMobileMenu?: () => void
 }
 
-export default function AdminHeader({ user, photoURL, pendingCount, density, onDensityToggle, onViewSite, onOpenPalette }: Props) {
+export default function AdminHeader({ user, photoURL, pendingCount, density, onDensityToggle, onViewSite, onOpenPalette, onMobileMenu }: Props) {
   const initials = (user?.name || user?.email || 'AD').slice(0, 2).toUpperCase()
 
   return (
-    <header className="sticky top-0 z-10 flex items-center justify-between gap-4 px-7 py-4 border-b border-[rgba(255,255,255,0.07)] bg-[rgba(10,10,10,0.88)] backdrop-blur-xl">
-      <div>
-        <h1 className="text-[19px] font-semibold text-white tracking-tight">Panel de administración</h1>
-        <p className="text-[13px] text-[rgba(255,255,255,0.35)] mt-0.5">Bienvenido. Gestioná toda la plataforma desde aquí.</p>
+    <header className="sticky top-0 z-10 flex items-center justify-between gap-3 px-4 md:px-7 py-3 md:py-4 border-b border-[rgba(255,255,255,0.07)] bg-[rgba(10,10,10,0.88)] backdrop-blur-xl">
+      <div className="flex items-center gap-3 min-w-0">
+        {/* Hamburger — mobile only */}
+        <button
+          onClick={onMobileMenu}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[rgba(255,255,255,0.5)] hover:text-white hover:bg-[rgba(255,255,255,0.06)] transition-all cursor-pointer bg-transparent border-none lg:hidden"
+          aria-label="Abrir menú de navegación"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div className="min-w-0">
+          <h1 className="text-[16px] md:text-[19px] font-semibold text-white tracking-tight truncate">Panel de administración</h1>
+          <p className="hidden sm:block text-[13px] text-[rgba(255,255,255,0.35)] mt-0.5">Bienvenido. Gestioná toda la plataforma desde aquí.</p>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">

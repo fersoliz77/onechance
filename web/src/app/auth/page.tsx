@@ -61,8 +61,8 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
         <button onClick={onSwitch} className="text-oc-green cursor-pointer bg-none border-none font-sans">Registrate gratis</button>
       </div>
       <div className="flex flex-col gap-2.5 mb-4">
-        <Input placeholder="Correo electrónico" type="email" value={email} onChange={e => setEmail(e.target.value)} />
-        <Input placeholder="Contraseña" type="password" value={pass} onChange={e => setPass(e.target.value)} />
+        <Input placeholder="Correo electrónico" type="email" aria-label="Correo electrónico" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
+        <Input placeholder="Contraseña" type="password" aria-label="Contraseña" autoComplete="current-password" value={pass} onChange={e => setPass(e.target.value)} />
       </div>
       {err && <div className="mb-3 text-[12px] text-[var(--color-oc-red)]">{err}</div>}
       <Button variant="primary" className="w-full justify-center mb-3" size="lg" onClick={submit} disabled={loading}>
@@ -143,9 +143,9 @@ function RegisterForm() {
           <div className="mb-1.5 text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-label)]">Paso 1 de 3</div>
           <div className="text-white text-[23px] font-medium tracking-[-0.02em] mb-5">Creá tu cuenta</div>
           <div className="flex flex-col gap-2.5 mb-4">
-            <Input placeholder="Correo electrónico" type="email" value={creds.email} onChange={e => setCreds(c => ({ ...c, email: e.target.value }))} />
-            <Input placeholder="Contraseña" type="password" value={creds.pass} onChange={e => setCreds(c => ({ ...c, pass: e.target.value }))} />
-            <Input placeholder="Confirmá tu contraseña" type="password" value={creds.confirm} onChange={e => setCreds(c => ({ ...c, confirm: e.target.value }))} />
+            <Input placeholder="Correo electrónico" type="email" aria-label="Correo electrónico" autoComplete="email" value={creds.email} onChange={e => setCreds(c => ({ ...c, email: e.target.value }))} />
+            <Input placeholder="Contraseña" type="password" aria-label="Contraseña" autoComplete="new-password" value={creds.pass} onChange={e => setCreds(c => ({ ...c, pass: e.target.value }))} />
+            <Input placeholder="Confirmá tu contraseña" type="password" aria-label="Confirmá tu contraseña" autoComplete="new-password" value={creds.confirm} onChange={e => setCreds(c => ({ ...c, confirm: e.target.value }))} />
           </div>
           {err && <div className="mb-2.5 text-[12px] text-[var(--color-oc-red)]">{err}</div>}
           <Button variant="primary" className="w-full justify-center" size="lg" onClick={step0Submit}>Continuar →</Button>
@@ -188,7 +188,7 @@ function RegisterForm() {
           </div>
           <div className="text-white text-[23px] font-medium tracking-[-0.02em] mb-5">Tus datos</div>
           <div className="flex flex-col gap-2.5 mb-3.5">
-            <Input placeholder="Nombre y apellido" value={form.fullName} onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))} />
+            <Input placeholder="Nombre y apellido" aria-label="Nombre y apellido" autoComplete="name" value={form.fullName} onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))} />
             <div>
                <div className="mb-1.5 text-[10px] uppercase tracking-[0.06em] text-[var(--oc-text-label)]">Fecha de nacimiento</div>
               <input

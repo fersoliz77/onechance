@@ -47,7 +47,7 @@ function NotificationBell({ uid }: { uid: string }) {
       <button
         onClick={handleOpen}
         aria-label="Notificaciones"
-        className="relative flex items-center justify-center w-9 h-9 rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] transition-colors cursor-pointer"
+        className="relative flex items-center justify-center h-11 w-11 lg:h-9 lg:w-9 rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] transition-colors cursor-pointer"
       >
         <svg className="h-[17px] w-[17px] text-white/55" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -251,7 +251,7 @@ export default function Nav() {
               <button
                 aria-label="Abrir menu"
                 aria-expanded={mobileOpen}
-                className="ml-1 inline-flex h-9 w-9 items-center justify-center rounded-[8px] border border-[var(--oc-border-hi)] text-white lg:hidden"
+                className="ml-1 inline-flex h-11 w-11 items-center justify-center rounded-[8px] border border-[var(--oc-border-hi)] text-white lg:hidden"
                 onClick={() => setMobileOpen(prev => !prev)}
               >
                 <span className="text-[17px] leading-none">{mobileOpen ? 'x' : '='}</span>
@@ -271,7 +271,7 @@ export default function Nav() {
               <button
                 aria-label="Abrir menu"
                 aria-expanded={mobileOpen}
-                className="ml-1 inline-flex h-9 w-9 items-center justify-center rounded-[8px] border border-[var(--oc-border-hi)] text-white lg:hidden"
+                className="ml-1 inline-flex h-11 w-11 items-center justify-center rounded-[8px] border border-[var(--oc-border-hi)] text-white lg:hidden"
                 onClick={() => setMobileOpen(prev => !prev)}
               >
                 <span className="text-[17px] leading-none">{mobileOpen ? 'x' : '='}</span>
