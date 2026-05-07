@@ -6,5 +6,5 @@ type Props = {
 }
 
 export default function EmptyState({ message, className = '' }: Props) {
-  return <div className={cn('text-center py-16 text-[var(--oc-text-faint)] text-[13px]', className)}>{message}</div>
+  return <div className={cn('text-center py-16 text-[var(--oc-text-faint)] text-[14px]', className)}>{message}</div>
 }

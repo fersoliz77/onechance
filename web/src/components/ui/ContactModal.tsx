@@ -75,34 +75,34 @@ export default function ContactModal({ toUid, toName, accent, onClose }: Contact
 
         <div className="relative z-[1] mb-[var(--oc-space-5)] flex items-start justify-between">
           <div>
-            <h2 className="text-[16px] font-[700] tracking-[-0.01em] text-white">Enviar mensaje</h2>
-            <p className="mt-1 text-[11px] text-[var(--oc-fg-muted)]">a <span className="text-[var(--oc-accent)]">{toName}</span></p>
+            <h2 className="text-[17px] font-[700] tracking-[-0.01em] text-white">Enviar mensaje</h2>
+            <p className="mt-1 text-[12px] text-[var(--oc-fg-muted)]">a <span className="text-[var(--oc-accent)]">{toName}</span></p>
           </div>
-          <button onClick={onClose} className="-mt-0.5 text-[20px] leading-none text-[var(--oc-fg-dim)] transition-colors hover:text-white">×</button>
+          <button onClick={onClose} className="-mt-0.5 text-[21px] leading-none text-[var(--oc-fg-dim)] transition-colors hover:text-white">×</button>
         </div>
 
         {sent ? (
           <div className="relative z-[1] py-6 text-center">
-            <div className="text-[32px] mb-3">✓</div>
-            <p className="text-white text-[14px] font-medium mb-1">Mensaje enviado</p>
-            <p className="text-[rgba(255,255,255,0.4)] text-[12px] mb-5">{toName} recibirá una notificación.</p>
+            <div className="text-[33px] mb-3">✓</div>
+            <p className="text-white text-[15px] font-medium mb-1">Mensaje enviado</p>
+            <p className="text-[rgba(255,255,255,0.4)] text-[13px] mb-5">{toName} recibirá una notificación.</p>
             <Button variant="outline" size="sm" onClick={onClose} className="w-full justify-center">Cerrar</Button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="relative z-[1] flex flex-col gap-[var(--oc-space-4)]">
             <div>
-              <label className="mb-1.5 block text-[10px] uppercase tracking-[0.07em] text-[var(--oc-text-label)]">Asunto</label>
+              <label className="mb-1.5 block text-[11px] uppercase tracking-[0.07em] text-[var(--oc-text-label)]">Asunto</label>
               <input
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
                 maxLength={120}
                 required
                 placeholder="Ej: Propuesta de contratación"
-                className="w-full rounded-[var(--oc-radius-sm)] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5 text-[13px] text-white placeholder-[var(--oc-text-faint)] outline-none transition-colors focus:border-[var(--oc-border-strong)]"
+                className="w-full rounded-[var(--oc-radius-sm)] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5 text-[14px] text-white placeholder-[var(--oc-text-faint)] outline-none transition-colors focus:border-[var(--oc-border-strong)]"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-[10px] uppercase tracking-[0.07em] text-[var(--oc-text-label)]">Mensaje</label>
+              <label className="mb-1.5 block text-[11px] uppercase tracking-[0.07em] text-[var(--oc-text-label)]">Mensaje</label>
               <textarea
                 value={body}
                 onChange={e => setBody(e.target.value)}
@@ -110,12 +110,12 @@ export default function ContactModal({ toUid, toName, accent, onClose }: Contact
                 required
                 rows={4}
                 placeholder="Describí brevemente tu propuesta o consulta…"
-                className="w-full resize-none rounded-[var(--oc-radius-sm)] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5 text-[13px] text-white placeholder-[var(--oc-text-faint)] outline-none transition-colors focus:border-[var(--oc-border-strong)]"
+                className="w-full resize-none rounded-[var(--oc-radius-sm)] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5 text-[14px] text-white placeholder-[var(--oc-text-faint)] outline-none transition-colors focus:border-[var(--oc-border-strong)]"
               />
-              <div className="mt-1 text-right text-[10px] text-[var(--oc-text-label)]">{body.length}/1000</div>
+              <div className="mt-1 text-right text-[11px] text-[var(--oc-text-label)]">{body.length}/1000</div>
             </div>
 
-            {error && <p className="text-red-400 text-[11px]">{error}</p>}
+            {error && <p className="text-red-400 text-[12px]">{error}</p>}
 
             <div className="mt-1 flex gap-2">
               <Button type="button" variant="ghost" size="sm" onClick={onClose} className="flex-1 justify-center">Cancelar</Button>

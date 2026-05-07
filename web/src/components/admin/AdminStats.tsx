@@ -44,9 +44,9 @@ export default function AdminStats(props: Props) {
         <div key={s.label} className="relative overflow-hidden rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-5 hover:border-[rgba(255,255,255,0.13)] transition-colors">
           {/* Glow top-right */}
           <div className="pointer-events-none absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-20" style={{ background: s.color, filter: 'blur(20px)' }} />
-          <p className="text-[12px] font-medium text-[rgba(255,255,255,0.45)]">{s.label}</p>
-          <p className="mt-2 text-[28px] font-semibold text-white leading-none">{s.value}</p>
-          <p className="mt-2 text-[11px] font-bold" style={{ color: s.warn ? '#F59E0B' : '#AAFF00' }}>{s.delta}</p>
+          <p className="text-[13px] font-medium text-[rgba(255,255,255,0.45)]">{s.label}</p>
+          <p className="mt-2 text-[29px] font-semibold text-white leading-none">{s.value}</p>
+          <p className="mt-2 text-[12px] font-bold" style={{ color: s.warn ? '#F59E0B' : '#AAFF00' }}>{s.delta}</p>
           {i === 0 && <Sparkline />}
         </div>
       ))}

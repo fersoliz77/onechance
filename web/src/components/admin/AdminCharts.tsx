@@ -60,14 +60,14 @@ export default function AdminCharts({
     <div className="grid grid-cols-2 gap-6">
       <section className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-6">
         <div className="flex items-center justify-between gap-4">
-          <h3 className="text-[18px] font-semibold text-white">Crecimiento mensual</h3>
+          <h3 className="text-[19px] font-semibold text-white">Crecimiento mensual</h3>
           <div className="inline-flex rounded-lg border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.03)] p-1">
             {RANGE_OPTIONS.map(opt => (
               <button
                 key={opt}
                 type="button"
                 onClick={() => onMonthRangeChange(opt)}
-                className="rounded-md px-2.5 py-1 text-[11px] font-semibold transition-colors"
+                className="rounded-md px-2.5 py-1 text-[12px] font-semibold transition-colors"
                 style={{
                   background: monthRange === opt ? 'rgba(170,255,0,0.14)' : 'transparent',
                   color: monthRange === opt ? '#AAFF00' : 'rgba(255,255,255,0.5)',
@@ -79,7 +79,7 @@ export default function AdminCharts({
           </div>
         </div>
         <div className="mt-4 h-[230px] rounded-lg border border-[rgba(255,255,255,0.07)] bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] p-4">
-          <div className="mb-3 flex flex-wrap gap-3 text-[12px] text-[rgba(255,255,255,0.6)]">
+          <div className="mb-3 flex flex-wrap gap-3 text-[13px] text-[rgba(255,255,255,0.6)]">
             {[...rows, { key: 'pending', label: 'Solicitudes' }].map(r => (
               <span key={r.key} className="inline-flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: ROLE_COLORS[r.key as keyof typeof ROLE_COLORS] }} />
@@ -95,20 +95,20 @@ export default function AdminCharts({
               <path key={line.key} d={seriesPath(line.data, max)} stroke={line.color} strokeWidth={line.key === 'player' ? 2.4 : 2} fill="none" />
             ))}
           </svg>
-          <div className="mt-2 flex justify-between text-[10px] text-[rgba(255,255,255,0.35)]">
+          <div className="mt-2 flex justify-between text-[11px] text-[rgba(255,255,255,0.35)]">
             {months.map(m => <span key={m}>{m}</span>)}
           </div>
         </div>
       </section>
 
       <section className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-6">
-        <h3 className="text-[18px] font-semibold text-white">Perfiles por rol</h3>
+        <h3 className="text-[19px] font-semibold text-white">Perfiles por rol</h3>
         <div className="mt-4 space-y-3">
           {rows.map(r => {
             const pct = totalUsers > 0 ? Math.round((r.value / totalUsers) * 100) : 0
             return (
               <div key={r.key}>
-                <div className="mb-1 flex items-center justify-between text-[12px]">
+                <div className="mb-1 flex items-center justify-between text-[13px]">
                   <span className="text-[rgba(255,255,255,0.75)]">{r.label}</span>
                   <span className="text-[rgba(255,255,255,0.45)]">{r.value} ({pct}%)</span>
                 </div>

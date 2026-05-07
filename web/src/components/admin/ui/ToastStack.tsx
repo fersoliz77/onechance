@@ -23,8 +23,8 @@ export default function ToastStack({ toasts, onRemove }: Props) {
           <div key={t.id}
             className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl backdrop-blur-xl border shadow-[0_16px_48px_rgba(0,0,0,0.55)] animate-[oc-fadeUp_0.25s_ease_both]"
             style={{ background: 'rgba(20,20,20,0.92)', borderColor: s.border, minWidth: 260, maxWidth: 380 }}>
-            <span className="text-[15px] font-black shrink-0" style={{ color: s.color }}>{s.icon}</span>
-            <p className="text-[13px] text-white flex-1">{t.message}</p>
+            <span className="text-[16px] font-black shrink-0" style={{ color: s.color }}>{s.icon}</span>
+            <p className="text-[14px] text-white flex-1">{t.message}</p>
             <button onClick={() => onRemove(t.id)}
               className="text-[rgba(255,255,255,0.3)] hover:text-white transition-colors text-lg leading-none cursor-pointer bg-transparent border-none shrink-0"
               aria-label="Cerrar notificación">×</button>

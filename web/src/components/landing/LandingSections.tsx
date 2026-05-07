@@ -32,8 +32,8 @@ export default function LandingSections({ ctaParallaxY, onOpenModal, onCardMove 
           ].map((card, index) => (
             <article key={card[0]} data-reveal className="oc-reveal oc-hover-card rounded-[14px] border border-[var(--oc-border)] bg-[var(--oc-bg-card)] px-8 py-8 text-center transition hover:-translate-y-0.5 hover:border-[var(--oc-border-hi)]" style={{ transitionDelay: `${index * 60}ms` }} onMouseMove={onCardMove}>
               <div className="oc-content-frame-tight">
-                <h3 className="text-[22px] font-[700] leading-[1.08] tracking-[-0.02em]">{card[0]}</h3>
-                <p className="mt-3 text-[14px] leading-[1.65] text-[var(--oc-fg-muted)]">{card[1]}</p>
+                <h3 className="text-[23px] font-[700] leading-[1.08] tracking-[-0.02em]">{card[0]}</h3>
+                <p className="mt-3 text-[15px] leading-[1.65] text-[var(--oc-fg-muted)]">{card[1]}</p>
               </div>
             </article>
           ))}
@@ -50,9 +50,9 @@ export default function LandingSections({ ctaParallaxY, onOpenModal, onCardMove 
           ].map((step, index) => (
             <article key={step[0]} data-reveal className="oc-reveal oc-hover-card rounded-[14px] border border-[var(--oc-border)] bg-[var(--oc-bg-card)] px-8 py-8 text-center transition hover:-translate-y-0.5 hover:border-[var(--oc-border-hi)]" style={{ transitionDelay: `${(index + 1) * 60}ms` }} onMouseMove={onCardMove}>
               <div className="oc-content-frame-tight">
-                <div className="text-[64px] font-[800] leading-[0.95] tracking-[-0.05em] text-[var(--oc-lime)]">{step[0]}</div>
-                <h3 className="mt-2 text-[22px] font-[700] leading-[1.1]">{step[1]}</h3>
-                <p className="mt-2 text-[14px] leading-[1.65] text-[var(--oc-fg-muted)]">{step[2]}</p>
+                <div className="text-[65px] font-[800] leading-[0.95] tracking-[-0.05em] text-[var(--oc-lime)]">{step[0]}</div>
+                <h3 className="mt-2 text-[23px] font-[700] leading-[1.1]">{step[1]}</h3>
+                <p className="mt-2 text-[15px] leading-[1.65] text-[var(--oc-fg-muted)]">{step[2]}</p>
               </div>
             </article>
           ))}
@@ -104,8 +104,8 @@ export default function LandingSections({ ctaParallaxY, onOpenModal, onCardMove 
               ['Representantes', 'Evaluá y conectá con jugadores comprometidos.'],
             ].map((item, index) => (
               <article key={item[0]} data-reveal className="oc-reveal" style={{ transitionDelay: `${index * 60}ms` }}>
-                <h4 className="text-[22px] font-[700] tracking-[-0.01em]">{item[0]}</h4>
-                <p className="mt-3 text-[14px] leading-[1.65] text-[var(--oc-fg-muted)]">{item[1]}</p>
+                <h4 className="text-[23px] font-[700] tracking-[-0.01em]">{item[0]}</h4>
+                <p className="mt-3 text-[15px] leading-[1.65] text-[var(--oc-fg-muted)]">{item[1]}</p>
               </article>
             ))}
           </div>
@@ -123,7 +123,7 @@ export default function LandingSections({ ctaParallaxY, onOpenModal, onCardMove 
           <h2 className="mx-auto max-w-[860px] text-[clamp(38px,5.8vw,64px)] font-[800] leading-[1.06] tracking-[-0.03em]">
             Tu próxima oportunidad puede empezar con un <span className="text-[var(--oc-lime)]">perfil</span>.
           </h2>
-          <p className="mx-auto mt-5 max-w-[680px] text-[17px] leading-[1.7] text-[var(--oc-fg-muted)]">
+          <p className="mx-auto mt-5 max-w-[680px] text-[18px] leading-[1.7] text-[var(--oc-fg-muted)]">
             One Chance es el lugar donde el talento deja de estar oculto y empieza a mostrarse profesionalmente.
           </p>
           <Link
@@ -132,7 +132,7 @@ export default function LandingSections({ ctaParallaxY, onOpenModal, onCardMove 
               e.preventDefault()
               onOpenModal()
             }}
-            className="group mt-9 inline-flex h-[54px] items-center gap-3 rounded-[8px] bg-[var(--oc-lime)] px-8 text-[17px] font-[700] leading-none text-black transition-all hover:scale-[1.03] hover:bg-[#C4FF40] hover:shadow-[0_8px_32px_rgba(170,255,0,0.25)]"
+            className="group mt-9 inline-flex h-[54px] items-center gap-3 rounded-[8px] bg-[var(--oc-lime)] px-8 text-[18px] font-[700] leading-none text-black transition-all hover:scale-[1.03] hover:bg-[#C4FF40] hover:shadow-[0_8px_32px_rgba(170,255,0,0.25)]"
           >
             Crear mi perfil en One Chance
             <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>

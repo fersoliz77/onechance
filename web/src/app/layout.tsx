@@ -13,6 +13,13 @@ export const metadata: Metadata = {
   title: 'OneChance — Vidriera profesional de fútbol',
   description: 'La plataforma donde clubes, representantes y técnicos descubren el talento que están buscando.',
   manifest: '/manifest.webmanifest',
+  icons: {
+    icon: [
+      { url: '/icons/pwa-icon-192.svg', type: 'image/svg+xml' },
+      { url: '/icons/pwa-icon-512.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/images/estadio.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

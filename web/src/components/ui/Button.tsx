@@ -15,9 +15,9 @@ const buttonVariants = cva(
           'border-[0.5px] border-white/20 bg-transparent hover:bg-white/5 text-white',
       },
       size: {
-        default: 'h-11 min-w-[130px] px-7 py-2.5 text-[14px]',
-        sm: 'h-10 min-w-[116px] rounded-[9px] px-7 text-[13px]',
-        lg: 'h-[50px] min-w-[220px] px-12 text-[15px]',
+        default: 'h-11 min-w-[130px] px-7 py-2.5 text-[15px]',
+        sm: 'h-10 min-w-[116px] rounded-[9px] px-7 text-[14px]',
+        lg: 'h-[50px] min-w-[220px] px-12 text-[16px]',
         icon: 'h-10 w-10',
       },
     },

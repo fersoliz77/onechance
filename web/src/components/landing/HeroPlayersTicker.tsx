@@ -37,7 +37,7 @@ export default function HeroPlayersTicker({
       <div className="oc-shell">
         <div className="group overflow-hidden py-3 [mask-image:linear-gradient(90deg,transparent,black_7%,black_93%,transparent)]">
           <div
-            className="flex w-max items-center gap-3 whitespace-nowrap text-[12px] font-[500] tracking-[0.005em] text-white/80 motion-reduce:animate-none md:text-[13px] md:group-hover:[animation-play-state:paused]"
+            className="flex w-max items-center gap-3 whitespace-nowrap text-[13px] font-[500] tracking-[0.005em] text-white/80 motion-reduce:animate-none md:text-[14px] md:group-hover:[animation-play-state:paused]"
             style={{ animation: `oc-ticker-loop ${durationSeconds}s linear infinite` }}
           >
             {track.map((player, index) => (

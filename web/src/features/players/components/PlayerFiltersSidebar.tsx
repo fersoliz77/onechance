@@ -17,7 +17,7 @@ export default function PlayerFiltersSidebar({ filters, setFilters, onClear }: P
           key={o.value}
           type="button"
           onClick={() => setFilters({ ...filters, [keyName]: o.value })}
-          className="px-[10px] py-1 rounded-[20px] text-[10px] sm:text-[9px] cursor-pointer transition-all duration-150"
+          className="px-[10px] py-1 rounded-[20px] text-[11px] sm:text-[10px] cursor-pointer transition-all duration-150"
           style={{
             background: filters[keyName] === o.value ? 'rgba(0,200,83,0.12)' : 'rgba(255,255,255,0.03)',
             border: `0.5px solid ${filters[keyName] === o.value ? 'rgba(0,200,83,0.35)' : 'rgba(255,255,255,0.07)'}`,
@@ -34,8 +34,8 @@ export default function PlayerFiltersSidebar({ filters, setFilters, onClear }: P
   return (
     <aside className="w-full shrink-0 rounded-[var(--oc-radius-xl)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-4)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_18px_50px_rgba(0,0,0,0.35)] md:sticky md:top-[calc(var(--oc-nav-height)+var(--oc-space-4))] md:w-[300px] self-start">
       <div className="mb-[var(--oc-space-4)] flex items-center justify-between">
-        <span className="text-[14px] font-[700] text-white">Filtros</span>
-        <button onClick={onClear} className="cursor-pointer border-none bg-transparent text-[11px] text-[var(--oc-lime)]">Limpiar</button>
+        <span className="text-[15px] font-[700] text-white">Filtros</span>
+        <button onClick={onClear} className="cursor-pointer border-none bg-transparent text-[12px] text-[var(--oc-lime)]">Limpiar</button>
       </div>
       <div className="mb-3.5">
         <SectionKicker className="mb-1.5">Sexo</SectionKicker>

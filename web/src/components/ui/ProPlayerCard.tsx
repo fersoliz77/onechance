@@ -2,6 +2,7 @@
 
 import { useId, useRef } from 'react'
 import type { PointerEvent } from 'react'
+import Image from 'next/image'
 import styles from './ProPlayerCard.module.css'
 
 type PlayerStat = {
@@ -103,7 +104,13 @@ export default function ProPlayerCard({
         </header>
 
         <section className={styles.playerArea}>
-          <img className={styles.playerImg} src={imageUrl} alt="Jugador de futbol profesional" />
+          <Image
+            className={styles.playerImg}
+            src={imageUrl}
+            alt="Jugador de futbol profesional"
+            fill
+            sizes="(max-width: 768px) 100vw, 700px"
+          />
         </section>
 
         <section className={styles.info}>

@@ -54,7 +54,7 @@ function NotificationBell({ uid }: { uid: string }) {
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
         {unread > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-[3px] leading-none">
+          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center px-[3px] leading-none">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
@@ -63,13 +63,13 @@ function NotificationBell({ uid }: { uid: string }) {
       {open && (
         <div className="absolute right-0 top-[calc(100%+8px)] w-[300px] rounded-[12px] border border-[rgba(255,255,255,0.1)] bg-[rgba(14,14,14,0.97)] shadow-[0_16px_48px_rgba(0,0,0,0.6)] backdrop-blur-xl overflow-hidden z-[200]">
           <div className="px-4 py-2.5 border-b border-[rgba(255,255,255,0.07)] flex items-center justify-between">
-            <span className="text-[11px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)]">Notificaciones</span>
+            <span className="text-[12px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)]">Notificaciones</span>
             {notifs.length > 0 && (
-              <span className="text-[10px] text-[rgba(255,255,255,0.2)]">{notifs.length} total</span>
+              <span className="text-[11px] text-[rgba(255,255,255,0.2)]">{notifs.length} total</span>
             )}
           </div>
           {notifs.length === 0 ? (
-            <div className="px-4 py-6 text-center text-[12px] text-[rgba(255,255,255,0.2)]">Sin notificaciones</div>
+            <div className="px-4 py-6 text-center text-[13px] text-[rgba(255,255,255,0.2)]">Sin notificaciones</div>
           ) : (
             <div className="max-h-[320px] overflow-y-auto">
               {notifs.slice(0, 10).map(n => (
@@ -77,8 +77,8 @@ function NotificationBell({ uid }: { uid: string }) {
                   <div className="flex items-start gap-2">
                     {!n.read && <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#00C853] shrink-0" />}
                     <div className={!n.read ? '' : 'pl-[14px]'}>
-                      <p className="text-[12px] text-[rgba(255,255,255,0.65)] leading-[1.5]">{n.message}</p>
-                      <p className="text-[10px] text-[rgba(255,255,255,0.2)] mt-0.5">{n.createdAt ? timeAgo(n.createdAt) : ''}</p>
+                      <p className="text-[13px] text-[rgba(255,255,255,0.65)] leading-[1.5]">{n.message}</p>
+                      <p className="text-[11px] text-[rgba(255,255,255,0.2)] mt-0.5">{n.createdAt ? timeAgo(n.createdAt) : ''}</p>
                     </div>
                   </div>
                 </div>
@@ -131,12 +131,12 @@ function UserMenu({ name, role, systemRole }: { name: string; role: Role | null;
         }}
       >
         <div
-          className="w-[28px] h-[28px] rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+          className="w-[28px] h-[28px] rounded-full flex items-center justify-center text-[12px] font-bold shrink-0"
           style={{ background: `linear-gradient(135deg,${accent},${accent}55)` }}
         >
           <span className="text-black">{initial}</span>
         </div>
-        <span className="text-white text-[12px] font-medium hidden sm:block max-w-[110px] truncate">{name}</span>
+        <span className="text-white text-[13px] font-medium hidden sm:block max-w-[110px] truncate">{name}</span>
         <svg className="hidden h-3 w-3 shrink-0 text-white/40 sm:block" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={2}>
           <path d={open ? 'M2 8l4-4 4 4' : 'M2 4l4 4 4-4'} />
         </svg>
@@ -146,31 +146,31 @@ function UserMenu({ name, role, systemRole }: { name: string; role: Role | null;
         <div className="absolute right-0 top-[calc(100%+8px)] w-[220px] rounded-[12px] border border-[rgba(255,255,255,0.1)] bg-[rgba(14,14,14,0.97)] shadow-[0_16px_48px_rgba(0,0,0,0.6)] backdrop-blur-xl overflow-hidden z-[200]">
           {/* Header */}
           <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.07)]">
-            <div className="text-white text-[13px] font-medium truncate">{name}</div>
-            <div className="text-[11px] mt-0.5 truncate" style={{ color: accent }}>{roleLabel}</div>
+            <div className="text-white text-[14px] font-medium truncate">{name}</div>
+            <div className="text-[12px] mt-0.5 truncate" style={{ color: accent }}>{roleLabel}</div>
           </div>
           {/* Actions */}
           <div className="py-1.5">
             <button
               onClick={() => { setOpen(false); router.push('/dashboard') }}
-              className="w-full flex items-center gap-2.5 px-4 py-2 text-[12px] text-[rgba(255,255,255,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.05)] transition-colors cursor-pointer text-left"
+              className="w-full flex items-center gap-2.5 px-4 py-2 text-[13px] text-[rgba(255,255,255,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.05)] transition-colors cursor-pointer text-left"
             >
-              <span className="text-[14px]">◉</span> Mi panel
+              <span className="text-[15px]">◉</span> Mi panel
             </button>
             {isAdminRole(systemRole as 'user' | 'admin' | 'super_admin') && (
               <button
                 onClick={() => { setOpen(false); router.push('/admin') }}
-                className="w-full flex items-center gap-2.5 px-4 py-2 text-[12px] text-[rgba(255,255,255,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.05)] transition-colors cursor-pointer text-left"
+                className="w-full flex items-center gap-2.5 px-4 py-2 text-[13px] text-[rgba(255,255,255,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.05)] transition-colors cursor-pointer text-left"
               >
-                <span className="text-[14px]">⚡</span> Panel admin
+                <span className="text-[15px]">⚡</span> Panel admin
               </button>
             )}
             <div className="my-1 border-t border-[rgba(255,255,255,0.06)]" />
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-2.5 px-4 py-2 text-[12px] text-[rgba(255,60,60,0.75)] hover:text-[#FF6060] hover:bg-[rgba(255,60,60,0.06)] transition-colors cursor-pointer text-left"
+              className="w-full flex items-center gap-2.5 px-4 py-2 text-[13px] text-[rgba(255,60,60,0.75)] hover:text-[#FF6060] hover:bg-[rgba(255,60,60,0.06)] transition-colors cursor-pointer text-left"
             >
-              <span className="text-[14px]">→</span> Cerrar sesión
+              <span className="text-[15px]">→</span> Cerrar sesión
             </button>
           </div>
         </div>
@@ -219,9 +219,9 @@ export default function Nav() {
       <div className="oc-shell h-full flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-1 cursor-pointer no-underline">
-          <span className={`text-white font-medium tracking-[-0.02em] transition-all duration-300 ${navCompact ? 'text-[19px]' : 'text-[22px]'}`}>ONE</span>
+          <span className={`text-white font-medium tracking-[-0.02em] transition-all duration-300 ${navCompact ? 'text-[20px]' : 'text-[23px]'}`}>ONE</span>
           <span className={`bg-oc-green rounded-full mx-[2px] animate-blink transition-all duration-300 ${navCompact ? 'w-[5px] h-[5px]' : 'w-[6px] h-[6px]'}`} />
-          <span className={`text-oc-green font-medium tracking-[-0.02em] transition-all duration-300 ${navCompact ? 'text-[19px]' : 'text-[22px]'}`}>CHANCE</span>
+          <span className={`text-oc-green font-medium tracking-[-0.02em] transition-all duration-300 ${navCompact ? 'text-[20px]' : 'text-[23px]'}`}>CHANCE</span>
         </Link>
 
         {/* Nav links */}
@@ -230,7 +230,7 @@ export default function Nav() {
             <Link
               key={l.href}
               href={l.href}
-              className={`oc-nav-link transition-all duration-300 ${navCompact ? 'text-[15px]' : 'text-[16px]'} ${
+              className={`oc-nav-link transition-all duration-300 ${navCompact ? 'text-[16px]' : 'text-[17px]'} ${
                 pathname.startsWith(l.href)
                   ? 'is-active font-semibold'
                   : 'text-[var(--oc-fg-muted)]'
@@ -253,7 +253,7 @@ export default function Nav() {
                 className="ml-1 inline-flex h-9 w-9 items-center justify-center rounded-[8px] border border-[var(--oc-border-hi)] text-white lg:hidden"
                 onClick={() => setMobileOpen(prev => !prev)}
               >
-                <span className="text-[16px] leading-none">{mobileOpen ? 'x' : '='}</span>
+                <span className="text-[17px] leading-none">{mobileOpen ? 'x' : '='}</span>
               </button>
             </>
           ) : (
@@ -263,7 +263,7 @@ export default function Nav() {
               </Button>
               <button
                 onClick={() => router.push('/auth?tab=register')}
-                className="h-10 min-w-[140px] px-7 rounded-[8px] inline-flex items-center justify-center gap-2.5 no-underline text-[13px] font-[700] leading-none tracking-[-0.01em] text-black bg-[var(--oc-lime)] shadow-[0_8px_32px_rgba(170,255,0,0.25)] transition-all duration-200 hover:-translate-y-[2px] hover:bg-[#C4FF40] cursor-pointer"
+                className="h-10 min-w-[140px] px-7 rounded-[8px] inline-flex items-center justify-center gap-2.5 no-underline text-[14px] font-[700] leading-none tracking-[-0.01em] text-black bg-[var(--oc-lime)] shadow-[0_8px_32px_rgba(170,255,0,0.25)] transition-all duration-200 hover:-translate-y-[2px] hover:bg-[#C4FF40] cursor-pointer"
               >
                 Publicar perfil
               </button>
@@ -273,7 +273,7 @@ export default function Nav() {
                 className="ml-1 inline-flex h-9 w-9 items-center justify-center rounded-[8px] border border-[var(--oc-border-hi)] text-white lg:hidden"
                 onClick={() => setMobileOpen(prev => !prev)}
               >
-                <span className="text-[16px] leading-none">{mobileOpen ? 'x' : '='}</span>
+                <span className="text-[17px] leading-none">{mobileOpen ? 'x' : '='}</span>
               </button>
             </>
           )}
@@ -288,7 +288,7 @@ export default function Nav() {
               key={l.href}
               href={l.href}
               onClick={() => setMobileOpen(false)}
-              className={`oc-nav-link rounded-[8px] px-3 py-2 text-[14px] ${pathname.startsWith(l.href) ? 'is-active' : 'text-white'}`}
+              className={`oc-nav-link rounded-[8px] px-3 py-2 text-[15px] ${pathname.startsWith(l.href) ? 'is-active' : 'text-white'}`}
             >
               {l.label}
             </Link>
@@ -298,13 +298,13 @@ export default function Nav() {
               <div className="my-2 border-t border-[rgba(255,255,255,0.06)]" />
               <button
                 onClick={() => { setMobileOpen(false); router.push('/dashboard') }}
-                className="rounded-[8px] px-3 py-2 text-[14px] text-white text-left cursor-pointer bg-transparent border-none"
+                className="rounded-[8px] px-3 py-2 text-[15px] text-white text-left cursor-pointer bg-transparent border-none"
               >
                 Mi panel
               </button>
               <button
                 onClick={async () => { setMobileOpen(false); await logout(); router.push('/') }}
-                className="rounded-[8px] px-3 py-2 text-[14px] text-[rgba(255,60,60,0.8)] text-left cursor-pointer bg-transparent border-none"
+                className="rounded-[8px] px-3 py-2 text-[15px] text-[rgba(255,60,60,0.8)] text-left cursor-pointer bg-transparent border-none"
               >
                 Cerrar sesión
               </button>

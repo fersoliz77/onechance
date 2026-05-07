@@ -25,21 +25,21 @@ export function PlayerCard({
       >
         <div className="h-[2px] bg-gradient-to-r from-oc-green to-transparent -mt-4 -mx-4 mb-3" />
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-[44px] h-[44px] rounded-full bg-gradient-to-br from-oc-green to-oc-green-deep flex items-center justify-center text-[18px] border-[1.5px] border-[rgba(0,200,83,0.4)] shadow-[0_0_18px_rgba(0,200,83,0.35)]">{avatar}</div>
+          <div className="w-[44px] h-[44px] rounded-full bg-gradient-to-br from-oc-green to-oc-green-deep flex items-center justify-center text-[19px] border-[1.5px] border-[rgba(0,200,83,0.4)] shadow-[0_0_18px_rgba(0,200,83,0.35)]">{avatar}</div>
           <div className="flex-1">
-            <div className="text-white text-[12px] font-medium">{name}</div>
-            <div className="text-oc-green text-[10px] mt-0.5">{position}</div>
+            <div className="text-white text-[13px] font-medium">{name}</div>
+            <div className="text-oc-green text-[11px] mt-0.5">{position}</div>
           </div>
             <div className="bg-[rgba(0,200,83,0.12)] rounded-[7px] px-[8px] py-[5px] text-center border border-[rgba(0,200,83,0.2)]">
-            <div className="text-oc-green text-[14px] font-medium leading-none">{overall}</div>
-            <div className="text-[rgba(255,255,255,0.2)] text-[7px] uppercase mt-0.5">OVR</div>
+            <div className="text-oc-green text-[15px] font-medium leading-none">{overall}</div>
+            <div className="text-[rgba(255,255,255,0.2)] text-[8px] uppercase mt-0.5">OVR</div>
           </div>
         </div>
         <div className="grid grid-cols-3 gap-1.5">
           {[[country, 'Nac.'], [height, 'Alt.'], [age, 'Edad']].map(([v, l]) => (
             <div key={l} className="bg-[rgba(0,200,83,0.08)] rounded-[6px] p-[6px] text-center border border-[rgba(0,200,83,0.12)]">
-              <div className="text-oc-green text-[11px] font-medium">{v}</div>
-              <div className="text-[rgba(255,255,255,0.2)] text-[7px] uppercase mt-0.5">{l}</div>
+              <div className="text-oc-green text-[12px] font-medium">{v}</div>
+              <div className="text-[rgba(255,255,255,0.2)] text-[8px] uppercase mt-0.5">{l}</div>
             </div>
           ))}
         </div>
@@ -62,9 +62,9 @@ export function ClubChip({
           boxShadow: '0 12px 30px rgba(0,0,0,0.3)'
         }}
       >
-        <div className="text-[rgba(255,180,0,0.72)] text-[8px] uppercase tracking-[0.08em] mb-1">Club verificado</div>
-        <div className="text-white text-[12px] font-medium">{name}</div>
-        <div className="text-[rgba(255,255,255,0.35)] text-[9px] mt-0.5">{liga}</div>
+        <div className="text-[rgba(255,180,0,0.72)] text-[9px] uppercase tracking-[0.08em] mb-1">Club verificado</div>
+        <div className="text-white text-[13px] font-medium">{name}</div>
+        <div className="text-[rgba(255,255,255,0.35)] text-[10px] mt-0.5">{liga}</div>
       </div>
     </div>
   )
@@ -86,15 +86,15 @@ export function CoachCard({
         }}
       >
         <div className="flex items-center gap-2.5 mb-2">
-          <div className="w-[36px] h-[36px] rounded-full bg-gradient-to-br from-oc-blue to-[#0B1A3A] flex items-center justify-center text-[14px] border border-[rgba(90,143,255,0.35)] shadow-[0_0_14px_rgba(90,143,255,0.32)]">📋</div>
+          <div className="w-[36px] h-[36px] rounded-full bg-gradient-to-br from-oc-blue to-[#0B1A3A] flex items-center justify-center text-[15px] border border-[rgba(90,143,255,0.35)] shadow-[0_0_14px_rgba(90,143,255,0.32)]">📋</div>
           <div>
-            <div className="text-white text-[11px] font-medium">{name}</div>
-            <div className="text-oc-blue text-[9px] mt-0.5">{role}</div>
+            <div className="text-white text-[12px] font-medium">{name}</div>
+            <div className="text-oc-blue text-[10px] mt-0.5">{role}</div>
           </div>
         </div>
         <div className="flex gap-1 flex-wrap">
           {tags.map(t => (
-            <span key={t} className="bg-[rgba(90,143,255,0.07)] text-oc-blue text-[8px] px-[8px] py-[3px] rounded-[8px]" style={{ border: '0.5px solid rgba(90,143,255,0.18)' }}>
+            <span key={t} className="bg-[rgba(90,143,255,0.07)] text-oc-blue text-[9px] px-[8px] py-[3px] rounded-[8px]" style={{ border: '0.5px solid rgba(90,143,255,0.18)' }}>
               {t}
             </span>
           ))}
@@ -118,16 +118,16 @@ export function RepChip({
           boxShadow: '0 12px 30px rgba(0,0,0,0.3)'
         }}
       >
-        <div className="text-[rgba(180,100,255,0.75)] text-[8px] uppercase tracking-[0.08em] mb-1">Representante</div>
-        <div className="text-white text-[12px] font-medium">{name}</div>
+        <div className="text-[rgba(180,100,255,0.75)] text-[9px] uppercase tracking-[0.08em] mb-1">Representante</div>
+        <div className="text-white text-[13px] font-medium">{name}</div>
         <div className="flex gap-1.5 mt-2">
           <div className="flex-1 bg-[rgba(180,100,255,0.08)] rounded-[6px] p-1.5 text-center">
-            <div className="text-[#B464FF] text-[11px] font-medium">{players}</div>
-            <div className="text-[rgba(255,255,255,0.2)] text-[7px] uppercase">Jugadores</div>
+            <div className="text-[#B464FF] text-[12px] font-medium">{players}</div>
+            <div className="text-[rgba(255,255,255,0.2)] text-[8px] uppercase">Jugadores</div>
           </div>
           <div className="flex-1 bg-[rgba(180,100,255,0.08)] rounded-[6px] p-1.5 text-center">
-            <div className="text-[#B464FF] text-[11px] font-medium">{countries}</div>
-            <div className="text-[rgba(255,255,255,0.2)] text-[7px] uppercase">Países</div>
+            <div className="text-[#B464FF] text-[12px] font-medium">{countries}</div>
+            <div className="text-[rgba(255,255,255,0.2)] text-[8px] uppercase">Países</div>
           </div>
         </div>
       </div>

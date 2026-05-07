@@ -310,7 +310,7 @@ export default function AdminPage() {
                   <thead>
                     <tr className="border-b border-[rgba(255,255,255,0.07)]">
                       {['Jugador','Posición','Nacionalidad','Estado','Destacado','Acciones'].map(h => (
-                        <th key={h} className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-[0.05em] text-[rgba(255,255,255,0.3)]">{h}</th>
+                        <th key={h} className="px-5 py-3.5 text-left text-[12px] font-semibold uppercase tracking-[0.05em] text-[rgba(255,255,255,0.3)]">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -319,7 +319,7 @@ export default function AdminPage() {
                       <tr key={p.uid} className="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.02)] transition-colors">
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#AAFF00] to-[#7B3FF6] flex items-center justify-center text-[10px] font-black text-black shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#AAFF00] to-[#7B3FF6] flex items-center justify-center text-[11px] font-black text-black shrink-0">
                               {(p.fullName?.[0] ?? '?').toUpperCase()}
                             </div>
                             <span className="font-medium text-white">{p.fullName}</span>
@@ -328,19 +328,19 @@ export default function AdminPage() {
                         <td className="px-5 py-3 text-[rgba(255,255,255,0.5)]">{p.position ?? '—'}</td>
                         <td className="px-5 py-3 text-[rgba(255,255,255,0.5)]">{p.nationality ?? '—'}</td>
                         <td className="px-5 py-3">
-                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[rgba(170,255,0,0.1)] text-[#AAFF00] border border-[rgba(170,255,0,0.28)]">
+                          <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-2.5 py-1 rounded-full bg-[rgba(170,255,0,0.1)] text-[#AAFF00] border border-[rgba(170,255,0,0.28)]">
                             <span className="w-1.5 h-1.5 rounded-full bg-current" />Publicado
                           </span>
                         </td>
                         <td className="px-5 py-3">
                           <button onClick={() => handleFeatured(p.uid, p.isFeatured)}
-                            className="text-[11px] px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer border-none"
+                            className="text-[12px] px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer border-none"
                             style={{ background: p.isFeatured ? 'rgba(170,255,0,0.12)' : 'rgba(255,255,255,0.06)', color: p.isFeatured ? '#AAFF00' : 'rgba(255,255,255,0.4)' }}>
                             {p.isFeatured ? '★ Destacado' : '☆ Destacar'}
                           </button>
                         </td>
                         <td className="px-5 py-3">
-                          <button className="text-[11px] px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.5)] hover:text-white hover:border-[rgba(255,255,255,0.2)] transition-all cursor-pointer bg-transparent">
+                          <button className="text-[12px] px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.5)] hover:text-white hover:border-[rgba(255,255,255,0.2)] transition-all cursor-pointer bg-transparent">
                             Ver perfil
                           </button>
                         </td>
@@ -364,7 +364,7 @@ export default function AdminPage() {
                   <thead>
                     <tr className="border-b border-[rgba(255,255,255,0.07)]">
                       {['Usuario','Rol','Sistema','Acciones'].map(h => (
-                        <th key={h} className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-[0.05em] text-[rgba(255,255,255,0.3)]">{h}</th>
+                        <th key={h} className="px-5 py-3.5 text-left text-[12px] font-semibold uppercase tracking-[0.05em] text-[rgba(255,255,255,0.3)]">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -373,25 +373,25 @@ export default function AdminPage() {
                       <tr key={u.uid} className="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.02)] transition-colors">
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-[rgba(255,255,255,0.08)] flex items-center justify-center text-[10px] font-bold shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-[rgba(255,255,255,0.08)] flex items-center justify-center text-[11px] font-bold shrink-0">
                               {((u.name || u.email)?.[0] ?? '?').toUpperCase()}
                             </div>
                             <div>
                               <p className="text-white font-medium">{u.name || '—'}</p>
-                              <p className="text-[11px] text-[rgba(255,255,255,0.3)]">{u.email}</p>
+                              <p className="text-[12px] text-[rgba(255,255,255,0.3)]">{u.email}</p>
                             </div>
                           </div>
                         </td>
                         <td className="px-5 py-3"><RoleBadge role={u.role} /></td>
                         <td className="px-5 py-3">
-                          <span className="text-[11px] px-2 py-1 rounded-md bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.4)]">{u.systemRole ?? 'user'}</span>
+                          <span className="text-[12px] px-2 py-1 rounded-md bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.4)]">{u.systemRole ?? 'user'}</span>
                         </td>
                         <td className="px-5 py-3">
                           {isSuperAdmin && (
                             <div className="flex gap-1.5">
                               {(['user','admin','super_admin'] as const).map(role => (
                                 <button key={role} onClick={() => handleSetSystemRole(u.uid, role)}
-                                  className="text-[10px] px-2 py-1 rounded-md cursor-pointer font-sans border-none transition-all"
+                                  className="text-[11px] px-2 py-1 rounded-md cursor-pointer font-sans border-none transition-all"
                                   style={{ background: u.systemRole === role ? 'rgba(170,255,0,0.15)' : 'rgba(255,255,255,0.06)', color: u.systemRole === role ? '#AAFF00' : 'rgba(255,255,255,0.4)' }}>
                                   {role.replace('_',' ')}
                                 </button>
@@ -439,7 +439,7 @@ export default function AdminPage() {
           )}
         </div>
 
-        <footer className="px-7 py-5 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between text-[11px] text-[rgba(255,255,255,0.2)]">
+        <footer className="px-7 py-5 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between text-[12px] text-[rgba(255,255,255,0.2)]">
           <span>One Chance Admin Panel © 2025</span>
           <span>v2.0.0</span>
         </footer>
@@ -465,5 +465,5 @@ function RoleBadge({ role }: { role?: string }) {
     agent:  { label:'Representante', color:'#7B3FF6', bg:'rgba(123,63,246,0.1)' },
   }
   const s = map[role ?? ''] ?? { label: role ?? '—', color:'rgba(255,255,255,0.4)', bg:'rgba(255,255,255,0.06)' }
-  return <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ color:s.color, background:s.bg }}>{s.label}</span>
+  return <span className="text-[12px] font-semibold px-2.5 py-1 rounded-full" style={{ color:s.color, background:s.bg }}>{s.label}</span>
 }

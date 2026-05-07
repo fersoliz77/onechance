@@ -40,15 +40,15 @@ export default function ConfirmModal({ open, title, description, confirmLabel = 
             : <svg className="w-5 h-5 text-[#AAFF00]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 9v4m0 4h.01"/><circle cx="12" cy="12" r="9"/></svg>
           }
         </div>
-        <h2 id="confirm-title" className="text-[17px] font-semibold text-white mb-1.5">{title}</h2>
-        {description && <p className="text-[13px] text-[rgba(255,255,255,0.4)] leading-relaxed mb-6">{description}</p>}
+        <h2 id="confirm-title" className="text-[18px] font-semibold text-white mb-1.5">{title}</h2>
+        {description && <p className="text-[14px] text-[rgba(255,255,255,0.4)] leading-relaxed mb-6">{description}</p>}
         <div className="flex gap-3 justify-end mt-5">
           <button onClick={onCancel}
-            className="px-4 py-2.5 rounded-xl text-[13px] font-medium text-[rgba(255,255,255,0.5)] border border-[rgba(255,255,255,0.1)] hover:text-white hover:border-[rgba(255,255,255,0.2)] transition-all cursor-pointer bg-transparent">
+            className="px-4 py-2.5 rounded-xl text-[14px] font-medium text-[rgba(255,255,255,0.5)] border border-[rgba(255,255,255,0.1)] hover:text-white hover:border-[rgba(255,255,255,0.2)] transition-all cursor-pointer bg-transparent">
             Cancelar
           </button>
           <button onClick={() => { onConfirm(); }}
-            className="px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all cursor-pointer border-none"
+            className="px-4 py-2.5 rounded-xl text-[14px] font-semibold transition-all cursor-pointer border-none"
             style={danger
               ? { background: 'rgba(244,63,94,0.18)', color: '#F43F5E', outline: '1px solid rgba(244,63,94,0.35)' }
               : { background: '#AAFF00', color: '#000' }}>

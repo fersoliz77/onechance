@@ -54,23 +54,23 @@ export default function AdminActivity({ pending, players, videos }: Props) {
   return (
     <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-5 flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[16px] font-semibold text-white">Actividad reciente</h2>
-        <button className="text-[12px] font-bold text-[#AAFF00] cursor-pointer hover:underline bg-transparent border-none">Ver todas</button>
+        <h2 className="text-[17px] font-semibold text-white">Actividad reciente</h2>
+        <button className="text-[13px] font-bold text-[#AAFF00] cursor-pointer hover:underline bg-transparent border-none">Ver todas</button>
       </div>
 
       <div className="flex flex-col gap-3 flex-1">
         {display.map((it, i) => (
           <div key={i} className="flex items-center gap-3 pb-3 border-b border-[rgba(255,255,255,0.05)] last:border-0 last:pb-0">
             {/* Avatar */}
-            <div className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-[10px] font-black text-black"
+            <div className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-[11px] font-black text-black"
               style={{ background: `linear-gradient(135deg, ${it.color}, ${it.color}88)` }}>
               {it.initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-white truncate">{it.name}</p>
-              <p className="text-[11px] text-[rgba(255,255,255,0.35)] truncate">{it.action}</p>
+              <p className="text-[14px] font-semibold text-white truncate">{it.name}</p>
+              <p className="text-[12px] text-[rgba(255,255,255,0.35)] truncate">{it.action}</p>
             </div>
-            <span className="text-[11px] text-[rgba(255,255,255,0.25)] shrink-0">{it.time}</span>
+            <span className="text-[12px] text-[rgba(255,255,255,0.25)] shrink-0">{it.time}</span>
           </div>
         ))}
       </div>

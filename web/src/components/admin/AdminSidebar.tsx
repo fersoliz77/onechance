@@ -96,16 +96,16 @@ export default function AdminSidebar({ tab, onTab, pendingCount }: Props) {
         {/* Logo */}
         <div className="flex items-center justify-between px-4 pt-6 pb-5 shrink-0" style={{ minHeight: 80 }}>
           {!collapsed ? (
-            <div className="text-[20px] font-black leading-[0.85] tracking-[0.07em] text-white whitespace-nowrap overflow-hidden">
+            <div className="text-[21px] font-black leading-[0.85] tracking-[0.07em] text-white whitespace-nowrap overflow-hidden">
               ONE<br/><span className="text-[#AAFF00]">CHANCE</span>
               <div className="mt-1.5 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#AAFF00] animate-pulse" />
-                <span className="text-[9px] text-[rgba(255,255,255,0.3)] tracking-widest uppercase">Admin</span>
+                <span className="text-[10px] text-[rgba(255,255,255,0.3)] tracking-widest uppercase">Admin</span>
               </div>
             </div>
           ) : (
             <div className="w-8 h-8 rounded-lg bg-[rgba(170,255,0,0.12)] border border-[rgba(170,255,0,0.25)] flex items-center justify-center mx-auto">
-              <span className="text-[#AAFF00] text-[10px] font-black">OC</span>
+              <span className="text-[#AAFF00] text-[11px] font-black">OC</span>
             </div>
           )}
         </div>
@@ -131,7 +131,7 @@ export default function AdminSidebar({ tab, onTab, pendingCount }: Props) {
                   <OcIcon type={item.icon} />
                   {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
                   {!collapsed && count !== undefined && count > 0 && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-[#AAFF00] text-black min-w-[20px] text-center">
+                    <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-[#AAFF00] text-black min-w-[20px] text-center">
                       {count}
                     </span>
                   )}
@@ -147,9 +147,9 @@ export default function AdminSidebar({ tab, onTab, pendingCount }: Props) {
         {/* Live activity widget */}
         {!collapsed && (
           <div className="mx-2 mb-3 rounded-xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] p-4 shrink-0">
-            <p className="text-[11px] font-semibold text-white mb-3">Actividad reciente</p>
+            <p className="text-[12px] font-semibold text-white mb-3">Actividad reciente</p>
             {activity.length === 0 ? (
-              <p className="text-[10px] text-[rgba(255,255,255,0.25)]">Sin actividad registrada.</p>
+              <p className="text-[11px] text-[rgba(255,255,255,0.25)]">Sin actividad registrada.</p>
             ) : (
               <div className="space-y-3">
                 {activity.map(item => {
@@ -161,10 +161,10 @@ export default function AdminSidebar({ tab, onTab, pendingCount }: Props) {
                         <span className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
                       </span>
                       <div className="min-w-0">
-                        <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.75)] leading-tight truncate">
+                        <p className="text-[11px] font-semibold text-[rgba(255,255,255,0.75)] leading-tight truncate">
                           {ACTION_LABEL[item.action] ?? item.action}
                         </p>
-                        <p className="text-[9px] text-[rgba(255,255,255,0.25)] mt-0.5">{timeAgo(item.timestamp)}</p>
+                        <p className="text-[10px] text-[rgba(255,255,255,0.25)] mt-0.5">{timeAgo(item.timestamp)}</p>
                       </div>
                     </div>
                   )
@@ -181,7 +181,7 @@ export default function AdminSidebar({ tab, onTab, pendingCount }: Props) {
           style={{ justifyContent: collapsed ? 'center' : 'flex-start' }}
           aria-label={collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}>
           <OcIcon type={collapsed ? 'expand' : 'collapse'} />
-          {!collapsed && <span className="text-[12px]">Colapsar</span>}
+          {!collapsed && <span className="text-[13px]">Colapsar</span>}
         </button>
       </aside>
     </>

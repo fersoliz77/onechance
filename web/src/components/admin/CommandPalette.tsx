@@ -69,17 +69,17 @@ export default function CommandPalette({ open, onClose, onNav, extraActions = []
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Buscar sección o acción…"
-            className="flex-1 bg-transparent text-white text-[15px] outline-none placeholder:text-[rgba(255,255,255,0.25)]"
+            className="flex-1 bg-transparent text-white text-[16px] outline-none placeholder:text-[rgba(255,255,255,0.25)]"
             aria-label="Búsqueda del panel de administración"
           />
-          <kbd className="text-[10px] px-1.5 py-0.5 rounded border border-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.25)]">ESC</kbd>
+          <kbd className="text-[11px] px-1.5 py-0.5 rounded border border-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.25)]">ESC</kbd>
         </div>
 
         {/* Results */}
         <div className="max-h-[340px] overflow-y-auto py-2">
           {filteredNav.length > 0 && (
             <div>
-              <p className="px-5 py-2 text-[10px] font-semibold uppercase tracking-[0.07em] text-[rgba(255,255,255,0.25)]">Navegación</p>
+              <p className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.07em] text-[rgba(255,255,255,0.25)]">Navegación</p>
               {filteredNav.map(item => (
                 <button key={item.tab}
                   onClick={() => { onNav(item.tab); onClose() }}
@@ -87,8 +87,8 @@ export default function CommandPalette({ open, onClose, onNav, extraActions = []
                   <span className="w-7 h-7 rounded-lg bg-[rgba(170,255,0,0.08)] border border-[rgba(170,255,0,0.18)] flex items-center justify-center shrink-0 group-hover:bg-[rgba(170,255,0,0.14)] transition-colors">
                     <svg className="w-3.5 h-3.5 text-[rgba(170,255,0,0.8)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="m9 18 6-6-6-6"/></svg>
                   </span>
-                  <span className="text-[14px] text-[rgba(255,255,255,0.75)] group-hover:text-white transition-colors">{item.label}</span>
-                  <span className="ml-auto text-[11px] text-[rgba(255,255,255,0.2)]">Tab</span>
+                  <span className="text-[15px] text-[rgba(255,255,255,0.75)] group-hover:text-white transition-colors">{item.label}</span>
+                  <span className="ml-auto text-[12px] text-[rgba(255,255,255,0.2)]">Tab</span>
                 </button>
               ))}
             </div>
@@ -96,13 +96,13 @@ export default function CommandPalette({ open, onClose, onNav, extraActions = []
 
           {filteredActions.length > 0 && (
             <div className="mt-1">
-              <p className="px-5 py-2 text-[10px] font-semibold uppercase tracking-[0.07em] text-[rgba(255,255,255,0.25)]">Acciones</p>
+              <p className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.07em] text-[rgba(255,255,255,0.25)]">Acciones</p>
               {filteredActions.map(a => (
                 <button key={a.label}
                   onClick={() => { a.action(); onClose() }}
                   className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-[rgba(255,255,255,0.05)] transition-colors cursor-pointer bg-transparent border-none">
-                  <span className="w-7 h-7 rounded-lg bg-[rgba(255,255,255,0.05)] flex items-center justify-center shrink-0 text-[14px]">{a.icon}</span>
-                  <span className="text-[14px] text-[rgba(255,255,255,0.75)]">{a.label}</span>
+                  <span className="w-7 h-7 rounded-lg bg-[rgba(255,255,255,0.05)] flex items-center justify-center shrink-0 text-[15px]">{a.icon}</span>
+                  <span className="text-[15px] text-[rgba(255,255,255,0.75)]">{a.label}</span>
                 </button>
               ))}
             </div>
@@ -116,7 +116,7 @@ export default function CommandPalette({ open, onClose, onNav, extraActions = []
         </div>
 
         {/* Footer hint */}
-        <div className="flex items-center gap-4 px-5 py-2.5 border-t border-[rgba(255,255,255,0.06)] text-[11px] text-[rgba(255,255,255,0.2)]">
+        <div className="flex items-center gap-4 px-5 py-2.5 border-t border-[rgba(255,255,255,0.06)] text-[12px] text-[rgba(255,255,255,0.2)]">
           <span><kbd className="border border-[rgba(255,255,255,0.12)] rounded px-1">↵</kbd> seleccionar</span>
           <span><kbd className="border border-[rgba(255,255,255,0.12)] rounded px-1">ESC</kbd> cerrar</span>
         </div>

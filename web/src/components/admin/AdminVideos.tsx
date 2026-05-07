@@ -27,11 +27,11 @@ export default function AdminVideos({ videos, onToggle, onRemove, compact }: Pro
   return (
     <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[16px] font-semibold text-white">Videos pendientes de revisión</h2>
+        <h2 className="text-[17px] font-semibold text-white">Videos pendientes de revisión</h2>
         {compact
-          ? <button className="text-[12px] font-bold text-[#AAFF00] cursor-pointer hover:underline bg-transparent border-none">Ver todos</button>
+          ? <button className="text-[13px] font-bold text-[#AAFF00] cursor-pointer hover:underline bg-transparent border-none">Ver todos</button>
           : <div className="flex gap-2">
-              <button className="text-[11px] px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.4)] hover:text-white transition-colors cursor-pointer bg-transparent">Filtrar ▾</button>
+              <button className="text-[12px] px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.4)] hover:text-white transition-colors cursor-pointer bg-transparent">Filtrar ▾</button>
             </div>
         }
       </div>
@@ -45,15 +45,15 @@ export default function AdminVideos({ videos, onToggle, onRemove, compact }: Pro
               className="flex items-center gap-3 rounded-xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] p-3 hover:border-[rgba(255,255,255,0.11)] transition-colors">
               <VideoThumb />
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-white truncate">{v.title ?? 'Sin título'}</p>
-                <p className="text-[11px] text-[rgba(255,255,255,0.35)] truncate mt-0.5">{v.playerUid}</p>
+                <p className="text-[14px] font-semibold text-white truncate">{v.title ?? 'Sin título'}</p>
+                <p className="text-[12px] text-[rgba(255,255,255,0.35)] truncate mt-0.5">{v.playerUid}</p>
                 {!compact && v.url && (
-                  <p className="text-[10px] text-[rgba(255,255,255,0.2)] truncate mt-0.5">{v.url}</p>
+                  <p className="text-[11px] text-[rgba(255,255,255,0.2)] truncate mt-0.5">{v.url}</p>
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <button onClick={() => onToggle(v)}
-                  className="text-[11px] px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer border-none transition-all"
+                  className="text-[12px] px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer border-none transition-all"
                   style={{
                     background: v.status === 'active' ? 'rgba(170,255,0,0.1)' : 'rgba(255,255,255,0.06)',
                     color: v.status === 'active' ? '#AAFF00' : 'rgba(255,255,255,0.3)',
@@ -61,7 +61,7 @@ export default function AdminVideos({ videos, onToggle, onRemove, compact }: Pro
                   {v.status === 'active' ? 'Visible' : 'Oculto'}
                 </button>
                 <button onClick={() => onRemove(v.playerUid, v.id)}
-                  className="text-[11px] px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer border-none transition-all"
+                  className="text-[12px] px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer border-none transition-all"
                   style={{ background: 'rgba(244,63,94,0.1)', color: '#F43F5E' }}>
                   Eliminar
                 </button>

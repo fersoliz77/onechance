@@ -29,12 +29,12 @@ function QIcon({ type }: { type: string }) {
 export default function AdminQuickActions() {
   return (
     <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-5">
-      <h2 className="text-[16px] font-semibold text-white mb-4">Acciones rápidas</h2>
+      <h2 className="text-[17px] font-semibold text-white mb-4">Acciones rápidas</h2>
       <div className="grid grid-cols-3 gap-2.5">
         {ACTIONS.map(a => (
           <button
             key={a.label}
-            className="flex flex-col items-center justify-center h-[86px] rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] text-[11px] text-[rgba(255,255,255,0.45)] hover:text-white hover:border-[rgba(170,255,0,0.25)] hover:bg-[rgba(170,255,0,0.05)] transition-all cursor-pointer group"
+            className="flex flex-col items-center justify-center h-[86px] rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] text-[12px] text-[rgba(255,255,255,0.45)] hover:text-white hover:border-[rgba(170,255,0,0.25)] hover:bg-[rgba(170,255,0,0.05)] transition-all cursor-pointer group"
           >
             <span className="text-[rgba(255,255,255,0.35)] group-hover:text-[#AAFF00] transition-colors">
               <QIcon type={a.icon} />

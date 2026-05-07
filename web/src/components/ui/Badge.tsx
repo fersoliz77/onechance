@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn'
 import type { ProfileStatus } from '@/types'
 
 const badgeVariants = cva(
-  'inline-flex items-center gap-2 border-[0.5px] px-[14px] py-[5px] text-[10px] tracking-[0.07em] uppercase transition-colors',
+  'inline-flex items-center gap-2 border-[0.5px] px-[14px] py-[5px] text-[11px] tracking-[0.07em] uppercase transition-colors',
   {
     variants: {
       variant: {
@@ -39,7 +39,7 @@ function Badge({ className, variant, status, ...props }: BadgeProps) {
     const cfg = STATUS_CONFIG[status]
     return (
       <div
-        className={cn('inline-flex items-center gap-1.5 border-[0.5px] px-[11px] py-[4px] text-[10px] tracking-[0.07em] uppercase rounded-[20px]', className)}
+        className={cn('inline-flex items-center gap-1.5 border-[0.5px] px-[11px] py-[4px] text-[11px] tracking-[0.07em] uppercase rounded-[20px]', className)}
         style={{ background: cfg.bg, color: cfg.color, borderColor: cfg.border }}
         {...props}
       >

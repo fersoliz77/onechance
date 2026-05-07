@@ -16,10 +16,10 @@ export default function PanelHeader({ badgeText, title, subtitle, badgeColorClas
     <div className="mb-6 sm:mb-7 lg:mb-8">
       <div className={cn('inline-flex items-center gap-1.5 border rounded-[20px] px-2.5 sm:px-3 py-1 mb-2.5 sm:mb-3', badgeColorClass)}>
         <div className={cn('w-[5px] h-[5px] rounded-full animate-blink', dotColorClass)} />
-        <span className={cn('text-[8px] sm:text-[9px] tracking-[0.07em]', textColorClass)}>{badgeText}</span>
+        <span className={cn('text-[9px] sm:text-[10px] tracking-[0.07em]', textColorClass)}>{badgeText}</span>
       </div>
-      <h1 className="text-white text-[38px] sm:text-[32px] lg:text-[40px] leading-[1] font-medium tracking-[-0.03em] mb-2.5">{title}</h1>
-      <p className="text-[var(--oc-text-muted)] text-[15px] sm:text-[13px] lg:text-[16px] leading-[1.5] sm:leading-[1.65]">{subtitle}</p>
+      <h1 className="text-white text-[39px] sm:text-[33px] lg:text-[41px] leading-[1] font-medium tracking-[-0.03em] mb-2.5">{title}</h1>
+      <p className="text-[var(--oc-text-muted)] text-[16px] sm:text-[14px] lg:text-[17px] leading-[1.5] sm:leading-[1.65]">{subtitle}</p>
       {actions}
     </div>
   )
