@@ -6,15 +6,24 @@ interface Props {
   pending: number
   videos: number
   roleDistribution: { player: number; coach: number; club: number; agent: number }
+  deltas: {
+    profiles: string
+    player: string
+    coach: string
+    club: string
+    agent: string
+    videos: string
+    pending: string
+  }
 }
 
 const STATS = (p: Props) => [
-  { label: 'Perfiles totales', value: (p.published + p.pending).toLocaleString(), delta: '+18% vs. mes anterior', color: '#AAFF00', icon: 'dashboard' },
-  { label: 'Jugadores',        value: p.roleDistribution.player.toLocaleString(), delta: '+21%', color: '#7B3FF6', icon: 'user' },
-  { label: 'Técnicos',         value: p.roleDistribution.coach.toLocaleString(),  delta: '+15%', color: '#22D3EE', icon: 'shield' },
-  { label: 'Clubes',           value: p.roleDistribution.club.toLocaleString(),   delta: '+12%', color: '#3B82F6', icon: 'briefcase' },
-  { label: 'Representantes',   value: p.roleDistribution.agent.toLocaleString(),  delta: '+8%',  color: '#a855f7', icon: 'user' },
-  { label: 'Pendientes',       value: p.pending.toLocaleString(),                 delta: p.pending > 0 ? `${p.pending} en espera` : 'Al día', color: '#F59E0B', icon: 'clock', warn: p.pending > 0 },
+  { label: 'Perfiles totales', value: (p.published + p.pending).toLocaleString(), delta: p.deltas.profiles, color: '#AAFF00', icon: 'dashboard' },
+  { label: 'Jugadores',        value: p.roleDistribution.player.toLocaleString(), delta: p.deltas.player, color: '#7B3FF6', icon: 'user' },
+  { label: 'Técnicos',         value: p.roleDistribution.coach.toLocaleString(),  delta: p.deltas.coach, color: '#22D3EE', icon: 'shield' },
+  { label: 'Clubes',           value: p.roleDistribution.club.toLocaleString(),   delta: p.deltas.club, color: '#3B82F6', icon: 'briefcase' },
+  { label: 'Representantes',   value: p.roleDistribution.agent.toLocaleString(),  delta: p.deltas.agent, color: '#a855f7', icon: 'user' },
+  { label: 'Pendientes',       value: p.pending.toLocaleString(),                 delta: p.deltas.pending, color: '#F59E0B', icon: 'clock', warn: p.pending > 0 },
 ]
 
 function Sparkline() {

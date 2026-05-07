@@ -16,7 +16,10 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return systemRole() == 'admin' || systemRole() == 'super_admin';
+      return systemRole() == 'admin' ||
+        systemRole() == 'super_admin' ||
+        request.auth.token.role == 'admin' ||
+        request.auth.token.role == 'super_admin';
     }
 
     function canReadPublicOrPrivileged(uid) {

@@ -1,132 +1,125 @@
 'use client'
 
-interface Props {
+type RangeValue = 3 | 6 | 12
+
+type Props = {
   roleDistribution: { player: number; coach: number; club: number; agent: number }
   totalUsers: number
+  months: string[]
+  roleSeries: { player: number[]; coach: number[]; club: number[]; agent: number[] }
+  pendingSeries: number[]
+  monthRange: RangeValue
+  onMonthRangeChange: (next: RangeValue) => void
 }
 
-const MONTHS = ['May','Jun','Jul','Ago','Sep','Oct','Nov','Dic','Ene','Feb','Mar','Abr']
-const GREEN  = [44,60,54,60,72,90,96,82,85,97,90,98]
-const BLUE   = [24,30,26,34,33,36,34,38,45,47,38,32]
-const PURPLE = [11,15,16,14,15,15,20,20,24,27,20,17]
-const AMBER  = [7, 8, 6, 5, 7, 6, 7, 7, 8, 7, 6, 3]
+const ROLE_COLORS = {
+  player: '#AAFF00',
+  coach: '#22D3EE',
+  club: '#3B82F6',
+  agent: '#A855F7',
+  pending: '#F59E0B',
+} as const
 
-const W = 580, H = 190
-const px = (i: number) => 20 + i * ((W - 20) / (MONTHS.length - 1))
-const py = (v: number) => H - 12 - v * 1.7
-const path = (d: number[]) => d.map((v,i) => `${i===0?'M':'L'}${px(i)},${py(v)}`).join(' ')
+const W = 560
+const H = 170
+const RANGE_OPTIONS: RangeValue[] = [3, 6, 12]
 
-function AreaChart() {
-  const greenPath = path(GREEN)
-  return (
-    <div className="flex flex-col h-full px-6 pb-5 pt-5">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[16px] font-semibold text-white">Crecimiento de perfiles</h2>
-        <div className="flex gap-2">
-          <button className="text-[11px] px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.4)] hover:text-white transition-colors cursor-pointer bg-transparent">Últimos 12 meses ▾</button>
-          <button className="text-[11px] px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.4)] hover:text-white transition-colors cursor-pointer bg-transparent">Exportar ▾</button>
-        </div>
-      </div>
-      {/* Legend */}
-      <div className="flex items-center gap-6 mb-3 text-[11px] text-[rgba(255,255,255,0.45)]">
-        {[['#AAFF00','Jugadores'],['#3B82F6','Técnicos'],['#7B3FF6','Clubes'],['#F59E0B','Representantes']].map(([c,l]) => (
-          <span key={l} className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: c }} />
-            {l}
-          </span>
-        ))}
-      </div>
-      {/* SVG */}
-      <div className="relative flex-1 min-h-0">
-        <svg className="w-full h-full" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
-          {/* Grid lines */}
-          {[0.25,0.5,0.75,1].map(f => (
-            <line key={f} x1={20} x2={W} y1={py(f*98)} y2={py(f*98)} stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
-          ))}
-          {/* Area fill */}
-          <path d={`${greenPath} L${px(GREEN.length-1)},${H} L${px(0)},${H} Z`} fill="url(#area-g)"/>
-          {/* Lines */}
-          <path d={greenPath}  stroke="#AAFF00" strokeWidth="2.5" fill="none"/>
-          <path d={path(BLUE)}   stroke="#3B82F6" strokeWidth="2"   fill="none"/>
-          <path d={path(PURPLE)} stroke="#7B3FF6" strokeWidth="2"   fill="none"/>
-          <path d={path(AMBER)}  stroke="#F59E0B" strokeWidth="2"   fill="none"/>
-          {/* Dots – green only */}
-          {GREEN.map((v,i) => <circle key={i} cx={px(i)} cy={py(v)} r="3" fill="#AAFF00"/>)}
-          <defs>
-            <linearGradient id="area-g" x1="0" y1="0" x2="0" y2="1">
-              <stop stopColor="#AAFF00" stopOpacity=".22"/>
-              <stop offset="1" stopColor="#AAFF00" stopOpacity="0"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        {/* X labels */}
-        <div className="absolute bottom-0 left-0 right-0 flex justify-between px-[10px] text-[10px] text-[rgba(255,255,255,0.25)]">
-          {MONTHS.map(m => <span key={m}>{m}</span>)}
-        </div>
-      </div>
-    </div>
-  )
+const px = (i: number, points: number) => 20 + i * ((W - 40) / Math.max(points - 1, 1))
+const py = (v: number, max: number) => H - 14 - (v / Math.max(max, 1)) * (H - 28)
+
+function seriesPath(data: number[], max: number) {
+  return data.map((v, i) => `${i === 0 ? 'M' : 'L'}${px(i, data.length)},${py(v, max)}`).join(' ')
 }
 
-function DonutChart({ roleDistribution, totalUsers }: Props) {
-  const total = totalUsers || 1
-  const items = [
-    { label: 'Jugadores',      value: roleDistribution.player, color: '#AAFF00' },
-    { label: 'Técnicos',       value: roleDistribution.coach,  color: '#3B82F6' },
-    { label: 'Clubes',         value: roleDistribution.club,   color: '#7B3FF6' },
-    { label: 'Representantes', value: roleDistribution.agent,  color: '#F59E0B' },
-  ]
-  // Build conic-gradient stops
-  let acc = 0
-  const stops = items.map(it => {
-    const pct = (it.value / total) * 100
-    const from = acc
-    acc += pct
-    return `${it.color} ${from.toFixed(1)}% ${acc.toFixed(1)}%`
-  }).join(', ')
+export default function AdminCharts({
+  roleDistribution,
+  totalUsers,
+  months,
+  roleSeries,
+  pendingSeries,
+  monthRange,
+  onMonthRangeChange,
+}: Props) {
+  const rows = [
+    { key: 'player', label: 'Jugadores', value: roleDistribution.player },
+    { key: 'coach', label: 'Técnicos', value: roleDistribution.coach },
+    { key: 'club', label: 'Clubes', value: roleDistribution.club },
+    { key: 'agent', label: 'Representantes', value: roleDistribution.agent },
+  ] as const
+
+  const max = Math.max(...roleSeries.player, ...roleSeries.coach, ...roleSeries.club, ...roleSeries.agent, ...pendingSeries, 1)
+  const lines = [
+    { key: 'player', data: roleSeries.player, color: ROLE_COLORS.player },
+    { key: 'coach', data: roleSeries.coach, color: ROLE_COLORS.coach },
+    { key: 'club', data: roleSeries.club, color: ROLE_COLORS.club },
+    { key: 'agent', data: roleSeries.agent, color: ROLE_COLORS.agent },
+    { key: 'pending', data: pendingSeries, color: ROLE_COLORS.pending },
+  ] as const
 
   return (
-    <div className="flex flex-col h-full px-6 pt-5 pb-5">
-      <h2 className="text-[16px] font-semibold text-white mb-4">Perfiles por estado</h2>
-      <div className="flex items-center justify-center gap-8 flex-1">
-        {/* Donut */}
-        <div className="relative w-44 h-44 shrink-0 rounded-full" style={{ background: `conic-gradient(${stops || '#AAFF00 0% 100%'})` }}>
-          <div className="absolute inset-4 rounded-full bg-[#0A0A0A] flex flex-col items-center justify-center shadow-[inset_0_0_24px_rgba(0,0,0,0.6)]">
-            <span className="text-[11px] text-[rgba(255,255,255,0.35)]">Total</span>
-            <span className="text-[24px] font-semibold text-white leading-tight">{totalUsers.toLocaleString()}</span>
+    <div className="grid grid-cols-2 gap-6">
+      <section className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-6">
+        <div className="flex items-center justify-between gap-4">
+          <h3 className="text-[18px] font-semibold text-white">Crecimiento mensual</h3>
+          <div className="inline-flex rounded-lg border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.03)] p-1">
+            {RANGE_OPTIONS.map(opt => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => onMonthRangeChange(opt)}
+                className="rounded-md px-2.5 py-1 text-[11px] font-semibold transition-colors"
+                style={{
+                  background: monthRange === opt ? 'rgba(170,255,0,0.14)' : 'transparent',
+                  color: monthRange === opt ? '#AAFF00' : 'rgba(255,255,255,0.5)',
+                }}
+              >
+                {opt} meses
+              </button>
+            ))}
           </div>
         </div>
-        {/* Legend */}
-        <div className="flex flex-col gap-4 text-sm flex-1">
-          {items.map(it => {
-            const pct = total > 0 ? Math.round((it.value / total) * 100) : 0
+        <div className="mt-4 h-[230px] rounded-lg border border-[rgba(255,255,255,0.07)] bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] p-4">
+          <div className="mb-3 flex flex-wrap gap-3 text-[12px] text-[rgba(255,255,255,0.6)]">
+            {[...rows, { key: 'pending', label: 'Solicitudes' }].map(r => (
+              <span key={r.key} className="inline-flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: ROLE_COLORS[r.key as keyof typeof ROLE_COLORS] }} />
+                {r.label}
+              </span>
+            ))}
+          </div>
+          <svg className="h-[150px] w-full" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+            {[0.25, 0.5, 0.75, 1].map(step => (
+              <line key={step} x1={20} x2={W - 20} y1={py(step * max, max)} y2={py(step * max, max)} stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+            ))}
+            {lines.map(line => (
+              <path key={line.key} d={seriesPath(line.data, max)} stroke={line.color} strokeWidth={line.key === 'player' ? 2.4 : 2} fill="none" />
+            ))}
+          </svg>
+          <div className="mt-2 flex justify-between text-[10px] text-[rgba(255,255,255,0.35)]">
+            {months.map(m => <span key={m}>{m}</span>)}
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-6">
+        <h3 className="text-[18px] font-semibold text-white">Perfiles por rol</h3>
+        <div className="mt-4 space-y-3">
+          {rows.map(r => {
+            const pct = totalUsers > 0 ? Math.round((r.value / totalUsers) * 100) : 0
             return (
-              <div key={it.label} className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] pb-2">
-                <span className="flex items-center gap-2 text-[rgba(255,255,255,0.55)] text-[12px]">
-                  <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: it.color }} />
-                  {it.label}
-                </span>
-                <span className="text-[rgba(255,255,255,0.35)] text-[12px]">{it.value} ({pct}%)</span>
+              <div key={r.key}>
+                <div className="mb-1 flex items-center justify-between text-[12px]">
+                  <span className="text-[rgba(255,255,255,0.75)]">{r.label}</span>
+                  <span className="text-[rgba(255,255,255,0.45)]">{r.value} ({pct}%)</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.08)]">
+                  <div className="h-full rounded-full" style={{ width: `${pct}%`, background: ROLE_COLORS[r.key] }} />
+                </div>
               </div>
             )
           })}
         </div>
-      </div>
-    </div>
-  )
-}
-
-export default function AdminCharts(props: Props) {
-  return (
-    <div className="grid grid-cols-[1.65fr_1fr] gap-5">
-      {/* Area chart */}
-      <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] h-[340px]">
-        <AreaChart />
-      </div>
-      {/* Donut */}
-      <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] h-[340px]">
-        <DonutChart {...props} />
-      </div>
+      </section>
     </div>
   )
 }

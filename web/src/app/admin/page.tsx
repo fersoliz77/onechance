@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Background from '@/components/layout/Background'
@@ -10,6 +10,7 @@ import { isAdminRole, isSuperAdminRole } from '@/lib/permissions'
 import { logAudit } from '@/lib/auditLog'
 import { useToastState } from '@/hooks/useToast'
 import { useRateLimit } from '@/hooks/useRateLimit'
+import { buildAdminMetrics } from '@/lib/adminMetrics'
 
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader, { type Density } from '@/components/admin/AdminHeader'
@@ -37,6 +38,7 @@ export type PendingItem = {
   [key: string]: unknown
 }
 export type AdminTab = 'dashboard' | 'perfiles' | 'usuarios' | 'solicitudes' | 'videos' | 'estadisticas' | 'configuracion' | 'moderacion' | 'suscripciones'
+type MonthRange = 3 | 6 | 12
 
 interface ConfirmState {
   open: boolean
@@ -54,6 +56,7 @@ export default function AdminPage() {
   const router = useRouter()
 
   const [tab, setTab]         = useState<AdminTab>('dashboard')
+  const [monthRange, setMonthRange] = useState<MonthRange>(12)
   const [pending, setPending] = useState<PendingItem[]>([])
   const [players, setPlayers] = useState<PlayerProfile[]>([])
   const [users, setUsers]     = useState<UserRecord[]>([])
@@ -69,6 +72,7 @@ export default function AdminPage() {
 
   const { toasts, toast, remove: removeToast } = useToastState()
   const { execute } = useRateLimit(2000)
+  const metrics = useMemo(() => buildAdminMetrics(users, videos, pending, monthRange), [users, videos, pending, monthRange])
 
   const isAdmin      = isAdminRole(user?.systemRole)
   const isSuperAdmin = isSuperAdminRole(user?.systemRole)
@@ -96,14 +100,23 @@ export default function AdminPage() {
   // Load data
   useEffect(() => {
     if (!user || !isAdmin) return
+    const sources = ['solicitudes', 'jugadores', 'videos', 'usuarios'] as const
     Promise.allSettled([getPendingProfiles(), getAllPlayers(), getAllVideos(), getAllUsers()]).then(results => {
       const [p, pl, v, u] = results
       if (p.status  === 'fulfilled') setPending(p.value as PendingItem[])
       if (pl.status === 'fulfilled') setPlayers(pl.value)
       if (v.status  === 'fulfilled') setVideos(v.value)
       if (u.status  === 'fulfilled') setUsers(u.value)
-      const failed = results.filter(r => r.status === 'rejected')
-      setLoadError(failed.length > 0 ? 'No se pudieron cargar algunos datos. Verificá permisos de rol.' : '')
+
+      const failedSources = results
+        .map((r, i) => (r.status === 'rejected' ? sources[i] : null))
+        .filter((x): x is (typeof sources)[number] => x !== null)
+
+      setLoadError(
+        failedSources.length > 0
+          ? `No se pudieron cargar: ${failedSources.join(', ')}. Verificá permisos/reglas en Firebase.`
+          : ''
+      )
       setLoading(false)
     })
   }, [user, isAdmin])
@@ -225,7 +238,6 @@ export default function AdminPage() {
     club:   users.filter(u => u.role === 'club').length,
     agent:  users.filter(u => u.role === 'agent').length,
   }
-
   return (
     <div className="flex min-h-screen bg-[#0A0A0A] text-white" style={{ fontFamily: 'var(--font-dm-sans), system-ui, sans-serif' }}>
       {/* Ambient */}
@@ -270,8 +282,8 @@ export default function AdminPage() {
           {/* DASHBOARD */}
           {tab === 'dashboard' && (
             <>
-              <AdminStats totalUsers={users.length} published={publishedPlayers.length} pending={pending.length} videos={videos.length} roleDistribution={roleDistribution} />
-              <AdminCharts roleDistribution={roleDistribution} totalUsers={users.length} />
+              <AdminStats totalUsers={users.length} published={publishedPlayers.length} pending={pending.length} videos={videos.length} roleDistribution={roleDistribution} deltas={metrics.deltas} />
+              <AdminCharts roleDistribution={roleDistribution} totalUsers={users.length} months={metrics.months} roleSeries={metrics.roleSeries} pendingSeries={metrics.pendingSeries} monthRange={monthRange} onMonthRangeChange={setMonthRange} />
               <div className="grid grid-cols-[1fr_360px] gap-6">
                 <AdminPendingTable items={pending.slice(0,6)} onApprove={i => handleStatus(i,'published')} onReject={confirmReject} compact density={density} />
                 <AdminActivity pending={pending} players={players} videos={videos} />
@@ -404,8 +416,8 @@ export default function AdminPage() {
           {tab === 'estadisticas' && (
             <div className="space-y-6">
               <SectionHeader title="Estadísticas de la plataforma" subtitle="Métricas y distribución de perfiles" />
-              <AdminStats totalUsers={users.length} published={publishedPlayers.length} pending={pending.length} videos={videos.length} roleDistribution={roleDistribution} />
-              <AdminCharts roleDistribution={roleDistribution} totalUsers={users.length} />
+              <AdminStats totalUsers={users.length} published={publishedPlayers.length} pending={pending.length} videos={videos.length} roleDistribution={roleDistribution} deltas={metrics.deltas} />
+              <AdminCharts roleDistribution={roleDistribution} totalUsers={users.length} months={metrics.months} roleSeries={metrics.roleSeries} pendingSeries={metrics.pendingSeries} monthRange={monthRange} onMonthRangeChange={setMonthRange} />
             </div>
           )}
 
