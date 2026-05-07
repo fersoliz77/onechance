@@ -120,7 +120,8 @@ export default function AdminPendingTable({ items, onApprove, onReject, compact,
       ) : (
         <>
           <div className="overflow-hidden rounded-lg border border-[rgba(255,255,255,0.07)]">
-            <table className="w-full text-[14px]">
+          <div className="overflow-x-auto">
+            <table className="w-full text-[14px] min-w-[720px]">
               <thead>
                 <tr className="bg-[rgba(255,255,255,0.03)]">
                   {['','Perfil','Tipo','Edad','País','Registro','Motivo','Acciones'].map((h,i) => (
@@ -185,6 +186,7 @@ export default function AdminPendingTable({ items, onApprove, onReject, compact,
                 })}
               </tbody>
             </table>
+          </div>
           </div>
 
           {!compact && (

@@ -285,7 +285,7 @@ export default function PlayerProfilePage() {
 
               <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
                 <SectionTitle title="Estadisticas generales" />
-                <div className="relative mx-auto mt-4 h-44 w-44">
+                <div className="relative mx-auto mt-4 w-full max-w-[176px] aspect-square">
                   <svg viewBox="0 0 200 200" className="h-full w-full">
                     {[36, 58, 80].map((r) => (
                       <polygon key={r} points={`${100},${100 - r} ${100 + r * 0.86},${100 - r * 0.5} ${100 + r * 0.86},${100 + r * 0.5} ${100},${100 + r} ${100 - r * 0.86},${100 + r * 0.5} ${100 - r * 0.86},${100 - r * 0.5}`} fill="none" stroke="#AAFF00" strokeOpacity="0.24" />

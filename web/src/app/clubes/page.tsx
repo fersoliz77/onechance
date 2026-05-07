@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Background from '@/components/layout/Background'
 import ListPageHeader from '@/components/patterns/ListPageHeader'
@@ -12,6 +13,8 @@ import { COUNTRIES } from '@/types'
 export default function ClubesPage() {
   const { clubs, visible, loading, search, setSearch, filters, setFilters } = useClubsListing()
   const router = useRouter()
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const activeFilters = Object.values(filters).filter(Boolean).length
 
   return (
     <div className="relative min-h-screen bg-[var(--oc-bg-base)] text-white">
@@ -58,32 +61,39 @@ export default function ClubesPage() {
             </div>
           </section>
 
-          <nav className="grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
+          <nav className="flex overflow-x-auto rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-[13px] font-[700] text-[var(--oc-fg-muted)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {['Resumen', 'Filtros', 'Clubes', 'Categorias', 'Ciudades', 'Contacto'].map((tab, i) => (
-              <div key={tab} className={`flex items-center justify-center border-b-2 ${i === 0 ? 'border-[var(--oc-yellow)] text-[var(--oc-yellow)]' : 'border-transparent'}`}>{tab}</div>
+              <div key={tab} className={`h-12 flex-1 min-w-[80px] shrink-0 flex items-center justify-center whitespace-nowrap px-2 border-b-2 ${i === 0 ? 'border-[var(--oc-yellow)] text-[var(--oc-yellow)]' : 'border-transparent'}`}>{tab}</div>
             ))}
           </nav>
 
           <div className="mt-[var(--oc-space-5)] grid gap-4 lg:grid-cols-[300px_1fr] lg:gap-5">
-            <aside className="self-start rounded-[var(--oc-radius-xl)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-4)] shadow-[0_0_0_1px_rgba(255,180,0,0.06),0_18px_50px_rgba(0,0,0,0.35)] lg:sticky lg:top-[calc(var(--oc-nav-height)+var(--oc-space-4))]">
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-[15px] font-[700] text-white">Filtros</span>
-                <button onClick={() => setFilters(emptyClubFilters)} className="text-[12px] text-oc-yellow">Limpiar</button>
-              </div>
-              <div className="space-y-3.5">
-                <div>
-                  <p className="mb-1.5 text-[12px] text-[var(--oc-text-faint)]">Pais</p>
-                  <Select value={filters.country} onChange={e => setFilters({ ...filters, country: e.target.value })} options={[{ value: '', label: 'Todos los paises' }, ...COUNTRIES.map(c => ({ value: c, label: c }))]} />
+            <aside className="self-start rounded-[var(--oc-radius-xl)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] shadow-[0_0_0_1px_rgba(255,180,0,0.06),0_18px_50px_rgba(0,0,0,0.35)] lg:sticky lg:top-[calc(var(--oc-nav-height)+var(--oc-space-4))]">
+              <button type="button" onClick={() => setFiltersOpen(o => !o)} className="w-full flex items-center justify-between p-[var(--oc-space-4)] lg:cursor-default" aria-expanded={filtersOpen}>
+                <span className="flex items-center gap-2 text-[15px] font-[700] text-white">
+                  Filtros
+                  {activeFilters > 0 && <span className="inline-flex items-center justify-center h-[18px] min-w-[18px] rounded-full bg-[rgba(255,180,0,0.15)] text-[var(--oc-yellow)] text-[10px] font-bold px-1">{activeFilters}</span>}
+                </span>
+                <div className="flex items-center gap-3">
+                  {activeFilters > 0 && <button type="button" onClick={e => { e.stopPropagation(); setFilters(emptyClubFilters) }} className="text-[12px] text-oc-yellow cursor-pointer border-none bg-transparent">Limpiar</button>}
+                  <svg className={`w-4 h-4 text-[rgba(255,255,255,0.3)] transition-transform duration-200 lg:hidden ${filtersOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M6 9l6 6 6-6"/></svg>
                 </div>
-                <div>
-                  <p className="mb-1.5 text-[12px] text-[var(--oc-text-faint)]">Division actual</p>
-                  <Select value={filters.division} onChange={e => setFilters({ ...filters, division: e.target.value })} options={[{ value: '', label: 'Todas las divisiones' }, ...DIVISIONS.map(d => ({ value: d, label: d }))]} />
+              </button>
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out lg:block ${filtersOpen ? 'max-h-[500px]' : 'max-h-0 lg:max-h-none'}`}>
+                <div className="px-[var(--oc-space-4)] pb-[var(--oc-space-4)] space-y-3.5">
+                  <div>
+                    <p className="mb-1.5 text-[12px] text-[var(--oc-text-faint)]">Pais</p>
+                    <Select value={filters.country} onChange={e => setFilters({ ...filters, country: e.target.value })} options={[{ value: '', label: 'Todos los paises' }, ...COUNTRIES.map(c => ({ value: c, label: c }))]} />
+                  </div>
+                  <div>
+                    <p className="mb-1.5 text-[12px] text-[var(--oc-text-faint)]">Division actual</p>
+                    <Select value={filters.division} onChange={e => setFilters({ ...filters, division: e.target.value })} options={[{ value: '', label: 'Todas las divisiones' }, ...DIVISIONS.map(d => ({ value: d, label: d }))]} />
+                  </div>
+                  <div className="rounded-[10px] border border-[rgba(255,180,0,0.34)] bg-[rgba(255,180,0,0.08)] p-4">
+                    <h3 className="text-[18px] font-semibold text-white">Sos un club?</h3>
+                    <p className="mt-2 text-[13px] leading-[1.6] text-[var(--oc-text-muted)]">Publica tu perfil institucional y conecta con jugadores, tecnicos y representantes.</p>
+                  </div>
                 </div>
-              </div>
-
-              <div className="mt-5 rounded-[10px] border border-[rgba(255,180,0,0.34)] bg-[rgba(255,180,0,0.08)] p-4">
-                <h3 className="text-[18px] font-semibold text-white">Sos un club?</h3>
-                <p className="mt-2 text-[13px] leading-[1.6] text-[var(--oc-text-muted)]">Publica tu perfil institucional y conecta con jugadores, tecnicos y representantes.</p>
               </div>
             </aside>
 

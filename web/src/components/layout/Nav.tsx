@@ -281,9 +281,9 @@ export default function Nav() {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      <div className={`border-t border-[var(--oc-border)] bg-[rgba(10,10,10,0.98)] px-5 py-4 lg:hidden ${mobileOpen ? 'block backdrop-blur-[14px]' : 'hidden'}`}>
-        <div className="flex flex-col gap-1">
+      {/* Mobile menu — max-h trick for smooth slide-down */}
+      <div className={`overflow-hidden transition-all duration-300 ease-in-out lg:hidden backdrop-blur-[14px] bg-[rgba(10,10,10,0.98)] border-t ${mobileOpen ? 'max-h-[400px] border-[var(--oc-border)]' : 'max-h-0 border-transparent'}`}>
+        <div className="flex flex-col gap-1 px-5 py-4">
           {links.map(l => (
             <Link
               key={l.href}

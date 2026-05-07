@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Background from '@/components/layout/Background'
 import ListPageHeader from '@/components/patterns/ListPageHeader'
@@ -12,6 +13,8 @@ import { COUNTRIES } from '@/types'
 export default function TecnicosPage() {
   const { coaches, visible, loading, search, setSearch, filters, setFilters } = useCoachesListing()
   const router = useRouter()
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const activeFilters = Object.values(filters).filter(Boolean).length
 
   return (
     <div className="relative min-h-screen bg-[var(--oc-bg-base)] text-white">
@@ -57,24 +60,34 @@ export default function TecnicosPage() {
               </div>
             </div>
           </section>
-          <nav className="grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
+          <nav className="flex overflow-x-auto rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-[13px] font-[700] text-[var(--oc-fg-muted)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {['Resumen', 'Filtros', 'Tecnicos', 'Experiencia', 'Videos', 'Contacto'].map((tab, i) => (
-              <div key={tab} className={`flex items-center justify-center border-b-2 ${i === 0 ? 'border-[var(--oc-blue)] text-[var(--oc-blue)]' : 'border-transparent'}`}>{tab}</div>
+              <div key={tab} className={`h-12 flex-1 min-w-[80px] shrink-0 flex items-center justify-center whitespace-nowrap px-2 border-b-2 ${i === 0 ? 'border-[var(--oc-blue)] text-[var(--oc-blue)]' : 'border-transparent'}`}>{tab}</div>
             ))}
           </nav>
           <div className="mt-[var(--oc-space-5)] flex flex-col items-start gap-[var(--oc-space-4)] md:flex-row md:gap-[var(--oc-space-5)]">
-            <aside className="w-full shrink-0 rounded-[var(--oc-radius-xl)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] p-[var(--oc-space-4)] shadow-[0_0_0_1px_rgba(90,143,255,0.08),0_18px_50px_rgba(0,0,0,0.35)] md:sticky md:top-[calc(var(--oc-nav-height)+var(--oc-space-4))] md:w-[300px] self-start">
-              <div className="mb-[var(--oc-space-4)] flex items-center justify-between">
-                <span className="text-[15px] font-[700] text-white">Filtros</span>
-                <button onClick={() => setFilters(emptyCoachFilters)} className="cursor-pointer border-none bg-transparent text-[12px] text-[var(--oc-blue)]">Limpiar</button>
-              </div>
-              <div className="mb-3.5">
-                <p className="mb-1.5 text-[12px] text-[var(--oc-text-faint)]">Nacionalidad</p>
-                <Select value={filters.nationality} onChange={e => setFilters({ ...filters, nationality: e.target.value })} options={[{ value: '', label: 'Todos los países' }, ...COUNTRIES.map(c => ({ value: c, label: c }))]} />
-              </div>
-              <div className="mb-3.5">
-                <p className="mb-1.5 text-[12px] text-[var(--oc-text-faint)]">Experiencia mínima</p>
-                <Select value={filters.minYears} onChange={e => setFilters({ ...filters, minYears: e.target.value })} options={[{ value: '', label: 'Todas' }, { value: '5', label: '5+ años' }, { value: '10', label: '10+ años' }, { value: '15', label: '15+ años' }]} />
+            <aside className="w-full shrink-0 rounded-[var(--oc-radius-xl)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] shadow-[0_0_0_1px_rgba(90,143,255,0.08),0_18px_50px_rgba(0,0,0,0.35)] md:sticky md:top-[calc(var(--oc-nav-height)+var(--oc-space-4))] md:w-[300px] self-start">
+              <button type="button" onClick={() => setFiltersOpen(o => !o)} className="w-full flex items-center justify-between p-[var(--oc-space-4)] md:cursor-default" aria-expanded={filtersOpen}>
+                <span className="flex items-center gap-2 text-[15px] font-[700] text-white">
+                  Filtros
+                  {activeFilters > 0 && <span className="inline-flex items-center justify-center h-[18px] min-w-[18px] rounded-full bg-[rgba(90,143,255,0.15)] text-[var(--oc-blue)] text-[10px] font-bold px-1">{activeFilters}</span>}
+                </span>
+                <div className="flex items-center gap-3">
+                  {activeFilters > 0 && <button type="button" onClick={e => { e.stopPropagation(); setFilters(emptyCoachFilters) }} className="cursor-pointer border-none bg-transparent text-[12px] text-[var(--oc-blue)]">Limpiar</button>}
+                  <svg className={`w-4 h-4 text-[rgba(255,255,255,0.3)] transition-transform duration-200 md:hidden ${filtersOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+              </button>
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out md:block ${filtersOpen ? 'max-h-[400px]' : 'max-h-0 md:max-h-none'}`}>
+                <div className="px-[var(--oc-space-4)] pb-[var(--oc-space-4)] space-y-3.5">
+                  <div>
+                    <p className="mb-1.5 text-[12px] text-[var(--oc-text-faint)]">Nacionalidad</p>
+                    <Select value={filters.nationality} onChange={e => setFilters({ ...filters, nationality: e.target.value })} options={[{ value: '', label: 'Todos los países' }, ...COUNTRIES.map(c => ({ value: c, label: c }))]} />
+                  </div>
+                  <div>
+                    <p className="mb-1.5 text-[12px] text-[var(--oc-text-faint)]">Experiencia mínima</p>
+                    <Select value={filters.minYears} onChange={e => setFilters({ ...filters, minYears: e.target.value })} options={[{ value: '', label: 'Todas' }, { value: '5', label: '5+ años' }, { value: '10', label: '10+ años' }, { value: '15', label: '15+ años' }]} />
+                  </div>
+                </div>
               </div>
             </aside>
 

@@ -57,7 +57,7 @@ export default function AdminCharts({
   ] as const
 
   return (
-    <div className="grid grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <section className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-6">
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-[19px] font-semibold text-white">Crecimiento mensual</h3>
