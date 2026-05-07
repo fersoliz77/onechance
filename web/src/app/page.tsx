@@ -131,7 +131,7 @@ export default function Landing() {
 
   return (
     <main className="bg-[var(--oc-bg-base)] text-white">
-      <section ref={heroRef} className="relative min-h-[100svh] overflow-hidden pt-[calc(var(--oc-nav-height)+56px)]">
+      <section ref={heroRef} className="relative min-h-[100svh] overflow-hidden pb-20 pt-[calc(var(--oc-nav-height)+56px)] max-sm:pb-28">
         <div className="absolute inset-0">
           <div className="absolute inset-0" style={{ transform: `translateY(${parallaxY}px)` }}>
             <Image src="/images/hero-stadium.png" alt="Estadio hero" fill priority className="object-cover object-[center_30%] opacity-80" />
@@ -140,7 +140,7 @@ export default function Landing() {
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,10,10,0.46)_0%,rgba(10,10,10,0.14)_36%,rgba(10,10,10,0.4)_100%)]" />
         </div>
 
-        <div className="oc-shell relative z-10 grid min-h-[calc(100svh-120px)] items-center gap-12 py-12 xl:grid-cols-[1.4fr_1fr] xl:gap-12 xl:py-16 2xl:gap-16 2xl:py-20">
+        <div className="oc-shell relative z-10 grid min-h-[calc(100svh-120px)] items-center gap-12 py-12 max-sm:gap-8 xl:grid-cols-[1.4fr_1fr] xl:gap-12 xl:py-16 2xl:gap-16 2xl:py-20">
           <div className="max-sm:-translate-y-[35px] xl:self-center">
             {/* Etiqueta superior (Eyebrow) */}
             <div className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.04)] px-[14px] py-1.5 text-[13px] font-[500] tracking-[0.02em] text-white/90 backdrop-blur-[4px]">
@@ -197,7 +197,7 @@ export default function Landing() {
           </div>
 
           {/* Columna Derecha (Tarjetas 3D) */}
-          <div className="relative h-[500px] w-full min-w-[280px] [perspective:1400px] xl:mx-0 xl:self-center max-lg:mx-auto max-lg:max-w-[440px]" style={{ transform: `translateY(${parallaxCards}px)` }}>
+          <div className="relative h-[500px] w-full min-w-[280px] [perspective:1400px] max-sm:h-[430px] xl:mx-0 xl:self-center max-lg:mx-auto max-lg:max-w-[440px]" style={{ transform: `translateY(${parallaxCards}px)` }}>
             {/* Tarjeta de Jugador Principal */}
             <article className="absolute inset-[20px_80px_60px_0] overflow-hidden rounded-[12px] border border-[rgba(170,255,0,0.28)] bg-[linear-gradient(165deg,rgba(20,35,18,0.22),rgba(15,22,18,0.3))] p-6 shadow-[0_24px_64px_rgba(0,0,0,0.5),0_0_0_1px_rgba(170,255,0,0.06),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[22px] [transform:perspective(1400px)_rotateY(-6deg)_rotateX(3deg)] [transform-style:preserve-3d] [animation:oc-tilt-float_6s_ease-in-out_infinite] max-lg:inset-[30px_60px_80px_0] max-sm:inset-[30px_40px_100px_0] max-sm:p-5">
               <div className="absolute left-4 right-4 top-0 h-[2px] bg-[linear-gradient(90deg,transparent,#AAFF00,transparent)] opacity-70" />
