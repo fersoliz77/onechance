@@ -141,7 +141,7 @@ export default function Landing() {
         </div>
 
         <div className="oc-shell relative z-10 grid min-h-[calc(100svh-120px)] items-center gap-12 py-12 xl:grid-cols-[1.4fr_1fr] xl:gap-12 xl:py-16 2xl:gap-16 2xl:py-20">
-          <div className="max-sm:-translate-y-[15px] xl:self-center">
+          <div className="max-sm:-translate-y-[35px] xl:self-center">
             {/* Etiqueta superior (Eyebrow) */}
             <div className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.04)] px-[14px] py-1.5 text-[13px] font-[500] tracking-[0.02em] text-white/90 backdrop-blur-[4px]">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--oc-lime)] shadow-[0_0_0_3px_rgba(170,255,0,0.18)] animate-[oc-pulse_2.4s_infinite]" />
