@@ -212,9 +212,10 @@ export default function Nav() {
     <nav
       className={`fixed top-0 left-0 right-0 z-[100] h-[var(--oc-nav-height)] transition-all duration-300 ${
         scrolled
-          ? 'border-b border-[var(--oc-border)] bg-[rgba(10,10,10,0.76)] backdrop-blur-[14px]'
+          ? 'border-b border-[var(--oc-border)] bg-[rgba(10,10,10,0.62)] backdrop-blur-[16px]'
           : 'border-b border-transparent bg-transparent backdrop-blur-0'
       } ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
+      style={scrolled ? { backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' } : undefined}
     >
       <div className="oc-shell h-full flex items-center justify-between">
         {/* Logo */}

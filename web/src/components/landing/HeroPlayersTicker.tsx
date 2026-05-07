@@ -26,7 +26,7 @@ export default function HeroPlayersTicker({
   return (
     <div
       className={[
-        'absolute inset-x-0 bottom-0 z-30 border-t border-white/10 md:fixed',
+        'fixed inset-x-0 bottom-0 z-30 border-t border-white/10 max-md:absolute',
         'bg-[linear-gradient(180deg,rgba(12,12,12,0.36)_0%,rgba(8,8,8,0.46)_100%)] backdrop-blur-[10px]',
         'transition-all duration-500 ease-out',
         visible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-5 opacity-0',

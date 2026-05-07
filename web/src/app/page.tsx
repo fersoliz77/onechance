@@ -50,19 +50,25 @@ export default function Landing() {
   useEffect(() => {
     if (!metricsRef.current) return
     const node = metricsRef.current
+    let fallbackTimer = 0
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0]
         if (entry?.isIntersecting) {
           setMetricsVisible(true)
           observer.disconnect()
+          window.clearTimeout(fallbackTimer)
         }
       },
-      { threshold: 0.35 }
+      { threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
     )
 
     observer.observe(node)
-    return () => observer.disconnect()
+    fallbackTimer = window.setTimeout(() => setMetricsVisible(true), 1200)
+    return () => {
+      observer.disconnect()
+      window.clearTimeout(fallbackTimer)
+    }
   }, [])
 
   useEffect(() => {

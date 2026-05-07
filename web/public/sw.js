@@ -1,4 +1,4 @@
-const CACHE_NAME = 'onechance-v1'
+const CACHE_NAME = 'onechance-v2'
 const OFFLINE_URL = '/'
 
 self.addEventListener('install', (event) => {
@@ -20,17 +20,36 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return
 
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached
+  const requestUrl = new URL(event.request.url)
+  const isHtmlNavigation = event.request.mode === 'navigate'
+  const isStaticAsset = requestUrl.pathname.startsWith('/_next/static/') || requestUrl.pathname.startsWith('/images/') || requestUrl.pathname.startsWith('/icons/')
 
-      return fetch(event.request)
+  if (isHtmlNavigation) {
+    event.respondWith(
+      fetch(event.request)
         .then((response) => {
           const copy = response.clone()
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy))
           return response
         })
-        .catch(() => caches.match(OFFLINE_URL))
-    })
-  )
+        .catch(() => caches.match(event.request).then((cached) => cached || caches.match(OFFLINE_URL)))
+    )
+    return
+  }
+
+  if (isStaticAsset) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached
+        return fetch(event.request).then((response) => {
+          const copy = response.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy))
+          return response
+        })
+      })
+    )
+    return
+  }
+
+  event.respondWith(fetch(event.request).catch(() => caches.match(event.request)))
 })
