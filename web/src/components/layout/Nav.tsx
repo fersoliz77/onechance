@@ -264,7 +264,7 @@ export default function Nav() {
               </Button>
               <button
                 onClick={() => router.push('/auth?tab=register')}
-                className="h-10 min-w-[140px] px-7 rounded-[8px] inline-flex items-center justify-center gap-2.5 no-underline text-[14px] font-[700] leading-none tracking-[-0.01em] text-black bg-[var(--oc-lime)] shadow-[0_8px_32px_rgba(170,255,0,0.25)] transition-all duration-200 hover:-translate-y-[2px] hover:bg-[#C4FF40] cursor-pointer"
+                className="hidden h-10 min-w-[140px] px-7 rounded-[8px] sm:inline-flex items-center justify-center gap-2.5 no-underline text-[14px] font-[700] leading-none tracking-[-0.01em] text-black bg-[var(--oc-lime)] shadow-[0_8px_32px_rgba(170,255,0,0.25)] transition-all duration-200 hover:-translate-y-[2px] hover:bg-[#C4FF40] cursor-pointer"
               >
                 Publicar perfil
               </button>
@@ -294,6 +294,17 @@ export default function Nav() {
               {l.label}
             </Link>
           ))}
+          {!user && (
+            <>
+              <div className="my-2 border-t border-[rgba(255,255,255,0.06)]" />
+              <button
+                onClick={() => { setMobileOpen(false); router.push('/auth?tab=register') }}
+                className="rounded-[8px] px-3 py-2 text-[15px] text-black text-left cursor-pointer border-none bg-[var(--oc-lime)] font-[700]"
+              >
+                Publicar perfil
+              </button>
+            </>
+          )}
           {user && (
             <>
               <div className="my-2 border-t border-[rgba(255,255,255,0.06)]" />
