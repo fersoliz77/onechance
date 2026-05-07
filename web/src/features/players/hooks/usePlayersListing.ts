@@ -21,14 +21,36 @@ export const emptyPlayerFilters: PlayerFilters = {
 export function usePlayersListing() {
   const [players, setPlayers] = useState<PlayerProfile[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState<PlayerFilters>(emptyPlayerFilters)
 
-  useEffect(() => {
-    getPublishedPlayers().then(data => {
+  const load = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const data = await getPublishedPlayers()
       setPlayers(data)
+    } catch {
+      setPlayers([])
+      setError('No se pudieron cargar los jugadores. Verifica tu conexión e intenta de nuevo.')
+    } finally {
       setLoading(false)
-    })
+    }
+  }
+
+  useEffect(() => {
+    getPublishedPlayers()
+      .then((data) => {
+        setPlayers(data)
+      })
+      .catch(() => {
+        setPlayers([])
+        setError('No se pudieron cargar los jugadores. Verifica tu conexión e intenta de nuevo.')
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }, [])
 
   const visible = useMemo(() => {
@@ -49,5 +71,5 @@ export function usePlayersListing() {
     })
   }, [players, filters, search])
 
-  return { players, visible, loading, search, setSearch, filters, setFilters }
+  return { players, visible, loading, error, reload: load, search, setSearch, filters, setFilters }
 }

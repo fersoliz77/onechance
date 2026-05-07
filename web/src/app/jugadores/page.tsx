@@ -10,7 +10,7 @@ import { emptyPlayerFilters, usePlayersListing } from '@/features/players/hooks/
 import { COUNTRIES } from '@/types'
 
 export default function JugadoresPage() {
-  const { players, visible, loading, search, setSearch, filters, setFilters } = usePlayersListing()
+  const { players, visible, loading, error, reload, search, setSearch, filters, setFilters } = usePlayersListing()
   const router = useRouter()
 
   return (
@@ -58,9 +58,17 @@ export default function JugadoresPage() {
             </div>
           </section>
 
-          <nav className="grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[12px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
+          <nav role="tablist" className="grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[12px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6" aria-label="Secciones de resultados">
             {['Resumen', 'Filtros', 'Resultados', 'Scout view', 'Videos', 'Fotos'].map((tab, i) => (
-              <div key={tab} className={`flex items-center justify-center border-b-2 ${i === 0 ? 'border-[var(--oc-lime)] text-[var(--oc-lime)]' : 'border-transparent'}`}>{tab}</div>
+              <button
+                key={tab}
+                type="button"
+                role="tab"
+                aria-selected={i === 0}
+                className={`flex items-center justify-center border-b-2 ${i === 0 ? 'border-[var(--oc-lime)] text-[var(--oc-lime)]' : 'border-transparent'}`}
+              >
+                {tab}
+              </button>
             ))}
           </nav>
 
@@ -69,6 +77,17 @@ export default function JugadoresPage() {
             <div className="w-full flex-1">
               {loading ? (
                 <EmptyState message="Cargando jugadores..." />
+              ) : error ? (
+                <div className="rounded-[12px] border border-[rgba(255,180,0,0.35)] bg-[rgba(255,180,0,0.08)] p-5 text-[12px] text-[rgba(255,220,140,0.95)]">
+                  <p>{error}</p>
+                  <button
+                    type="button"
+                    onClick={() => void reload()}
+                    className="mt-3 rounded-[8px] border border-[rgba(255,255,255,0.2)] px-3 py-2 text-[11px] font-[700] text-white"
+                  >
+                    Reintentar
+                  </button>
+                </div>
               ) : visible.length === 0 ? (
                 <EmptyState message={players.length === 0 ? 'Aún no hay jugadores registrados. Sé el primero.' : 'No se encontraron jugadores con esos filtros.'} />
               ) : (

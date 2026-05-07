@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 type Props = {
@@ -19,11 +19,20 @@ export default function AuthModal({ open, onClose }: Props) {
   const [step, setStep] = useState(0)
   const [role, setRole] = useState('')
 
+  useEffect(() => {
+    if (!open) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [open, onClose])
+
   if (!open) return null
 
   return (
     <div className="fixed inset-0 z-[140] flex items-center justify-center bg-[rgba(0,0,0,0.76)] px-4 backdrop-blur-[12px]" onClick={onClose}>
-      <div className="w-full max-w-[420px] rounded-[16px] border border-[rgba(170,255,0,0.24)] bg-[linear-gradient(165deg,rgba(20,35,18,0.2),rgba(15,22,18,0.3))] p-8 shadow-[0_24px_64px_rgba(0,0,0,0.5),0_0_0_1px_rgba(170,255,0,0.06),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[22px]" onClick={e => e.stopPropagation()}>
+      <div role="dialog" aria-modal="true" aria-label="Crear perfil" className="w-full max-w-[420px] rounded-[16px] border border-[rgba(170,255,0,0.24)] bg-[linear-gradient(165deg,rgba(20,35,18,0.2),rgba(15,22,18,0.3))] p-8 shadow-[0_24px_64px_rgba(0,0,0,0.5),0_0_0_1px_rgba(170,255,0,0.06),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[22px]" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute right-4 top-3 border-none bg-transparent text-[22px] text-[var(--oc-text-muted)] transition-colors hover:text-white">x</button>
 
         {step === 0 && (

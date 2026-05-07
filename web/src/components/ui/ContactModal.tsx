@@ -1,6 +1,6 @@
 'use client'
 
-import { type CSSProperties, useState } from 'react'
+import { type CSSProperties, useEffect, useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { sendMessage, addNotification } from '@/lib/rtdb'
 import Button from './Button'
@@ -19,6 +19,14 @@ export default function ContactModal({ toUid, toName, accent, onClose }: Contact
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onClose])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -55,6 +63,9 @@ export default function ContactModal({ toUid, toName, accent, onClose }: Contact
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-[var(--oc-overlay)] backdrop-blur-[6px]" />
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Enviar mensaje a ${toName}`}
         className="relative z-[1] w-full max-w-[440px] overflow-hidden rounded-[var(--oc-radius-xl)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.9)] p-[var(--oc-space-6)] shadow-[0_0_0_1px_rgba(0,212,255,0.04),0_24px_64px_rgba(0,0,0,0.5)]"
         style={{ '--oc-accent': accent, boxShadow: `0 0 0 1px color-mix(in srgb, var(--oc-accent) 16%, transparent), 0 24px 64px rgba(0,0,0,0.5)` } as CSSProperties}
         onClick={e => e.stopPropagation()}

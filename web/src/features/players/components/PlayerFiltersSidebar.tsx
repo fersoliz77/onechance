@@ -13,8 +13,9 @@ export default function PlayerFiltersSidebar({ filters, setFilters, onClear }: P
   const renderPills = (opts: { value: string; label: string }[], keyName: keyof PlayerFilters) => (
     <div className="flex gap-1.5 flex-wrap">
       {opts.map(o => (
-        <div
+        <button
           key={o.value}
+          type="button"
           onClick={() => setFilters({ ...filters, [keyName]: o.value })}
           className="px-[10px] py-1 rounded-[20px] text-[10px] sm:text-[9px] cursor-pointer transition-all duration-150"
           style={{
@@ -22,9 +23,10 @@ export default function PlayerFiltersSidebar({ filters, setFilters, onClear }: P
             border: `0.5px solid ${filters[keyName] === o.value ? 'rgba(0,200,83,0.35)' : 'rgba(255,255,255,0.07)'}`,
             color: filters[keyName] === o.value ? '#00C853' : 'rgba(255,255,255,0.35)',
           }}
+          aria-pressed={filters[keyName] === o.value}
         >
           {o.label}
-        </div>
+        </button>
       ))}
     </div>
   )

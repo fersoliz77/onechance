@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { getPlayer } from '@/lib/firestore'
 import { getPhotos, getProfileState, getVideos, type PhotoEntry } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
@@ -199,7 +200,7 @@ export default function PlayerProfilePage() {
                 <div className="relative hidden h-[345px] lg:block">
                   <div className="absolute bottom-0 left-7 h-[335px] w-[286px] overflow-hidden rounded-t-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[linear-gradient(165deg,rgba(170,255,0,0.22),rgba(12,25,15,0.52))] shadow-[0_25px_55px_rgba(0,0,0,.75)]">
                     {(player.avatarUrl || galleryUrls[0]) ? (
-                      <img src={player.avatarUrl || galleryUrls[0]} alt={`Foto de ${player.fullName}`} className="h-full w-full object-cover object-top" />
+                      <Image src={player.avatarUrl || galleryUrls[0]} alt={`Foto de ${player.fullName}`} fill sizes="286px" className="object-cover object-top" />
                     ) : null}
                   </div>
                   <div className="absolute bottom-12 left-4 rounded-[var(--oc-radius-md)] border border-[var(--oc-border-soft)] bg-[rgba(8,22,26,0.82)] px-[var(--oc-space-5)] py-[var(--oc-space-4)] text-[13px] font-[700] backdrop-blur">✓ Perfil verificado</div>
@@ -209,7 +210,7 @@ export default function PlayerProfilePage() {
                   <div className="mb-4 lg:hidden">
                     <div className="h-[180px] w-full overflow-hidden rounded-[12px] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.05)]">
                       {(player.avatarUrl || galleryUrls[0]) ? (
-                        <img src={player.avatarUrl || galleryUrls[0]} alt={`Foto de ${player.fullName}`} className="h-full w-full object-cover object-top" />
+                        <Image src={player.avatarUrl || galleryUrls[0]} alt={`Foto de ${player.fullName}`} fill sizes="(max-width: 1024px) 100vw, 286px" className="object-cover object-top" />
                       ) : null}
                     </div>
                   </div>
@@ -247,9 +248,17 @@ export default function PlayerProfilePage() {
             </div>
           </section>
 
-          <nav className="grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[12px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
+          <nav role="tablist" className="grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[12px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6" aria-label="Secciones del perfil">
             {['Resumen', 'Trayectoria', 'Estadisticas', 'Caracteristicas', 'Videos', 'Fotos'].map((tab, i) => (
-              <div key={tab} className={`flex items-center justify-center border-b-2 ${i === 0 ? 'border-[var(--oc-lime)] text-[var(--oc-lime)]' : 'border-transparent'}`}>{tab}</div>
+              <button
+                key={tab}
+                type="button"
+                role="tab"
+                aria-selected={i === 0}
+                className={`flex items-center justify-center border-b-2 ${i === 0 ? 'border-[var(--oc-lime)] text-[var(--oc-lime)]' : 'border-transparent'}`}
+              >
+                {tab}
+              </button>
             ))}
           </nav>
 
@@ -354,7 +363,7 @@ export default function PlayerProfilePage() {
                   <h2 className="text-[28px] font-[800] tracking-[-0.02em] text-white">Contacto del jugador</h2>
                   <p className="mt-3 text-[13px] text-[var(--oc-fg-muted)]">La informacion de contacto esta disponible para usuarios registrados en la plataforma.</p>
                   {showContactCta ? (
-                    <button onClick={handleContact} className="mt-6 h-11 w-full max-w-[320px] rounded-[8px] bg-[var(--oc-lime)] text-[13px] font-[800] text-black">Iniciar sesion / Registrarme</button>
+                    <button onClick={handleContact} className="mt-6 h-11 w-full max-w-[320px] rounded-[8px] bg-[var(--oc-lime)] text-[13px] font-[800] text-black">{user ? 'Contactar' : 'Iniciar sesion / Registrarme'}</button>
                   ) : (
                     <p className="mt-4 text-[12px] text-[var(--oc-fg-dim)]">El contacto directo esta desactivado por este perfil.</p>
                   )}
@@ -385,7 +394,7 @@ export default function PlayerProfilePage() {
               <div className="mt-[var(--oc-space-4)] grid grid-cols-2 gap-[var(--oc-space-3)] md:grid-cols-3 lg:grid-cols-6">
                 {(galleryUrls.length > 0 ? galleryUrls.slice(0, 6).map((url, i) => ({ id: `photo-${i}`, url })) : Array.from({ length: 6 }).map((_, i) => ({ id: `placeholder-${i}`, url: '' }))).map((photo, i) => (
                   <div key={photo.id} className="relative h-[154px] overflow-hidden rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(0,0,0,0.46))]">
-                    {photo.url ? <img src={photo.url} alt={`Foto ${i + 1} de ${player.fullName}`} className="h-full w-full object-cover" /> : null}
+                    {photo.url ? <Image src={photo.url} alt={`Foto ${i + 1} de ${player.fullName}`} fill sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 154px" className="object-cover" /> : null}
                     {i === 5 && galleryUrls.length > 6 ? <div className="absolute inset-0 grid place-items-center bg-[rgba(0,0,0,0.55)] text-[30px] font-[800]">+{Math.max(galleryUrls.length - 6, 0)}</div> : null}
                   </div>
                 ))}

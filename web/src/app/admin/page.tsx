@@ -27,6 +27,7 @@ import { SkeletonStat, SkeletonCard } from '@/components/admin/ui/Skeleton'
 
 export type PendingItem = {
   uid: string
+  createdAt?: unknown
   fullName?: string
   name?: string
   nationality?: string

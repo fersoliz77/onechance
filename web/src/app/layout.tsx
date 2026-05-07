@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { DM_Sans } from 'next/font/google'
 import './globals.css'
 import Providers from '@/components/Providers'
@@ -12,6 +12,16 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: 'OneChance — Vidriera profesional de fútbol',
   description: 'La plataforma donde clubes, representantes y técnicos descubren el talento que están buscando.',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'OneChance',
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#0A0A0A',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
