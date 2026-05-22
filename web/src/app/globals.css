@@ -61,6 +61,14 @@
   from { transform: translateX(-100%); }
   to   { transform: translateX(200%); }
 }
+@keyframes oc-slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes oc-fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 
 
 

@@ -1,13 +1,21 @@
 'use client'
 import type { ReactNode } from 'react'
+import type { AdminTab } from '@/app/admin/page'
 
-const ACTIONS = [
-  { icon: 'megaphone', label: 'Crear anuncio' },
-  { icon: 'mail',      label: 'Enviar mensaje' },
-  { icon: 'download',  label: 'Exportar datos' },
-  { icon: 'image',     label: 'Gestionar banners' },
-  { icon: 'flag',      label: 'Ver reportes' },
-  { icon: 'settings',  label: 'Configuración' },
+interface ToastAPI { info: (m: string) => void }
+
+interface Props {
+  onTab: (tab: AdminTab) => void
+  toast: ToastAPI
+}
+
+const ACTIONS: { icon: string; label: string; tab?: AdminTab; soon?: boolean }[] = [
+  { icon: 'megaphone', label: 'Crear anuncio',    soon: true },
+  { icon: 'mail',      label: 'Enviar mensaje',   soon: true },
+  { icon: 'download',  label: 'Exportar datos',   tab: 'configuracion' },
+  { icon: 'image',     label: 'Gestionar banners',soon: true },
+  { icon: 'flag',      label: 'Ver reportes',     soon: true },
+  { icon: 'settings',  label: 'Configuración',    tab: 'configuracion' },
 ]
 
 function QIcon({ type }: { type: string }) {
@@ -26,7 +34,7 @@ function QIcon({ type }: { type: string }) {
   )
 }
 
-export default function AdminQuickActions() {
+export default function AdminQuickActions({ onTab, toast }: Props) {
   return (
     <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-5">
       <h2 className="text-[17px] font-semibold text-white mb-4">Acciones rápidas</h2>
@@ -34,12 +42,14 @@ export default function AdminQuickActions() {
         {ACTIONS.map(a => (
           <button
             key={a.label}
+            onClick={() => a.tab ? onTab(a.tab) : toast.info('Próximamente disponible')}
             className="flex flex-col items-center justify-center h-[86px] rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] text-[12px] text-[rgba(255,255,255,0.45)] hover:text-white hover:border-[rgba(170,255,0,0.25)] hover:bg-[rgba(170,255,0,0.05)] transition-all cursor-pointer group"
           >
             <span className="text-[rgba(255,255,255,0.35)] group-hover:text-[#AAFF00] transition-colors">
               <QIcon type={a.icon} />
             </span>
             {a.label}
+            {a.soon && <span className="text-[10px] text-[rgba(255,255,255,0.2)] mt-0.5">Próximamente</span>}
           </button>
         ))}
       </div>

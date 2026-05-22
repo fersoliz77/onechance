@@ -18,10 +18,12 @@ export async function POST(req: Request) {
     firestoreUpdate.rejectionReason = null
   }
 
-  await Promise.all([
-    getAdminDb().collection(collection).doc(uid).set(firestoreUpdate, { merge: true }),
-    getAdminRtdb().ref(`profiles/${uid}`).update({ status }),
-  ])
+  await getAdminDb().collection(collection).doc(uid).set(firestoreUpdate, { merge: true })
+  try {
+    await getAdminRtdb().ref(`profiles/${uid}`).update({ status })
+  } catch (rtdbErr) {
+    console.warn('[profile-status] RTDB update skipped:', rtdbErr)
+  }
   await writeAuditLog({
     actorUid: auth.decoded.uid,
     actorEmail: auth.decoded.email,

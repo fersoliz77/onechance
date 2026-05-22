@@ -2,6 +2,7 @@
 
 interface Props {
   totalUsers: number
+  totalProfiles: number
   published: number
   pending: number
   videos: number
@@ -18,7 +19,7 @@ interface Props {
 }
 
 const STATS = (p: Props) => [
-  { label: 'Perfiles totales', value: (p.published + p.pending).toLocaleString(), delta: p.deltas.profiles, color: '#AAFF00', icon: 'dashboard' },
+  { label: 'Perfiles totales', value: p.totalProfiles.toLocaleString(), delta: p.deltas.profiles, color: '#AAFF00', icon: 'dashboard' },
   { label: 'Jugadores',        value: p.roleDistribution.player.toLocaleString(), delta: p.deltas.player, color: '#7B3FF6', icon: 'user' },
   { label: 'Técnicos',         value: p.roleDistribution.coach.toLocaleString(),  delta: p.deltas.coach, color: '#22D3EE', icon: 'shield' },
   { label: 'Clubes',           value: p.roleDistribution.club.toLocaleString(),   delta: p.deltas.club, color: '#3B82F6', icon: 'briefcase' },

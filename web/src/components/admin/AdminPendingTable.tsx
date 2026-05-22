@@ -7,9 +7,13 @@ interface Props {
   items: PendingItem[]
   onApprove: (item: PendingItem) => void
   onReject: (item: PendingItem) => void
+  onView?: (item: PendingItem) => void
+  onViewAll?: () => void
   compact?: boolean
   density?: 'comfortable' | 'compact'
 }
+
+const ITEMS_PER_PAGE = 20
 
 const COL_MAP: Record<string, string> = { players:'Jugador', coaches:'Técnico', clubs:'Club', agents:'Representante' }
 const TYPE_COLOR: Record<string, { bg: string; text: string }> = {
@@ -41,9 +45,27 @@ function initials(item: PendingItem) {
   return n.split(' ').map((w: string) => w[0]).slice(0,2).join('').toUpperCase()
 }
 
-export default function AdminPendingTable({ items, onApprove, onReject, compact, density = 'comfortable' }: Props) {
+function calcAge(item: PendingItem): string {
+  const birthDate = item.birthDate as string | undefined
+  if (birthDate) {
+    const birth = new Date(birthDate)
+    const now = new Date()
+    let age = now.getFullYear() - birth.getFullYear()
+    const m = now.getMonth() - birth.getMonth()
+    if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--
+    return String(age)
+  }
+  const age = item.age as number | undefined
+  const birthYear = item.birthYear as number | undefined
+  if (age !== undefined) return String(age)
+  if (birthYear !== undefined) return String(new Date().getFullYear() - birthYear)
+  return '—'
+}
+
+export default function AdminPendingTable({ items, onApprove, onReject, onView, onViewAll, compact, density = 'comfortable' }: Props) {
   const [activeTab, setActiveTab] = useState<string | null>(null)
   const [search, setSearch]       = useState('')
+  const [page, setPage]           = useState(1)
 
   const py = density === 'compact' ? '8px' : '12px'
 
@@ -57,11 +79,15 @@ export default function AdminPendingTable({ items, onApprove, onReject, compact,
     })
   }, [items, activeTab, search])
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
+  const safePage   = Math.min(page, totalPages)
+  const pageItems  = compact ? filtered : filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE)
+
   function handleExport() {
     exportToCsv('pendientes-onechance', filtered.map(p => ({
       Nombre:   p.fullName ?? p.name ?? '',
       Tipo:     COL_MAP[p._col] ?? p._col,
-      Edad:     p.age ?? p.birthYear ?? '',
+      Edad:     calcAge(p),
       País:     p.nationality ?? p.country ?? '',
       Registro: p.createdAt ? new Date((p.createdAt as { toDate?: () => Date } | string)?.toString?.() ?? String(p.createdAt)).toLocaleDateString('es-AR') : '',
       Motivo:   p.isMinor ? 'Menor de edad' : 'Revisión manual',
@@ -77,41 +103,49 @@ export default function AdminPendingTable({ items, onApprove, onReject, compact,
           {filtered.length > 0 && <span className="ml-2 text-[14px] text-[rgba(255,255,255,0.3)]">({filtered.length})</span>}
         </h2>
         <div className="flex items-center gap-2">
-          <button onClick={handleExport}
-            className="flex items-center gap-1.5 text-[13px] px-3 py-2 rounded-lg border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.45)] hover:text-white hover:border-[rgba(255,255,255,0.2)] transition-all cursor-pointer bg-transparent"
-            aria-label="Exportar como CSV">
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 3v11"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-            Exportar CSV
-          </button>
-          {compact && <span className="text-[13px] font-bold text-[#AAFF00] cursor-pointer hover:underline">Ver todos</span>}
+          {!compact && (
+            <button onClick={handleExport}
+              className="flex items-center gap-1.5 text-[13px] px-3 py-2 rounded-lg border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.45)] hover:text-white hover:border-[rgba(255,255,255,0.2)] transition-all cursor-pointer bg-transparent"
+              aria-label="Exportar como CSV">
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 3v11"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+              Exportar CSV
+            </button>
+          )}
+          {compact && onViewAll && (
+            <button onClick={onViewAll} className="text-[13px] font-bold text-[#AAFF00] cursor-pointer hover:underline bg-transparent border-none">Ver todos</button>
+          )}
         </div>
       </div>
 
       {/* Search */}
-      <div className="relative mb-4">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[rgba(255,255,255,0.25)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg>
-        <input
-          value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Buscar por nombre o país…"
-          className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-lg pl-9 pr-4 py-2.5 text-[14px] text-white placeholder:text-[rgba(255,255,255,0.2)] outline-none focus:border-[rgba(170,255,0,0.4)] focus:bg-[rgba(170,255,0,0.03)] transition-all"
-          aria-label="Buscar perfiles pendientes"
-        />
-      </div>
+      {!compact && (
+        <div className="relative mb-4">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[rgba(255,255,255,0.25)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg>
+          <input
+            value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
+            placeholder="Buscar por nombre o país…"
+            className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-lg pl-9 pr-4 py-2.5 text-[14px] text-white placeholder:text-[rgba(255,255,255,0.2)] outline-none focus:border-[rgba(170,255,0,0.4)] focus:bg-[rgba(170,255,0,0.03)] transition-all"
+            aria-label="Buscar perfiles pendientes"
+          />
+        </div>
+      )}
 
       {/* Sub-tabs */}
-      <div className="flex gap-1 mb-4 border-b border-[rgba(255,255,255,0.07)] overflow-x-auto pb-px">
-        {TABS.map(t => {
-          const count = t.col === null ? items.length : items.filter(i => i._col === t.col).length
-          const active = activeTab === t.col
-          return (
-            <button key={t.label} onClick={() => setActiveTab(t.col)}
-              className="pb-2.5 px-1 text-[14px] font-medium border-b-2 transition-colors cursor-pointer bg-transparent border-x-0 border-t-0 -mb-px whitespace-nowrap mr-4"
-              style={{ color: active ? '#AAFF00' : 'rgba(255,255,255,0.35)', borderBottomColor: active ? '#AAFF00' : 'transparent' }}>
-              {t.label} <span className="ml-1 text-[12px] opacity-60">({count})</span>
-            </button>
-          )
-        })}
-      </div>
+      {!compact && (
+        <div className="flex gap-1 mb-4 border-b border-[rgba(255,255,255,0.07)] overflow-x-auto pb-px">
+          {TABS.map(t => {
+            const count = t.col === null ? items.length : items.filter(i => i._col === t.col).length
+            const active = activeTab === t.col
+            return (
+              <button key={t.label} onClick={() => { setActiveTab(t.col); setPage(1) }}
+                className="pb-2.5 px-1 text-[14px] font-medium border-b-2 transition-colors cursor-pointer bg-transparent border-x-0 border-t-0 -mb-px whitespace-nowrap mr-4"
+                style={{ color: active ? '#AAFF00' : 'rgba(255,255,255,0.35)', borderBottomColor: active ? '#AAFF00' : 'transparent' }}>
+                {t.label} <span className="ml-1 text-[12px] opacity-60">({count})</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <div className="py-14 text-center text-[rgba(255,255,255,0.2)] text-sm">
@@ -133,7 +167,7 @@ export default function AdminPendingTable({ items, onApprove, onReject, compact,
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((item, idx) => {
+                {pageItems.map((item, idx) => {
                   const tc = TYPE_COLOR[item._col] ?? { bg:'rgba(255,255,255,0.06)', text:'rgba(255,255,255,0.4)' }
                   return (
                     <tr key={`${item._col}-${item.uid??idx}`}
@@ -155,7 +189,7 @@ export default function AdminPendingTable({ items, onApprove, onReject, compact,
                           {COL_MAP[item._col] ?? item._col}
                         </span>
                       </td>
-                      <td style={{ padding:`${py} 16px` }} className="text-[rgba(255,255,255,0.45)]">{String(item.age ?? item.birthYear ?? '—')}</td>
+                      <td style={{ padding:`${py} 16px` }} className="text-[rgba(255,255,255,0.45)]">{calcAge(item)}</td>
                       <td style={{ padding:`${py} 16px` }} className="text-[rgba(255,255,255,0.45)]">{String(item.nationality ?? item.country ?? '—')}</td>
                       <td style={{ padding:`${py} 16px` }} className="text-[rgba(255,255,255,0.3)] text-[13px]">
                         {item.createdAt ? new Date(String(item.createdAt)).toLocaleDateString('es-AR') : '—'}
@@ -175,10 +209,13 @@ export default function AdminPendingTable({ items, onApprove, onReject, compact,
                             style={{ background:'rgba(244,63,94,0.10)', color:'#F43F5E' }}>
                             Rechazar
                           </button>
-                          <button className="p-1.5 rounded-lg border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.3)] hover:text-white transition-colors cursor-pointer bg-transparent"
-                            aria-label="Ver perfil">
-                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/></svg>
-                          </button>
+                          {onView && (
+                            <button onClick={() => onView(item)}
+                              className="p-1.5 rounded-lg border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.3)] hover:text-white transition-colors cursor-pointer bg-transparent"
+                              aria-label="Ver perfil">
+                              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -189,17 +226,39 @@ export default function AdminPendingTable({ items, onApprove, onReject, compact,
           </div>
           </div>
 
-          {!compact && (
-            <div className="mt-5 flex items-center justify-center gap-1.5 text-sm">
-              <button className="px-4 py-2 rounded-lg border border-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.25)] text-[13px] cursor-pointer bg-transparent">← Anterior</button>
-              {[1,2,3].map(n => (
-                <button key={n} className="w-9 h-9 rounded-lg text-[13px] font-semibold cursor-pointer border-none transition-all"
-                  style={{ background:n===1?'#AAFF00':'transparent', color:n===1?'#000':'rgba(255,255,255,0.4)' }}>
-                  {n}
+          {!compact && totalPages > 1 && (
+            <div className="mt-5 flex items-center justify-between text-sm">
+              <span className="text-[12px] text-[rgba(255,255,255,0.3)]">
+                {filtered.length} resultados · Página {safePage} de {totalPages}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  disabled={safePage === 1}
+                  onClick={() => setPage(p => p - 1)}
+                  className="px-4 py-2 rounded-lg border border-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.4)] text-[13px] cursor-pointer bg-transparent disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:border-[rgba(255,255,255,0.18)]">
+                  ← Anterior
                 </button>
-              ))}
-              <span className="text-[rgba(255,255,255,0.2)] px-1">…</span>
-              <button className="px-4 py-2 rounded-lg border border-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.4)] text-[13px] cursor-pointer bg-transparent">Siguiente →</button>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let n: number
+                  if (totalPages <= 5) n = i + 1
+                  else if (safePage <= 3) n = i + 1
+                  else if (safePage >= totalPages - 2) n = totalPages - 4 + i
+                  else n = safePage - 2 + i
+                  return (
+                    <button key={n} onClick={() => setPage(n)}
+                      className="w-9 h-9 rounded-lg text-[13px] font-semibold cursor-pointer border-none transition-all"
+                      style={{ background:n===safePage?'#AAFF00':'transparent', color:n===safePage?'#000':'rgba(255,255,255,0.4)' }}>
+                      {n}
+                    </button>
+                  )
+                })}
+                <button
+                  disabled={safePage === totalPages}
+                  onClick={() => setPage(p => p + 1)}
+                  className="px-4 py-2 rounded-lg border border-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.4)] text-[13px] cursor-pointer bg-transparent disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:border-[rgba(255,255,255,0.18)]">
+                  Siguiente →
+                </button>
+              </div>
             </div>
           )}
         </>

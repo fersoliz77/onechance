@@ -7,7 +7,7 @@ import { getPendingProfiles, getAllPlayers, getAllUsers, getAllCoaches, getAllCl
 import { getAllVideos } from '@/lib/rtdb'
 import type { PlayerProfile, CoachProfile, ClubProfile, AgentProfile, VideoEntry, ProfileStatus, UserRecord } from '@/types'
 import { isAdminRole, isSuperAdminRole } from '@/lib/permissions'
-import { logAudit } from '@/lib/auditLog'
+import { logAudit, type AuditAction } from '@/lib/auditLog'
 import { useToastState } from '@/hooks/useToast'
 import { useRateLimit } from '@/hooks/useRateLimit'
 import { buildAdminMetrics } from '@/lib/adminMetrics'
@@ -25,6 +25,7 @@ import AdminProfilesTab from '@/components/admin/AdminProfilesTab'
 import CommandPalette from '@/components/admin/CommandPalette'
 import ToastStack from '@/components/admin/ui/ToastStack'
 import ConfirmModal from '@/components/admin/ui/ConfirmModal'
+import RejectModal from '@/components/admin/ui/RejectModal'
 import { SkeletonStat, SkeletonCard } from '@/components/admin/ui/Skeleton'
 
 export type PendingItem = {
@@ -68,6 +69,7 @@ export default function AdminPage() {
   const [users, setUsers]     = useState<UserRecord[]>([])
   const [videos, setVideos]   = useState<(VideoEntry & { playerUid: string })[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
   const [loadError, setLoadError] = useState('')
 
   const [paletteOpen, setPaletteOpen] = useState(false)
@@ -76,6 +78,9 @@ export default function AdminPage() {
     (typeof window !== 'undefined' ? localStorage.getItem('oc-admin-density') as Density | null : null) ?? 'comfortable'
   )
   const [confirm, setConfirm] = useState<ConfirmState>(CONFIRM_CLOSED)
+  const [rejectTarget, setRejectTarget] = useState<PendingItem | null>(null)
+  const [userSearch, setUserSearch] = useState('')
+  const [userRoleFilter, setUserRoleFilter] = useState<string>('all')
 
   const { toasts, toast, remove: removeToast } = useToastState()
   const { execute } = useRateLimit(2000)
@@ -134,19 +139,29 @@ export default function AdminPage() {
 
     // Videos — se cargan aparte, errores manejados silenciosamente
     getAllVideos().then(setVideos).catch(() => {})
-  }, [user, isAdmin])
+  }, [user, isAdmin, refreshKey])
 
   // ── API helper ──
   const callAdminApi = useCallback(async (path: string, payload: Record<string, unknown>) => {
     if (!firebaseUser) throw new Error('No auth user')
-    const token = await firebaseUser.getIdToken()
-    const res = await fetch(path, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(payload),
-    })
+    const exec = async (forceRefresh = false) => {
+      const token = await firebaseUser.getIdToken(forceRefresh)
+      return fetch(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      })
+    }
+
+    let res = await exec(false)
+    if (res.status === 401) {
+      res = await exec(true)
+    }
+
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
+      if (res.status === 401) throw new Error('Unauthorized: tu sesion admin expiro. Volve a iniciar sesion.')
+      if (res.status === 403) throw new Error('Forbidden: tu usuario no tiene permisos admin en Firestore.')
       throw new Error(body.error ?? 'Admin action failed')
     }
   }, [firebaseUser])
@@ -170,15 +185,41 @@ export default function AdminPage() {
     })
   }, [callAdminApi, execute, firebaseUser, toast])
 
+  const updateProfilesLocal = useCallback((uid: string, col: string, patch: Partial<{ status: ProfileStatus }>) => {
+    const upd = <T extends { uid: string }>(list: T[]) =>
+      list.map(item => item.uid === uid ? { ...item, ...patch } : item)
+    if      (col === 'players') setPlayers(upd as (prev: typeof players) => typeof players)
+    else if (col === 'coaches') setCoaches(upd as (prev: typeof coaches) => typeof coaches)
+    else if (col === 'clubs')   setClubs(upd   as (prev: typeof clubs)   => typeof clubs)
+    else if (col === 'agents')  setAgents(upd  as (prev: typeof agents)  => typeof agents)
+  }, [])
+
   const confirmReject = useCallback((item: PendingItem) => {
-    setConfirm({
-      open: true, danger: true,
-      title: 'Rechazar perfil',
-      description: `¿Rechazás el perfil de "${item.fullName ?? item.name ?? 'este usuario'}"? Esta acción notificará al jugador.`,
-      confirmLabel: 'Sí, rechazar',
-      onConfirm: () => { setConfirm(CONFIRM_CLOSED); handleStatus(item, 'rejected') },
+    setRejectTarget(item)
+  }, [])
+
+  const handleRejectWithReason = useCallback((reason: string) => {
+    if (!rejectTarget) return
+    const item = rejectTarget
+    setRejectTarget(null)
+    execute(`status-${item.uid}`, async () => {
+      try {
+        const payload: Record<string, unknown> = { collection: item._col, uid: item.uid, status: 'rejected' }
+        if (reason) payload.rejectionReason = reason
+        await callAdminApi('/api/admin/profile-status', payload)
+        setPending(ps => ps.filter(p => p.uid !== item.uid))
+        updateProfilesLocal(item.uid, item._col, { status: 'rejected' })
+        await logAudit(
+          { uid: firebaseUser!.uid, email: firebaseUser!.email },
+          'reject_profile', item.uid, item._col, { name: item.fullName ?? item.name, rejectionReason: reason }
+        )
+        toast.info('Perfil rechazado')
+      } catch (e) {
+        toast.error('Error al rechazar el perfil')
+        console.error('[handleRejectWithReason]', e)
+      }
     })
-  }, [handleStatus])
+  }, [rejectTarget, execute, callAdminApi, firebaseUser, toast, updateProfilesLocal])
 
   const handleFeatured = useCallback(async (uid: string, current: boolean) => {
     try {
@@ -189,56 +230,32 @@ export default function AdminPage() {
     } catch { toast.error('Error al actualizar destacado') }
   }, [callAdminApi, firebaseUser, toast])
 
-  const handleApproveProfile = useCallback(async (uid: string, col: string) => {
+  const handleChangeStatus = useCallback(async (uid: string, col: string, newStatus: ProfileStatus) => {
+    const AUDIT_ACTION: Record<ProfileStatus, AuditAction> = {
+      published: 'publish_profile',
+      hidden:    'hide_profile',
+      rejected:  'reject_profile',
+      pending:   'set_profile_pending',
+      draft:     'set_profile_draft',
+    }
     try {
-      await callAdminApi('/api/admin/profile-status', { collection: col, uid, status: 'published' })
-      const upd = <T extends { uid: string; status: ProfileStatus }>(list: T[]) =>
-        list.map(item => item.uid === uid ? { ...item, status: 'published' as ProfileStatus } : item)
-      if (col === 'players') setPlayers(upd)
-      else if (col === 'coaches') setCoaches(upd)
-      else if (col === 'clubs')   setClubs(upd)
-      else if (col === 'agents')  setAgents(upd)
-      setPending(ps => ps.filter(p => p.uid !== uid))
-      await logAudit({ uid: firebaseUser!.uid, email: firebaseUser!.email }, 'approve_profile', uid, col)
-      toast.success('✓ Perfil aprobado')
-    } catch { toast.error('Error al aprobar el perfil') }
-  }, [callAdminApi, firebaseUser, toast])
-
-  const handleRejectProfile = useCallback(async (uid: string, col: string, reason: string) => {
-    try {
-      await callAdminApi('/api/admin/profile-status', { collection: col, uid, status: 'rejected', ...(reason ? { rejectionReason: reason } : {}) })
-      const upd = <T extends { uid: string; status: ProfileStatus }>(list: T[]) =>
-        list.map(item => item.uid === uid ? { ...item, status: 'rejected' as ProfileStatus } : item)
-      if (col === 'players') setPlayers(upd)
-      else if (col === 'coaches') setCoaches(upd)
-      else if (col === 'clubs')   setClubs(upd)
-      else if (col === 'agents')  setAgents(upd)
-      setPending(ps => ps.filter(p => p.uid !== uid))
-      await logAudit({ uid: firebaseUser!.uid, email: firebaseUser!.email }, 'reject_profile', uid, col, { rejectionReason: reason })
-      toast.info('Perfil rechazado')
-    } catch { toast.error('Error al rechazar el perfil') }
-  }, [callAdminApi, firebaseUser, toast])
-
-  const handleTogglePublish = useCallback(async (uid: string, col: string, status: ProfileStatus) => {
-    const next: ProfileStatus = status === 'published' ? 'hidden' : 'published'
-    try {
-      await callAdminApi('/api/admin/profile-status', { collection: col, uid, status: next })
-      const upd = <T extends { uid: string; status: ProfileStatus }>(list: T[]) =>
-        list.map(item => item.uid === uid ? { ...item, status: next } : item)
-      if (col === 'players') setPlayers(upd)
-      else if (col === 'coaches') setCoaches(upd)
-      else if (col === 'clubs')   setClubs(upd)
-      else if (col === 'agents')  setAgents(upd)
+      await callAdminApi('/api/admin/profile-status', { collection: col, uid, status: newStatus })
+      updateProfilesLocal(uid, col, { status: newStatus })
       await logAudit(
         { uid: firebaseUser!.uid, email: firebaseUser!.email },
-        next === 'hidden' ? 'hide_profile' : 'publish_profile',
-        uid, col, { status: next },
+        AUDIT_ACTION[newStatus], uid, col, { status: newStatus },
       )
-      toast[next === 'hidden' ? 'info' : 'success'](
-        next === 'hidden' ? 'Perfil ocultado' : '✓ Perfil publicado'
-      )
-    } catch { toast.error('Error al actualizar el estado del perfil') }
-  }, [callAdminApi, firebaseUser, toast])
+      if (newStatus === 'published') toast.success('✓ Perfil publicado')
+      else if (newStatus === 'hidden')   toast.info('Perfil ocultado')
+      else if (newStatus === 'rejected') toast.info('Perfil rechazado')
+      else if (newStatus === 'pending')  toast.info('Perfil marcado como pendiente')
+      else                               toast.info('Perfil movido a borrador')
+    } catch { toast.error('Error al cambiar el estado del perfil') }
+  }, [callAdminApi, firebaseUser, toast, updateProfilesLocal])
+
+  const handleRequestRejectFromProfiles = useCallback((uid: string, col: string, name: string) => {
+    setRejectTarget({ uid, _col: col, fullName: name, status: 'published' } as PendingItem)
+  }, [])
 
   const handleToggleVideo = useCallback((v: VideoEntry & { playerUid: string }) => {
     execute(`video-${v.id}`, async () => {
@@ -298,12 +315,14 @@ export default function AdminPage() {
 
   const publishedPlayers  = players.filter(p => p.status === 'published')
   const featuredPlayers   = players.filter(p => p.isFeatured)
+  const totalProfiles     = players.length + coaches.length + clubs.length + agents.length
   const roleDistribution  = {
     player: users.filter(u => u.role === 'player').length,
     coach:  users.filter(u => u.role === 'coach').length,
     club:   users.filter(u => u.role === 'club').length,
     agent:  users.filter(u => u.role === 'agent').length,
   }
+  const playerNames = Object.fromEntries(players.map(p => [p.uid, p.fullName]))
   return (
     <div className="flex min-h-screen bg-[#0A0A0A] text-white" style={{ fontFamily: 'var(--font-dm-sans), system-ui, sans-serif' }}>
       {/* Ambient */}
@@ -318,6 +337,14 @@ export default function AdminPage() {
 
       {/* Confirm Modal */}
       <ConfirmModal {...confirm} onCancel={() => setConfirm(CONFIRM_CLOSED)} />
+
+      {/* Reject Modal — con campo de motivo */}
+      <RejectModal
+        open={rejectTarget !== null}
+        profileName={rejectTarget?.fullName ?? rejectTarget?.name ?? ''}
+        onConfirm={handleRejectWithReason}
+        onCancel={() => setRejectTarget(null)}
+      />
 
       {/* Toast stack */}
       <ToastStack toasts={toasts} onRemove={removeToast} />
@@ -339,9 +366,11 @@ export default function AdminPage() {
           photoURL={firebaseUser?.photoURL}
           pendingCount={pending.length}
           density={density}
+          role={user?.systemRole}
           onDensityToggle={toggleDensity}
           onViewSite={() => window.open('/', '_blank')}
           onOpenPalette={() => setPaletteOpen(true)}
+          onViewPending={() => setTab('solicitudes')}
           onMobileMenu={() => setMobileSidebarOpen(o => !o)}
         />
 
@@ -356,22 +385,25 @@ export default function AdminPage() {
           {/* DASHBOARD */}
           {tab === 'dashboard' && (
             <>
-              <AdminStats totalUsers={users.length} published={publishedPlayers.length} pending={pending.length} videos={videos.length} roleDistribution={roleDistribution} deltas={metrics.deltas} />
+              <AdminStats totalUsers={users.length} totalProfiles={totalProfiles} published={publishedPlayers.length} pending={pending.length} videos={videos.length} roleDistribution={roleDistribution} deltas={metrics.deltas} />
               <AdminCharts roleDistribution={roleDistribution} totalUsers={users.length} months={metrics.months} roleSeries={metrics.roleSeries} pendingSeries={metrics.pendingSeries} monthRange={monthRange} onMonthRangeChange={setMonthRange} />
               <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
-                <AdminPendingTable items={pending.slice(0,6)} onApprove={i => handleStatus(i,'published')} onReject={confirmReject} compact density={density} />
-                <AdminActivity pending={pending} players={players} videos={videos} />
+                <AdminPendingTable items={pending.slice(0,6)} onApprove={i => handleStatus(i,'published')} onReject={confirmReject} onViewAll={() => setTab('solicitudes')} compact density={density} />
+                <AdminActivity onViewAll={() => setTab('solicitudes')} />
               </div>
               <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
-                <AdminVideos videos={videos.slice(0,3)} onToggle={handleToggleVideo} onRemove={confirmRemoveVideo} compact />
-                <AdminQuickActions />
+                <AdminVideos videos={videos.slice(0,3)} playerNames={playerNames} onToggle={handleToggleVideo} onRemove={confirmRemoveVideo} onViewAll={() => setTab('videos')} compact />
+                <AdminQuickActions onTab={setTab} toast={toast} />
               </div>
             </>
           )}
 
           {/* SOLICITUDES */}
           {tab === 'solicitudes' && (
-            <AdminPendingTable items={pending} onApprove={i => handleStatus(i,'published')} onReject={confirmReject} density={density} />
+            <AdminPendingTable items={pending} onApprove={i => handleStatus(i,'published')} onReject={confirmReject} onView={item => {
+              const colToRoute: Record<string, string> = { players:'players', coaches:'coaches', clubs:'clubs', agents:'agents' }
+              window.open(`/${colToRoute[item._col] ?? item._col}/${item.uid}`, '_blank')
+            }} density={density} />
           )}
 
           {/* PERFILES */}
@@ -381,78 +413,115 @@ export default function AdminPage() {
               coaches={coaches}
               clubs={clubs}
               agents={agents}
-              onToggleStatus={handleTogglePublish}
+              onChangeStatus={handleChangeStatus}
               onFeatured={handleFeatured}
-              onApprove={handleApproveProfile}
-              onReject={handleRejectProfile}
+              onRequestReject={handleRequestRejectFromProfiles}
+              onRefresh={() => setRefreshKey(k => k + 1)}
             />
           )}
 
           {/* USUARIOS */}
-          {tab === 'usuarios' && (
-            <div className="space-y-4">
-              <SectionHeader title="Gestión de usuarios" subtitle={`${users.length} usuarios registrados`} />
-              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] overflow-hidden">
-                <div className="overflow-x-auto">
-                <table className="w-full text-sm min-w-[520px]">
-                  <thead>
-                    <tr className="border-b border-[rgba(255,255,255,0.07)]">
-                      {['Usuario','Rol','Sistema','Acciones'].map(h => (
-                        <th key={h} className="px-5 py-3.5 text-left text-[12px] font-semibold uppercase tracking-[0.05em] text-[rgba(255,255,255,0.3)]">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map(u => (
-                      <tr key={u.uid} className="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.02)] transition-colors">
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-[rgba(255,255,255,0.08)] flex items-center justify-center text-[11px] font-bold shrink-0">
-                              {((u.name || u.email)?.[0] ?? '?').toUpperCase()}
-                            </div>
-                            <div>
-                              <p className="text-white font-medium">{u.name || '—'}</p>
-                              <p className="text-[12px] text-[rgba(255,255,255,0.3)]">{u.email}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-3"><RoleBadge role={u.role} /></td>
-                        <td className="px-5 py-3">
-                          <span className="text-[12px] px-2 py-1 rounded-md bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.4)]">{u.systemRole ?? 'user'}</span>
-                        </td>
-                        <td className="px-5 py-3">
-                          {isSuperAdmin && (
-                            <div className="flex gap-1.5">
-                              {(['user','admin','super_admin'] as const).map(role => (
-                                <button key={role} onClick={() => handleSetSystemRole(u.uid, role)}
-                                  className="text-[11px] px-2 py-1 rounded-md cursor-pointer font-sans border-none transition-all"
-                                  style={{ background: u.systemRole === role ? 'rgba(170,255,0,0.15)' : 'rgba(255,255,255,0.06)', color: u.systemRole === role ? '#AAFF00' : 'rgba(255,255,255,0.4)' }}>
-                                  {role.replace('_',' ')}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </td>
-                      </tr>
+          {tab === 'usuarios' && (() => {
+            const q = userSearch.toLowerCase().trim()
+            const filteredUsers = users.filter(u => {
+              const matchRole = userRoleFilter === 'all' || u.role === userRoleFilter || u.systemRole === userRoleFilter
+              const matchSearch = !q || (u.name ?? '').toLowerCase().includes(q) || (u.email ?? '').toLowerCase().includes(q)
+              return matchRole && matchSearch
+            })
+            return (
+              <div className="space-y-4">
+                <SectionHeader title="Gestión de usuarios" subtitle={`${users.length} usuarios registrados`} />
+                {/* Search + filter */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1 relative">
+                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[rgba(255,255,255,0.25)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg>
+                    <input
+                      value={userSearch}
+                      onChange={e => setUserSearch(e.target.value)}
+                      placeholder="Buscar por nombre o email…"
+                      className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-lg pl-9 pr-4 py-2.5 text-[14px] text-white placeholder:text-[rgba(255,255,255,0.2)] outline-none focus:border-[rgba(170,255,0,0.4)] focus:bg-[rgba(170,255,0,0.03)] transition-all"
+                    />
+                  </div>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {(['all','player','coach','club','agent','admin','super_admin'] as const).map(f => (
+                      <button key={f} onClick={() => setUserRoleFilter(f)}
+                        className="text-[12px] px-3 py-2 rounded-lg border transition-all cursor-pointer"
+                        style={{
+                          background:  userRoleFilter === f ? 'rgba(170,255,0,0.1)' : 'rgba(255,255,255,0.04)',
+                          color:       userRoleFilter === f ? '#AAFF00' : 'rgba(255,255,255,0.4)',
+                          borderColor: userRoleFilter === f ? 'rgba(170,255,0,0.3)' : 'rgba(255,255,255,0.08)',
+                        }}>
+                        {f === 'all' ? 'Todos' : f === 'super_admin' ? 'Super Admin' : f === 'admin' ? 'Admin' : f.charAt(0).toUpperCase() + f.slice(1)}
+                      </button>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
                 </div>
-                {users.length === 0 && <div className="py-16 text-center text-[rgba(255,255,255,0.2)] text-sm">No hay usuarios registrados.</div>}
+                <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] overflow-hidden">
+                  <div className="overflow-x-auto">
+                  <table className="w-full text-sm min-w-[520px]">
+                    <thead>
+                      <tr className="border-b border-[rgba(255,255,255,0.07)]">
+                        {['Usuario','Rol','Sistema','Acciones'].map(h => (
+                          <th key={h} className="px-5 py-3.5 text-left text-[12px] font-semibold uppercase tracking-[0.05em] text-[rgba(255,255,255,0.3)]">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.map(u => (
+                        <tr key={u.uid} className="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-[rgba(255,255,255,0.08)] flex items-center justify-center text-[11px] font-bold shrink-0">
+                                {((u.name || u.email)?.[0] ?? '?').toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="text-white font-medium">{u.name || '—'}</p>
+                                <p className="text-[12px] text-[rgba(255,255,255,0.3)]">{u.email}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3"><RoleBadge role={u.role} /></td>
+                          <td className="px-5 py-3">
+                            <span className="text-[12px] px-2 py-1 rounded-md bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.4)]">{u.systemRole ?? 'user'}</span>
+                          </td>
+                          <td className="px-5 py-3">
+                            {isSuperAdmin && (
+                              <div className="flex gap-1.5">
+                                {(['user','admin','super_admin'] as const).map(role => (
+                                  <button key={role} onClick={() => handleSetSystemRole(u.uid, role)}
+                                    className="text-[11px] px-2 py-1 rounded-md cursor-pointer font-sans border-none transition-all"
+                                    style={{ background: u.systemRole === role ? 'rgba(170,255,0,0.15)' : 'rgba(255,255,255,0.06)', color: u.systemRole === role ? '#AAFF00' : 'rgba(255,255,255,0.4)' }}>
+                                    {role.replace('_',' ')}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  </div>
+                  {filteredUsers.length === 0 && (
+                    <div className="py-16 text-center text-[rgba(255,255,255,0.2)] text-sm">
+                      {userSearch || userRoleFilter !== 'all' ? 'Sin resultados para los filtros aplicados.' : 'No hay usuarios registrados.'}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          })()}
 
           {/* VIDEOS */}
           {tab === 'videos' && (
-            <AdminVideos videos={videos} onToggle={handleToggleVideo} onRemove={confirmRemoveVideo} />
+            <AdminVideos videos={videos} playerNames={playerNames} onToggle={handleToggleVideo} onRemove={confirmRemoveVideo} />
           )}
 
           {/* ESTADÍSTICAS */}
           {tab === 'estadisticas' && (
             <div className="space-y-6">
               <SectionHeader title="Estadísticas de la plataforma" subtitle="Métricas y distribución de perfiles" />
-              <AdminStats totalUsers={users.length} published={publishedPlayers.length} pending={pending.length} videos={videos.length} roleDistribution={roleDistribution} deltas={metrics.deltas} />
+              <AdminStats totalUsers={users.length} totalProfiles={totalProfiles} published={publishedPlayers.length} pending={pending.length} videos={videos.length} roleDistribution={roleDistribution} deltas={metrics.deltas} />
               <AdminCharts roleDistribution={roleDistribution} totalUsers={users.length} months={metrics.months} roleSeries={metrics.roleSeries} pendingSeries={metrics.pendingSeries} monthRange={monthRange} onMonthRangeChange={setMonthRange} />
             </div>
           )}

@@ -23,7 +23,7 @@ export async function updatePlayer(uid: string, data: Partial<PlayerProfile>) {
 
 export async function getAllPlayers(): Promise<PlayerProfile[]> {
   const snap = await getDocs(collection(db, 'players'))
-  return snap.docs.map(d => d.data() as PlayerProfile)
+  return snap.docs.map(d => ({ ...d.data(), uid: d.id } as PlayerProfile))
 }
 
 // ── COACHES ───────────────────────────────────────────────────
@@ -44,7 +44,7 @@ export async function updateCoach(uid: string, data: Partial<CoachProfile>) {
 
 export async function getAllCoaches(): Promise<CoachProfile[]> {
   const snap = await getDocs(collection(db, 'coaches'))
-  return snap.docs.map(d => d.data() as CoachProfile)
+  return snap.docs.map(d => ({ ...d.data(), uid: d.id } as CoachProfile))
 }
 
 // ── CLUBS ─────────────────────────────────────────────────────
@@ -61,7 +61,7 @@ export async function getClub(uid: string): Promise<ClubProfile | null> {
 
 export async function getAllClubs(): Promise<ClubProfile[]> {
   const snap = await getDocs(collection(db, 'clubs'))
-  return snap.docs.map(d => d.data() as ClubProfile)
+  return snap.docs.map(d => ({ ...d.data(), uid: d.id } as ClubProfile))
 }
 
 export async function updateClub(uid: string, data: Partial<ClubProfile>) {
@@ -82,7 +82,7 @@ export async function getAgent(uid: string): Promise<AgentProfile | null> {
 
 export async function getAllAgents(): Promise<AgentProfile[]> {
   const snap = await getDocs(collection(db, 'agents'))
-  return snap.docs.map(d => d.data() as AgentProfile)
+  return snap.docs.map(d => ({ ...d.data(), uid: d.id } as AgentProfile))
 }
 
 export async function updateAgent(uid: string, data: Partial<AgentProfile>) {
@@ -98,10 +98,10 @@ export async function getPendingProfiles() {
     getDocs(query(collection(db, 'agents'),  where('status', '==', 'pending'))),
   ])
   return [
-    ...players.docs.map(d => ({ ...d.data(), _col: 'players' as const })),
-    ...coaches.docs.map(d => ({ ...d.data(), _col: 'coaches' as const })),
-    ...clubs.docs.map(d => ({ ...d.data(), _col: 'clubs' as const })),
-    ...agents.docs.map(d => ({ ...d.data(), _col: 'agents' as const })),
+    ...players.docs.map(d => ({ ...d.data(), uid: d.id, _col: 'players' as const })),
+    ...coaches.docs.map(d => ({ ...d.data(), uid: d.id, _col: 'coaches' as const })),
+    ...clubs.docs.map(d => ({ ...d.data(), uid: d.id, _col: 'clubs' as const })),
+    ...agents.docs.map(d => ({ ...d.data(), uid: d.id, _col: 'agents' as const })),
   ]
 }
 

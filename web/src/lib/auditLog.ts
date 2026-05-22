@@ -9,6 +9,8 @@ export type AuditAction =
   | 'reject_profile'
   | 'hide_profile'
   | 'publish_profile'
+  | 'set_profile_pending'
+  | 'set_profile_draft'
   | 'delete_video'
   | 'toggle_video'
   | 'set_featured'
@@ -41,20 +43,22 @@ export interface RecentActivity {
 }
 
 const ACTION_LABEL: Record<AuditAction, string> = {
-  approve_profile: 'Perfil aprobado',
-  reject_profile:  'Perfil rechazado',
-  hide_profile:    'Perfil ocultado',
-  publish_profile: 'Perfil publicado',
-  delete_video:    'Video eliminado',
-  toggle_video:    'Video moderado',
-  set_featured:    'Jugador destacado',
-  set_role:        'Rol de usuario cambiado',
-  export_csv:      'Exportación de datos',
+  approve_profile:    'Perfil aprobado',
+  reject_profile:     'Perfil rechazado',
+  hide_profile:       'Perfil ocultado',
+  publish_profile:    'Perfil publicado',
+  set_profile_pending:'Perfil marcado pendiente',
+  set_profile_draft:  'Perfil movido a borrador',
+  delete_video:       'Video eliminado',
+  toggle_video:       'Video moderado',
+  set_featured:       'Jugador destacado',
+  set_role:           'Rol de usuario cambiado',
+  export_csv:         'Exportación de datos',
 }
 
 export async function getRecentAuditLogs(n = 5): Promise<RecentActivity[]> {
   try {
-    const q = query(collection(db, 'adminAuditLog'), orderBy('timestamp', 'desc'), limit(n))
+    const q = query(collection(db, 'admin_audit_logs'), orderBy('timestamp', 'desc'), limit(n))
     const snap = await getDocs(q)
     return snap.docs.map(d => {
       const data = d.data()
@@ -83,7 +87,7 @@ export async function logAudit(
   metadata?: Record<string, unknown>,
 ) {
   try {
-    await addDoc(collection(db, 'adminAuditLog'), {
+    await addDoc(collection(db, 'admin_audit_logs'), {
       adminUid:   admin.uid,
       adminEmail: admin.email ?? 'unknown',
       action,

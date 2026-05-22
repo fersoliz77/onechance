@@ -21,7 +21,12 @@ const normalizeRecord = (data: Record<string, unknown>) => {
   const normalized: Record<string, unknown> = {}
   for (const [key, raw] of Object.entries(data)) {
     if (typeof raw === 'string') normalized[key] = trimText(raw)
-    else if (Array.isArray(raw)) normalized[key] = normStringArray(raw)
+    else if (Array.isArray(raw)) {
+      // array of objects (e.g. career entries) → pass through; array of strings → deduplicate+trim
+      normalized[key] = raw.length > 0 && typeof raw[0] === 'object' && raw[0] !== null
+        ? raw
+        : normStringArray(raw)
+    }
     else normalized[key] = raw
   }
   return normalized
@@ -38,6 +43,12 @@ const PlayerDataSchema = z.object({
   strongFoot: z.enum(['Der', 'Izq', 'Ambas']),
   characteristics: z.array(z.string().min(1).max(60)).max(30),
   languages: z.array(z.string().min(1).max(40)).max(10),
+  career: z.array(z.object({ club: z.string().max(120), years: z.string().max(40) })).max(50),
+  social: z.object({
+    instagram: z.string().max(120).optional(),
+    tiktok:    z.string().max(120).optional(),
+    youtube:   z.string().max(200).optional(),
+  }).optional(),
 }).partial()
 
 const CoachDataSchema = z.object({
@@ -89,7 +100,7 @@ export const ProfileUpdateSchema = z.discriminatedUnion('role', [
 
 export const PROFILE_FIELD_MATRIX: Record<Role, { editable: string[]; required: string[]; public: string[] }> = {
   player: {
-    editable: ['fullName', 'bio', 'position', 'nationality', 'currentClub', 'height', 'weight', 'strongFoot', 'characteristics', 'languages'],
+    editable: ['fullName', 'bio', 'position', 'nationality', 'currentClub', 'height', 'weight', 'strongFoot', 'characteristics', 'languages', 'career', 'social'],
     required: ['fullName', 'position', 'nationality', 'bio'],
     public: ['fullName', 'bio', 'position', 'nationality', 'currentClub', 'height', 'weight', 'strongFoot', 'characteristics', 'languages', 'career', 'avatarUrl', 'photoGallery'],
   },

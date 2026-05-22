@@ -9,18 +9,14 @@ function getServiceAccount() {
   return JSON.parse(raw)
 }
 
-function getDatabaseUrl() {
-  const url = process.env.FIREBASE_DATABASE_URL
-  if (!url) throw new Error('Missing FIREBASE_DATABASE_URL')
-  return url
-}
-
 export function getAdminApp() {
   if (!getApps().length) {
-    initializeApp({
+    const cfg: Parameters<typeof initializeApp>[0] = {
       credential: cert(getServiceAccount()),
-      databaseURL: getDatabaseUrl(),
-    })
+    }
+    const dbUrl = process.env.FIREBASE_DATABASE_URL
+    if (dbUrl) cfg.databaseURL = dbUrl
+    initializeApp(cfg)
   }
   return getApps()[0]
 }
@@ -34,5 +30,7 @@ export function getAdminDb() {
 }
 
 export function getAdminRtdb() {
+  const url = process.env.FIREBASE_DATABASE_URL
+  if (!url) throw new Error('FIREBASE_DATABASE_URL not configured')
   return getDatabase(getAdminApp())
 }

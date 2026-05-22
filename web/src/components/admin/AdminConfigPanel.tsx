@@ -258,11 +258,43 @@ function ExportCard({ users, players }: { users: UserRecord[]; players: PlayerPr
 // ── Danger zone ────────────────────────────────────────────────────────────────
 
 function DangerZoneCard({ toast }: { toast: ToastAPI }) {
+  const { firebaseUser } = useAuth()
   const [confirm, setConfirm] = useState<string | null>(null)
+  const [running, setRunning] = useState<string | null>(null)
+
+  const executePurge = async () => {
+    if (!firebaseUser) return
+    setRunning('purge')
+    setConfirm(null)
+    try {
+      const token = await firebaseUser.getIdToken()
+      const res = await fetch('/api/admin/purge-rejected', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Error')
+      toast.success(`${data.deleted} perfiles rechazados eliminados`)
+    } catch {
+      toast.error('Error al purgar perfiles')
+    } finally {
+      setRunning(null)
+    }
+  }
 
   const actions = [
-    { id: 'purge',  label: 'Purgar perfiles rechazados', desc: 'Elimina permanentemente todos los perfiles con estado "rechazado".' },
-    { id: 'maint',  label: 'Forzar cierre de sesiones',  desc: 'Invalida todos los tokens activos. Los usuarios deberán volver a iniciar sesión.' },
+    {
+      id: 'purge',
+      label: 'Purgar perfiles rechazados',
+      desc: 'Elimina permanentemente todos los perfiles con estado "rechazado".',
+      onConfirm: executePurge,
+    },
+    {
+      id: 'maint',
+      label: 'Forzar cierre de sesiones',
+      desc: 'Invalida todos los tokens activos. Los usuarios deberán volver a iniciar sesión.',
+      onConfirm: () => { toast.info('Próximamente disponible'); setConfirm(null) },
+    },
   ]
 
   return (
@@ -289,9 +321,10 @@ function DangerZoneCard({ toast }: { toast: ToastAPI }) {
               <div className="flex gap-1.5 shrink-0">
                 <button
                   type="button"
-                  onClick={() => { toast.info('Acción no implementada aún'); setConfirm(null) }}
-                  className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-[rgba(255,60,60,0.15)] text-[rgba(255,100,100,0.9)] border border-[rgba(255,60,60,0.3)] cursor-pointer transition-all">
-                  Confirmar
+                  disabled={!!running}
+                  onClick={a.onConfirm}
+                  className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-[rgba(255,60,60,0.15)] text-[rgba(255,100,100,0.9)] border border-[rgba(255,60,60,0.3)] cursor-pointer transition-all disabled:opacity-50">
+                  {running === a.id ? '…' : 'Confirmar'}
                 </button>
                 <button
                   type="button"
@@ -303,9 +336,10 @@ function DangerZoneCard({ toast }: { toast: ToastAPI }) {
             ) : (
               <button
                 type="button"
+                disabled={!!running}
                 onClick={() => setConfirm(a.id)}
-                className="shrink-0 text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-[rgba(255,60,60,0.2)] bg-[rgba(255,60,60,0.06)] text-[rgba(255,100,100,0.7)] hover:bg-[rgba(255,60,60,0.12)] hover:text-[rgba(255,120,120,0.9)] transition-all cursor-pointer">
-                Ejecutar
+                className="shrink-0 text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-[rgba(255,60,60,0.2)] bg-[rgba(255,60,60,0.06)] text-[rgba(255,100,100,0.7)] hover:bg-[rgba(255,60,60,0.12)] hover:text-[rgba(255,120,120,0.9)] transition-all cursor-pointer disabled:opacity-50">
+                {running === a.id ? 'Ejecutando…' : 'Ejecutar'}
               </button>
             )}
           </div>

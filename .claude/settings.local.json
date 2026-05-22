@@ -20,7 +20,16 @@
       "PowerShell(cd \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\" ; npx tsc --noEmit 2>&1 | Where-Object { $_ -notmatch \"CoachEditForm\" } | Select-Object -First 30)",
       "PowerShell(cd \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\" ; npx tsc --noEmit 2>&1 | Where-Object { $_ -notmatch \"CoachEditForm\" })",
       "PowerShell(cd \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\" ; $output = npx tsc --noEmit 2>&1 ; $output | ForEach-Object { $_.ToString\\(\\) } | Where-Object { $_ -notmatch \"ClubEditForm|CoachEditForm\" } | Select-Object -First 20 ; Write-Output \"---TOTAL ERRORS: $\\(\\($output | Where-Object { $_ -match 'error TS'}\\).Count\\)\")",
-      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\\\\features\\\\dashboard\\\\components\\\\forms\" -Force | ForEach-Object { $_.Name })"
+      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\\\\features\\\\dashboard\\\\components\\\\forms\" -Force | ForEach-Object { $_.Name })",
+      "Bash(findstr /v \"=\")",
+      "Bash(findstr \"FIREBASE_SERVICE_ACCOUNT_JSON FIREBASE_DATABASE_URL\")",
+      "Bash(findstr /v \"^$\")",
+      "Bash(Select-String -Path \".env.local\" -Pattern \"FIREBASE_SERVICE_ACCOUNT_JSON|FIREBASE_DATABASE_URL\")",
+      "Bash(npx next *)",
+      "Bash(node -e \"const p = require\\('./node_modules/tailwindcss/package.json'\\); console.log\\(p.version\\)\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\" -Recurse -Directory)",
+      "Bash(Select-Object FullName)",
+      "Bash(node -e \"const p = require\\('./node_modules/zod/package.json'\\); console.log\\(p.version\\)\")"
     ]
   }
 }
