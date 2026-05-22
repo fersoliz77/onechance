@@ -79,6 +79,7 @@ export const ProfileStatusSchema = z.object({
   collection: z.enum(['players', 'coaches', 'clubs', 'agents']),
   uid: z.string().min(1),
   status: z.enum(['draft', 'pending', 'published', 'rejected', 'hidden']),
+  rejectionReason: z.string().max(500).optional(),
 })
 
 export const FeaturedSchema = z.object({

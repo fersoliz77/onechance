@@ -150,12 +150,12 @@ export default function PlayerProfilePage() {
   ]
 
   const topStats = [
-    ['Partidos jugados', '28'],
-    ['Goles', '16'],
-    ['Asistencias', '5'],
-    ['Minutos jugados', '2.154'],
-    ['Tarjetas amarillas', '3'],
-    ['Tarjetas rojas', '0'],
+    ['Estado', player.status === 'published' ? 'Publicado' : 'En revision'],
+    ['Edad', age === 'N/D' ? 'No informada' : `${age} anios`],
+    ['Nacionalidad', player.nationality || 'N/D'],
+    ['Posicion', player.position || 'N/D'],
+    ['Club', player.currentClub || 'Libre'],
+    ['Perfil ID', player.uid.slice(0, 8).toUpperCase()],
   ]
 
   function handleContact() {
@@ -277,10 +277,15 @@ export default function PlayerProfilePage() {
                 <SectionTitle title="Sobre mi" />
                 <p className="mt-4 text-[14px] leading-[1.7] text-[var(--oc-fg-muted)]">{player.bio || 'Perfil en actualizacion. Muy pronto este jugador tendra su biografia completa y objetivos deportivos.'}</p>
                 <h4 className="mt-5 text-[14px] font-[700] text-white">Idiomas</h4>
-                <div className="mt-3 flex gap-6 text-[13px]">
-                  <span><b className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-[var(--oc-lime)]" />Espanol</span>
-                  <span><b className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-[var(--oc-lime)]" />Ingles</span>
-                </div>
+                {player.languages && player.languages.length > 0 ? (
+                  <div className="mt-3 flex flex-wrap gap-3 text-[13px]">
+                    {player.languages.map((lang) => (
+                      <span key={lang}><b className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-[var(--oc-lime)]" />{lang}</span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-[13px] text-[var(--oc-fg-muted)]">Sin idiomas cargados.</p>
+                )}
               </Surface>
 
               <Surface className="min-h-[255px] p-[var(--oc-space-5)]">

@@ -3,9 +3,9 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Background from '@/components/layout/Background'
-import { getPendingProfiles, getAllPlayers, getAllUsers } from '@/lib/firestore'
+import { getPendingProfiles, getAllPlayers, getAllUsers, getAllCoaches, getAllClubs, getAllAgents } from '@/lib/firestore'
 import { getAllVideos } from '@/lib/rtdb'
-import type { PlayerProfile, VideoEntry, ProfileStatus, UserRecord } from '@/types'
+import type { PlayerProfile, CoachProfile, ClubProfile, AgentProfile, VideoEntry, ProfileStatus, UserRecord } from '@/types'
 import { isAdminRole, isSuperAdminRole } from '@/lib/permissions'
 import { logAudit } from '@/lib/auditLog'
 import { useToastState } from '@/hooks/useToast'
@@ -20,6 +20,8 @@ import AdminPendingTable from '@/components/admin/AdminPendingTable'
 import AdminActivity from '@/components/admin/AdminActivity'
 import AdminVideos from '@/components/admin/AdminVideos'
 import AdminQuickActions from '@/components/admin/AdminQuickActions'
+import AdminConfigPanel from '@/components/admin/AdminConfigPanel'
+import AdminProfilesTab from '@/components/admin/AdminProfilesTab'
 import CommandPalette from '@/components/admin/CommandPalette'
 import ToastStack from '@/components/admin/ui/ToastStack'
 import ConfirmModal from '@/components/admin/ui/ConfirmModal'
@@ -60,6 +62,9 @@ export default function AdminPage() {
   const [monthRange, setMonthRange] = useState<MonthRange>(12)
   const [pending, setPending] = useState<PendingItem[]>([])
   const [players, setPlayers] = useState<PlayerProfile[]>([])
+  const [coaches, setCoaches] = useState<CoachProfile[]>([])
+  const [clubs,   setClubs]   = useState<ClubProfile[]>([])
+  const [agents,  setAgents]  = useState<AgentProfile[]>([])
   const [users, setUsers]     = useState<UserRecord[]>([])
   const [videos, setVideos]   = useState<(VideoEntry & { playerUid: string })[]>([])
   const [loading, setLoading] = useState(true)
@@ -102,25 +107,33 @@ export default function AdminPage() {
   // Load data
   useEffect(() => {
     if (!user || !isAdmin) return
-    const sources = ['solicitudes', 'jugadores', 'videos', 'usuarios'] as const
-    Promise.allSettled([getPendingProfiles(), getAllPlayers(), getAllVideos(), getAllUsers()]).then(results => {
-      const [p, pl, v, u] = results
+    // Primary sources — failure shown as global error
+    const primarySources = ['solicitudes', 'jugadores', 'técnicos', 'clubes', 'representantes', 'usuarios'] as const
+    Promise.allSettled([
+      getPendingProfiles(), getAllPlayers(), getAllCoaches(), getAllClubs(), getAllAgents(), getAllUsers(),
+    ]).then(results => {
+      const [p, pl, co, cl, ag, u] = results
       if (p.status  === 'fulfilled') setPending(p.value as PendingItem[])
       if (pl.status === 'fulfilled') setPlayers(pl.value)
-      if (v.status  === 'fulfilled') setVideos(v.value)
+      if (co.status === 'fulfilled') setCoaches(co.value)
+      if (cl.status === 'fulfilled') setClubs(cl.value)
+      if (ag.status === 'fulfilled') setAgents(ag.value)
       if (u.status  === 'fulfilled') setUsers(u.value)
 
-      const failedSources = results
-        .map((r, i) => (r.status === 'rejected' ? sources[i] : null))
-        .filter((x): x is (typeof sources)[number] => x !== null)
+      const failed = results
+        .map((r, i) => (r.status === 'rejected' ? primarySources[i] : null))
+        .filter((x): x is (typeof primarySources)[number] => x !== null)
 
       setLoadError(
-        failedSources.length > 0
-          ? `No se pudieron cargar: ${failedSources.join(', ')}. Verificá permisos/reglas en Firebase.`
+        failed.length > 0
+          ? `No se pudieron cargar: ${failed.join(', ')}. Verificá permisos en Firebase.`
           : ''
       )
       setLoading(false)
     })
+
+    // Videos — se cargan aparte, errores manejados silenciosamente
+    getAllVideos().then(setVideos).catch(() => {})
   }, [user, isAdmin])
 
   // ── API helper ──
@@ -174,6 +187,57 @@ export default function AdminPage() {
       await logAudit({ uid: firebaseUser!.uid, email: firebaseUser!.email }, 'set_featured', uid, 'players', { isFeatured: !current })
       toast.success(!current ? '★ Perfil destacado' : 'Perfil removido de destacados')
     } catch { toast.error('Error al actualizar destacado') }
+  }, [callAdminApi, firebaseUser, toast])
+
+  const handleApproveProfile = useCallback(async (uid: string, col: string) => {
+    try {
+      await callAdminApi('/api/admin/profile-status', { collection: col, uid, status: 'published' })
+      const upd = <T extends { uid: string; status: ProfileStatus }>(list: T[]) =>
+        list.map(item => item.uid === uid ? { ...item, status: 'published' as ProfileStatus } : item)
+      if (col === 'players') setPlayers(upd)
+      else if (col === 'coaches') setCoaches(upd)
+      else if (col === 'clubs')   setClubs(upd)
+      else if (col === 'agents')  setAgents(upd)
+      setPending(ps => ps.filter(p => p.uid !== uid))
+      await logAudit({ uid: firebaseUser!.uid, email: firebaseUser!.email }, 'approve_profile', uid, col)
+      toast.success('✓ Perfil aprobado')
+    } catch { toast.error('Error al aprobar el perfil') }
+  }, [callAdminApi, firebaseUser, toast])
+
+  const handleRejectProfile = useCallback(async (uid: string, col: string, reason: string) => {
+    try {
+      await callAdminApi('/api/admin/profile-status', { collection: col, uid, status: 'rejected', ...(reason ? { rejectionReason: reason } : {}) })
+      const upd = <T extends { uid: string; status: ProfileStatus }>(list: T[]) =>
+        list.map(item => item.uid === uid ? { ...item, status: 'rejected' as ProfileStatus } : item)
+      if (col === 'players') setPlayers(upd)
+      else if (col === 'coaches') setCoaches(upd)
+      else if (col === 'clubs')   setClubs(upd)
+      else if (col === 'agents')  setAgents(upd)
+      setPending(ps => ps.filter(p => p.uid !== uid))
+      await logAudit({ uid: firebaseUser!.uid, email: firebaseUser!.email }, 'reject_profile', uid, col, { rejectionReason: reason })
+      toast.info('Perfil rechazado')
+    } catch { toast.error('Error al rechazar el perfil') }
+  }, [callAdminApi, firebaseUser, toast])
+
+  const handleTogglePublish = useCallback(async (uid: string, col: string, status: ProfileStatus) => {
+    const next: ProfileStatus = status === 'published' ? 'hidden' : 'published'
+    try {
+      await callAdminApi('/api/admin/profile-status', { collection: col, uid, status: next })
+      const upd = <T extends { uid: string; status: ProfileStatus }>(list: T[]) =>
+        list.map(item => item.uid === uid ? { ...item, status: next } : item)
+      if (col === 'players') setPlayers(upd)
+      else if (col === 'coaches') setCoaches(upd)
+      else if (col === 'clubs')   setClubs(upd)
+      else if (col === 'agents')  setAgents(upd)
+      await logAudit(
+        { uid: firebaseUser!.uid, email: firebaseUser!.email },
+        next === 'hidden' ? 'hide_profile' : 'publish_profile',
+        uid, col, { status: next },
+      )
+      toast[next === 'hidden' ? 'info' : 'success'](
+        next === 'hidden' ? 'Perfil ocultado' : '✓ Perfil publicado'
+      )
+    } catch { toast.error('Error al actualizar el estado del perfil') }
   }, [callAdminApi, firebaseUser, toast])
 
   const handleToggleVideo = useCallback((v: VideoEntry & { playerUid: string }) => {
@@ -312,58 +376,16 @@ export default function AdminPage() {
 
           {/* PERFILES */}
           {tab === 'perfiles' && (
-            <div className="space-y-4">
-              <SectionHeader title="Gestión de perfiles" subtitle={`${publishedPlayers.length} publicados · ${featuredPlayers.length} destacados`} />
-              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] overflow-hidden">
-                <div className="overflow-x-auto">
-                <table className="w-full text-sm min-w-[640px]">
-                  <thead>
-                    <tr className="border-b border-[rgba(255,255,255,0.07)]">
-                      {['Jugador','Posición','Nacionalidad','Estado','Destacado','Acciones'].map(h => (
-                        <th key={h} className="px-5 py-3.5 text-left text-[12px] font-semibold uppercase tracking-[0.05em] text-[rgba(255,255,255,0.3)]">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {publishedPlayers.map(p => (
-                      <tr key={p.uid} className="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.02)] transition-colors">
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#AAFF00] to-[#7B3FF6] flex items-center justify-center text-[11px] font-black text-black shrink-0">
-                              {(p.fullName?.[0] ?? '?').toUpperCase()}
-                            </div>
-                            <span className="font-medium text-white">{p.fullName}</span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-3 text-[rgba(255,255,255,0.5)]">{p.position ?? '—'}</td>
-                        <td className="px-5 py-3 text-[rgba(255,255,255,0.5)]">{p.nationality ?? '—'}</td>
-                        <td className="px-5 py-3">
-                          <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-2.5 py-1 rounded-full bg-[rgba(170,255,0,0.1)] text-[#AAFF00] border border-[rgba(170,255,0,0.28)]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-current" />Publicado
-                          </span>
-                        </td>
-                        <td className="px-5 py-3">
-                          <button onClick={() => handleFeatured(p.uid, p.isFeatured)}
-                            className="text-[12px] px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer border-none"
-                            style={{ background: p.isFeatured ? 'rgba(170,255,0,0.12)' : 'rgba(255,255,255,0.06)', color: p.isFeatured ? '#AAFF00' : 'rgba(255,255,255,0.4)' }}>
-                            {p.isFeatured ? '★ Destacado' : '☆ Destacar'}
-                          </button>
-                        </td>
-                        <td className="px-5 py-3">
-                          <button className="text-[12px] px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.5)] hover:text-white hover:border-[rgba(255,255,255,0.2)] transition-all cursor-pointer bg-transparent">
-                            Ver perfil
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                </div>
-                {publishedPlayers.length === 0 && (
-                  <div className="py-16 text-center text-[rgba(255,255,255,0.2)] text-sm">No hay perfiles publicados.</div>
-                )}
-              </div>
-            </div>
+            <AdminProfilesTab
+              players={players}
+              coaches={coaches}
+              clubs={clubs}
+              agents={agents}
+              onToggleStatus={handleTogglePublish}
+              onFeatured={handleFeatured}
+              onApprove={handleApproveProfile}
+              onReject={handleRejectProfile}
+            />
           )}
 
           {/* USUARIOS */}
@@ -435,11 +457,28 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* OTROS TABS */}
-          {(tab === 'configuracion' || tab === 'moderacion' || tab === 'suscripciones') && (
+          {/* CONFIGURACIÓN */}
+          {tab === 'configuracion' && (
+            isSuperAdmin
+              ? <AdminConfigPanel toast={toast} users={users} players={players} />
+              : (
+                <div className="space-y-4">
+                  <SectionHeader title="Configuración del sitio" subtitle="Acceso restringido" />
+                  <div className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] py-20 flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[rgba(255,60,60,0.08)] border border-[rgba(255,60,60,0.2)] flex items-center justify-center">
+                      <svg className="w-6 h-6 text-[rgba(255,100,100,0.6)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <p className="text-[rgba(255,255,255,0.3)] text-sm">Requiere permisos de Super Admin.</p>
+                  </div>
+                </div>
+              )
+          )}
+
+          {/* OTROS TABS — placeholders */}
+          {(tab === 'moderacion' || tab === 'suscripciones') && (
             <div className="space-y-4">
               <SectionHeader
-                title={tab === 'configuracion' ? 'Configuración del sitio' : tab === 'moderacion' ? 'Moderación' : 'Suscripciones'}
+                title={tab === 'moderacion' ? 'Moderación' : 'Suscripciones'}
                 subtitle="Próximamente disponible"
               />
               <div className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] py-20 flex flex-col items-center gap-4">

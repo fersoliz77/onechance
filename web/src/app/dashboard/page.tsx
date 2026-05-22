@@ -50,10 +50,10 @@ export default function DashboardPage() {
   ] as { id: typeof tab; icon: string; label: string }[]
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen oc-dashboard-page">
       <Background />
       <div className="relative z-[2] oc-main-offset">
-        <div className="oc-shell-content oc-page-block max-w-[980px]">
+        <div className="oc-shell-content oc-page-block oc-dashboard-scope max-w-[980px]">
           <div className="flex items-center gap-4 mb-6 lg:mb-8">
             <div className="w-[56px] h-[56px] lg:w-[64px] lg:h-[64px] rounded-full flex items-center justify-center text-[23px] lg:text-[27px] border-[2px]" style={{ background: `linear-gradient(135deg,${accent},${accent}44)`, borderColor: `${accent}66` }}>
               {role ? ROLE_ICONS[role] : '👤'}
@@ -66,7 +66,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid lg:grid-cols-[240px_1fr] gap-4 lg:gap-6 items-start">
-            <aside className="w-full lg:w-[240px] shrink-0 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] rounded-[12px] overflow-hidden lg:sticky lg:top-[calc(var(--oc-nav-height)+var(--oc-space-4))]">
+            <aside className="oc-dashboard-card w-full lg:w-[240px] shrink-0 rounded-[12px] overflow-hidden lg:sticky lg:top-[calc(var(--oc-nav-height)+var(--oc-space-4))]">
               {tabs.map(t => <button key={t.id} onClick={() => setTab(t.id)} className="w-full h-[44px] lg:h-[48px] px-3.5 lg:px-4 border-none border-b border-[rgba(255,255,255,0.04)] text-left cursor-pointer flex items-center gap-2.5" style={{ background: tab === t.id ? `${accent}18` : 'transparent', boxShadow: tab === t.id ? `inset 2px 0 0 ${accent}` : 'none' }}><span className="text-[13px]" style={{ color: tab === t.id ? accent : 'rgba(255,255,255,0.28)' }}>{t.icon}</span><span className="text-[13px]" style={{ color: tab === t.id ? '#fff' : 'rgba(255,255,255,0.42)' }}>{t.label}</span></button>)}
             </aside>
 
@@ -74,7 +74,7 @@ export default function DashboardPage() {
               {tab === 'overview' && (
                 <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
                   <div className="flex flex-col gap-4">
-                    {profile ? <StatusCard profile={profile} state={state} role={role} onSubmit={handleSubmit} /> : <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.07)] rounded-[14px] p-5 text-[rgba(255,255,255,0.35)] text-[13px]">No se encontro tu perfil. Intenta cerrar sesion y volver a ingresar.</div>}
+                    {profile ? <StatusCard profile={profile} state={state} role={role} onSubmit={handleSubmit} /> : <div className="oc-dashboard-card rounded-[14px] p-5 text-[rgba(255,255,255,0.45)] text-[13px]">No se encontro tu perfil. Intenta cerrar sesion y volver a ingresar.</div>}
                     {role === 'player' && profile && (
                       <SurfaceCard>
                         <SectionKicker className="mb-3">Datos del jugador</SectionKicker>

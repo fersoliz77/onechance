@@ -7,6 +7,8 @@ import { db } from '@/lib/firebase'
 export type AuditAction =
   | 'approve_profile'
   | 'reject_profile'
+  | 'hide_profile'
+  | 'publish_profile'
   | 'delete_video'
   | 'toggle_video'
   | 'set_featured'
@@ -41,6 +43,8 @@ export interface RecentActivity {
 const ACTION_LABEL: Record<AuditAction, string> = {
   approve_profile: 'Perfil aprobado',
   reject_profile:  'Perfil rechazado',
+  hide_profile:    'Perfil ocultado',
+  publish_profile: 'Perfil publicado',
   delete_video:    'Video eliminado',
   toggle_video:    'Video moderado',
   set_featured:    'Jugador destacado',

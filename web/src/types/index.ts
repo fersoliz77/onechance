@@ -22,6 +22,7 @@ export interface UserRecord {
 export interface PlayerProfile {
   uid: string
   fullName: string
+  rejectionReason?: string
   birthDate: string
   gender: Gender
   nationality: string
@@ -55,6 +56,7 @@ export interface PlayerProfile {
 export interface CoachProfile {
   uid: string
   fullName: string
+  rejectionReason?: string
   nationality: string
   age: number
   currentClub: string
@@ -71,6 +73,7 @@ export interface CoachProfile {
 export interface ClubProfile {
   uid: string
   name: string
+  rejectionReason?: string
   country: string
   city: string
   province: string
@@ -91,6 +94,7 @@ export interface ClubProfile {
 export interface AgentProfile {
   uid: string
   fullName: string
+  rejectionReason?: string
   nationality: string
   agencyName: string
   players: number

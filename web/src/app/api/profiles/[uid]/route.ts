@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAdminDb } from '@/lib/firebase-admin'
 import { requireOwner } from '@/app/api/admin/_lib'
-import { z } from 'zod'
+import { ProfileUpdateSchema, sanitizeProfileUpdate } from '@/lib/profileConsistency'
 
 const ROLE_COLLECTION: Record<string, string> = {
   player: 'players',
@@ -10,18 +10,13 @@ const ROLE_COLLECTION: Record<string, string> = {
   agent:  'agents',
 }
 
-const UpdateProfileSchema = z.object({
-  role: z.enum(['player', 'coach', 'club', 'agent']),
-  data: z.record(z.string(), z.unknown()),
-})
-
 export async function PUT(req: Request, { params }: { params: Promise<{ uid: string }> }) {
   const { uid } = await params
 
   const auth = await requireOwner(req, uid)
   if (!auth.ok) return auth.response
 
-  const parsed = UpdateProfileSchema.safeParse(await req.json())
+  const parsed = ProfileUpdateSchema.safeParse(await req.json())
   if (!parsed.success) {
     return NextResponse.json(
       { error: 'Invalid payload', details: parsed.error.flatten().fieldErrors },
@@ -33,9 +28,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ uid: str
   const collection = ROLE_COLLECTION[role]
   if (!collection) return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
 
-  // Strip protected fields that the user must not self-assign
-  const { status, isFeatured, uid: _uid, ...safeData } = data as Record<string, unknown>
-  void status; void isFeatured; void _uid
+  const safeData = sanitizeProfileUpdate(role, data as Record<string, unknown>)
 
   await getAdminDb()
     .collection(collection)

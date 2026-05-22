@@ -32,7 +32,7 @@ export default function StatusCard({
   const canSubmit = pct >= MIN_COMPLETION_TO_SUBMIT
 
   return (
-    <SurfaceCard>
+    <SurfaceCard className="oc-dashboard-card">
       <div className="flex items-center justify-between mb-3">
         <span className="text-white text-[14px] font-medium">Estado del perfil</span>
         <Badge status={status} />
@@ -40,7 +40,7 @@ export default function StatusCard({
       <CompletionBar pct={pct} />
 
       {missing.length > 0 && (
-        <div className="mt-3 rounded-[8px] bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] px-3 py-2.5">
+        <div className="mt-3 rounded-[8px] bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 py-2.5">
           <div className="text-[rgba(255,255,255,0.3)] text-[10px] uppercase tracking-[0.07em] mb-1.5">Falta completar</div>
           <div className="flex flex-col gap-1">
             {missing.slice(0, 5).map(m => (
@@ -59,7 +59,15 @@ export default function StatusCard({
       {(status === 'draft' || status === 'rejected') && (
         <div className="mt-4">
           {status === 'rejected' && (
-            <p className="text-[rgba(255,60,60,0.7)] text-[13px] mb-3">Tu perfil fue rechazado. Corregi los datos y volve a enviarlo.</p>
+            <div className="mb-3">
+              <p className="text-[rgba(255,60,60,0.7)] text-[13px]">Tu perfil fue rechazado. Corregí los datos y volvé a enviarlo.</p>
+              {profile.rejectionReason && (
+                <div className="mt-2 rounded-lg border border-[rgba(255,60,60,0.2)] bg-[rgba(255,60,60,0.05)] px-3 py-2.5">
+                  <p className="text-[10px] uppercase tracking-[0.07em] text-[rgba(255,100,100,0.5)] mb-1">Motivo del rechazo</p>
+                  <p className="text-[12px] text-[rgba(255,180,180,0.85)] leading-[1.5]">{profile.rejectionReason}</p>
+                </div>
+              )}
+            </div>
           )}
           {status === 'draft' && (
             <p className="text-[rgba(255,255,255,0.35)] text-[13px] mb-3">

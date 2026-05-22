@@ -9,9 +9,17 @@ export async function POST(req: Request) {
   const body = parseBody(ProfileStatusSchema, await req.json())
   if (!body.ok) return body.response
 
-  const { collection, uid, status } = body.data
+  const { collection, uid, status, rejectionReason } = body.data
+
+  const firestoreUpdate: Record<string, unknown> = { status }
+  if (status === 'rejected' && rejectionReason) {
+    firestoreUpdate.rejectionReason = rejectionReason
+  } else if (status !== 'rejected') {
+    firestoreUpdate.rejectionReason = null
+  }
+
   await Promise.all([
-    getAdminDb().collection(collection).doc(uid).set({ status }, { merge: true }),
+    getAdminDb().collection(collection).doc(uid).set(firestoreUpdate, { merge: true }),
     getAdminRtdb().ref(`profiles/${uid}`).update({ status }),
   ])
   await writeAuditLog({
