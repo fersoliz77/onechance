@@ -29,7 +29,9 @@
       "Bash(node -e \"const p = require\\('./node_modules/tailwindcss/package.json'\\); console.log\\(p.version\\)\")",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\" -Recurse -Directory)",
       "Bash(Select-Object FullName)",
-      "Bash(node -e \"const p = require\\('./node_modules/zod/package.json'\\); console.log\\(p.version\\)\")"
+      "Bash(node -e \"const p = require\\('./node_modules/zod/package.json'\\); console.log\\(p.version\\)\")",
+      "Bash(ls \"/mnt/c/Users/pikachu/Downloads/OneChance/web/src\" 2>/dev/null | head -20)",
+      "Read(//mnt/c/Users/pikachu/Downloads/OneChance/web/**)"
     ]
   }
 }

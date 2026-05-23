@@ -4,6 +4,19 @@ import { useAuth } from '@/context/AuthContext'
 import { exportToCsv } from '@/lib/exportCsv'
 import type { UserRecord, PlayerProfile } from '@/types'
 
+// ── LIMITACIÓN CONOCIDA ────────────────────────────────────────────────────────
+// Este panel guarda la configuración en Firestore (colección `platform_config`),
+// pero los flags NO están conectados a ninguna lógica de la app todavía:
+//   · maintenanceMode      → no redirige usuarios ni bloquea rutas
+//   · registrationEnabled  → el registro sigue funcionando siempre
+//   · autoApproveProfiles  → los perfiles siguen quedando en 'pending'
+//   · subscriptionsEnabled / messagingEnabled / ambassadorsEnabled → sin efecto
+//
+// Los datos SÍ persisten correctamente. La integración con middleware/APIs
+// queda pendiente para una iteración futura.
+// Ver: docs/04_known_issues.md
+// ──────────────────────────────────────────────────────────────────────────────
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 type PlatformConfig = {

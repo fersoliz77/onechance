@@ -22,6 +22,7 @@ import AdminVideos from '@/components/admin/AdminVideos'
 import AdminQuickActions from '@/components/admin/AdminQuickActions'
 import AdminConfigPanel from '@/components/admin/AdminConfigPanel'
 import AdminProfilesTab from '@/components/admin/AdminProfilesTab'
+import AdminSubscriptionsTab from '@/components/admin/AdminSubscriptionsTab'
 import CommandPalette from '@/components/admin/CommandPalette'
 import ToastStack from '@/components/admin/ui/ToastStack'
 import ConfirmModal from '@/components/admin/ui/ConfirmModal'
@@ -160,9 +161,10 @@ export default function AdminPage() {
 
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
-      if (res.status === 401) throw new Error('Unauthorized: tu sesion admin expiro. Volve a iniciar sesion.')
-      if (res.status === 403) throw new Error('Forbidden: tu usuario no tiene permisos admin en Firestore.')
-      throw new Error(body.error ?? 'Admin action failed')
+      if (res.status === 401) throw new Error('Sesión expirada o no autorizada. Volvé a iniciar sesión.')
+      if (res.status === 403) throw new Error('Sin permisos admin. Verificá que tu usuario tenga systemRole admin/super_admin en Firestore.')
+      if (res.status === 500) throw new Error(`Error del servidor (500). ${body.error ?? 'Revisá la consola del servidor.'}`)
+      throw new Error(body.error ?? `Error HTTP ${res.status}`)
     }
   }, [firebaseUser])
 
@@ -250,7 +252,11 @@ export default function AdminPage() {
       else if (newStatus === 'rejected') toast.info('Perfil rechazado')
       else if (newStatus === 'pending')  toast.info('Perfil marcado como pendiente')
       else                               toast.info('Perfil movido a borrador')
-    } catch { toast.error('Error al cambiar el estado del perfil') }
+    } catch (e) {
+      console.error('[handleChangeStatus]', e)
+      const msg = e instanceof Error ? e.message : 'Error desconocido'
+      toast.error(`Error al cambiar estado: ${msg}`)
+    }
   }, [callAdminApi, firebaseUser, toast, updateProfilesLocal])
 
   const handleRequestRejectFromProfiles = useCallback((uid: string, col: string, name: string) => {
@@ -543,13 +549,13 @@ export default function AdminPage() {
               )
           )}
 
-          {/* OTROS TABS — placeholders */}
-          {(tab === 'moderacion' || tab === 'suscripciones') && (
+          {/* SUSCRIPCIONES */}
+          {tab === 'suscripciones' && <AdminSubscriptionsTab />}
+
+          {/* MODERACIÓN — placeholder */}
+          {tab === 'moderacion' && (
             <div className="space-y-4">
-              <SectionHeader
-                title={tab === 'moderacion' ? 'Moderación' : 'Suscripciones'}
-                subtitle="Próximamente disponible"
-              />
+              <SectionHeader title="Moderación" subtitle="Próximamente disponible" />
               <div className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] py-20 flex flex-col items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-[rgba(170,255,0,0.08)] border border-[rgba(170,255,0,0.2)] flex items-center justify-center">
                   <svg className="w-6 h-6 text-[rgba(170,255,0,0.6)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>

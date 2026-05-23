@@ -16,6 +16,9 @@ export type AuditAction =
   | 'set_featured'
   | 'set_role'
   | 'export_csv'
+  | 'plan_create'
+  | 'plan_update'
+  | 'plan_delete'
 
 export interface AuditEntry {
   adminUid: string
@@ -54,6 +57,9 @@ const ACTION_LABEL: Record<AuditAction, string> = {
   set_featured:       'Jugador destacado',
   set_role:           'Rol de usuario cambiado',
   export_csv:         'Exportación de datos',
+  plan_create:        'Plan de suscripción creado',
+  plan_update:        'Plan de suscripción actualizado',
+  plan_delete:        'Plan de suscripción eliminado',
 }
 
 export async function getRecentAuditLogs(n = 5): Promise<RecentActivity[]> {

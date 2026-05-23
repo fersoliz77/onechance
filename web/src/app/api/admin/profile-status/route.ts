@@ -24,13 +24,17 @@ export async function POST(req: Request) {
   } catch (rtdbErr) {
     console.warn('[profile-status] RTDB update skipped:', rtdbErr)
   }
-  await writeAuditLog({
-    actorUid: auth.decoded.uid,
-    actorEmail: auth.decoded.email,
-    action: `profiles.${status}`,
-    targetCollection: collection,
-    targetUid: uid,
-  })
+  try {
+    await writeAuditLog({
+      actorUid: auth.decoded.uid,
+      actorEmail: auth.decoded.email,
+      action: `profiles.${status}`,
+      targetCollection: collection,
+      targetUid: uid,
+    })
+  } catch (auditErr) {
+    console.warn('[profile-status] audit log skipped:', auditErr)
+  }
 
   return NextResponse.json({ ok: true })
 }
