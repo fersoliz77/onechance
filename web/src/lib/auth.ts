@@ -3,6 +3,8 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  onIdTokenChanged,
+  sendPasswordResetEmail,
   type User,
 } from 'firebase/auth'
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
@@ -10,7 +12,7 @@ import { auth, db, rtdb } from './firebase'
 import { ref, set } from 'firebase/database'
 import type { Role, ProfileStatus } from '@/types'
 
-export { onAuthStateChanged, auth }
+export { onAuthStateChanged, onIdTokenChanged, sendPasswordResetEmail, auth }
 export type { User }
 
 export async function register(email: string, password: string) {

@@ -8,6 +8,8 @@ import SurfaceCard from '@/components/ui/SurfaceCard'
 import Textarea from '@/components/ui/Textarea'
 import { COUNTRIES, POSITIONS } from '@/types'
 import type { ClubProfile } from '@/types'
+import { calcClubCompletion } from '@/lib/completion'
+import { updateProfileState } from '@/lib/rtdb'
 
 async function updateProfile(uid: string, role: 'club', data: Partial<ClubProfile>) {
   const res = await fetch(`/api/profiles/${uid}`, {
@@ -67,6 +69,8 @@ export default function ClubEditForm({ club, uid, onSaved }: { club: ClubProfile
         achievements,
       }
       await updateProfile(uid, 'club', data)
+      const completionPct = calcClubCompletion({ ...club, ...data })
+      await updateProfileState(uid, { completionPct }).catch(() => {})
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
       onSaved({ ...club, ...data })

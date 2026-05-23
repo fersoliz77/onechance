@@ -48,7 +48,10 @@ export default function AdminActivity({ onViewAll }: Props) {
     getRecentAuditLogs(6).then(data => {
       setLogs(data)
       setLoaded(true)
-    }).catch(() => setLoaded(true))
+    }).catch((err) => {
+      console.error('[AdminActivity] getRecentAuditLogs failed:', err)
+      setLoaded(true)
+    })
   }, [])
 
   const display = loaded && logs.length > 0

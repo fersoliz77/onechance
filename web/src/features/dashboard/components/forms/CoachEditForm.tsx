@@ -8,6 +8,8 @@ import SurfaceCard from '@/components/ui/SurfaceCard'
 import Textarea from '@/components/ui/Textarea'
 import { COUNTRIES } from '@/types'
 import type { CoachProfile } from '@/types'
+import { calcCoachCompletion } from '@/lib/completion'
+import { updateProfileState } from '@/lib/rtdb'
 
 async function updateProfile(uid: string, role: 'coach', data: Partial<CoachProfile>) {
   const res = await fetch(`/api/profiles/${uid}`, {
@@ -74,6 +76,8 @@ export default function CoachEditForm({ coach, uid, onSaved }: { coach: CoachPro
         trophies,
       }
       await updateProfile(uid, 'coach', data)
+      const completionPct = calcCoachCompletion({ ...coach, ...data })
+      await updateProfileState(uid, { completionPct }).catch(() => {})
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
       onSaved({ ...coach, ...data })

@@ -35,7 +35,14 @@
       "Bash(node -e \"const pkg = require\\('./web/node_modules/firebase/package.json'\\); console.log\\(pkg.version\\)\")",
       "Bash(node -e \"const pkg = require\\('./web/node_modules/next/package.json'\\); console.log\\(pkg.version\\)\")",
       "Bash(Select-String -Pattern \"middleware\")",
-      "Bash(xargs grep -l \"middleware\")"
+      "Bash(xargs grep -l \"middleware\")",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\" -Recurse -Depth 3 -Force | Select-Object FullName | Where-Object { $_.FullName -match '\\\\.\\(tsx?|json|js|md|rules\\)$' } | Sort-Object)",
+      "Bash(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\\\\app\\\\terminos\")",
+      "Bash(Out-Null)",
+      "Bash(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\\\\app\\\\privacidad\")",
+      "Bash(Write-Output \"ok\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\\\\app\\\\terminos\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\\\\app\\\\privacidad\")"
     ]
   }
 }

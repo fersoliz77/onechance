@@ -29,7 +29,7 @@ export default function Landing() {
   useEffect(() => {
     getPublishedCounts()
       .then((counts) => { realCounts.current = counts })
-      .catch(() => {})
+      .catch((err) => console.error('[Landing] getPublishedCounts failed:', err))
   }, [])
 
   useEffect(() => {

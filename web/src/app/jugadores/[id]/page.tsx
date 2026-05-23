@@ -265,69 +265,60 @@ export default function PlayerProfilePage() {
           </nav>
 
           <div className="mt-[var(--oc-space-5)] space-y-[var(--oc-space-4)]">
-            {(activeTab === 0 || activeTab === 2 || activeTab === 3) && (
-            <div className="grid grid-cols-1 gap-[var(--oc-space-4)] lg:grid-cols-[260px_300px_300px_1fr]">
-              <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
-                <SectionTitle title="Caracteristicas" />
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {player.characteristics?.length
-                    ? player.characteristics.map(item => (
-                        <span key={item} className="rounded-[20px] border border-[rgba(170,255,0,0.3)] bg-[rgba(170,255,0,0.08)] px-3 py-1.5 text-[12px] font-[700] text-[var(--oc-lime)]">{item}</span>
-                      ))
-                    : <p className="text-[13px] text-[var(--oc-fg-muted)]">Sin características cargadas aún.</p>
-                  }
-                </div>
-              </Surface>
 
-              <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
-                <SectionTitle title="Sobre mi" />
-                <p className="mt-4 text-[14px] leading-[1.7] text-[var(--oc-fg-muted)]">{player.bio || 'Perfil en actualizacion. Muy pronto este jugador tendra su biografia completa y objetivos deportivos.'}</p>
-                <h4 className="mt-5 text-[14px] font-[700] text-white">Idiomas</h4>
-                {player.languages && player.languages.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-3 text-[13px]">
-                    {player.languages.map((lang) => (
-                      <span key={lang}><b className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-[var(--oc-lime)]" />{lang}</span>
+            {/* ── TAB 0: RESUMEN — vista general con un poco de todo ── */}
+            {activeTab === 0 && (
+              <div className="grid grid-cols-1 gap-[var(--oc-space-4)] lg:grid-cols-[260px_300px_300px_1fr]">
+                <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
+                  <SectionTitle title="Caracteristicas" />
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {player.characteristics?.length
+                      ? player.characteristics.map(item => (
+                          <span key={item} className="rounded-[20px] border border-[rgba(170,255,0,0.3)] bg-[rgba(170,255,0,0.08)] px-3 py-1.5 text-[12px] font-[700] text-[var(--oc-lime)]">{item}</span>
+                        ))
+                      : <p className="text-[13px] text-[var(--oc-fg-muted)]">Sin características cargadas aún.</p>
+                    }
+                  </div>
+                </Surface>
+                <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
+                  <SectionTitle title="Sobre mi" />
+                  <p className="mt-4 text-[14px] leading-[1.7] text-[var(--oc-fg-muted)]">{player.bio || 'Perfil en actualizacion. Muy pronto este jugador tendra su biografia completa y objetivos deportivos.'}</p>
+                  <h4 className="mt-5 text-[14px] font-[700] text-white">Idiomas</h4>
+                  {player.languages && player.languages.length > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-3 text-[13px]">
+                      {player.languages.map((lang) => (
+                        <span key={lang}><b className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-[var(--oc-lime)]" />{lang}</span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-[13px] text-[var(--oc-fg-muted)]">Sin idiomas cargados.</p>
+                  )}
+                </Surface>
+                <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
+                  <SectionTitle title="Estadisticas generales" />
+                  <div className="relative mx-auto mt-4 w-full max-w-[176px] aspect-square">
+                    <svg viewBox="0 0 200 200" className="h-full w-full">
+                      {[36, 58, 80].map((r) => (
+                        <polygon key={r} points={`${100},${100 - r} ${100 + r * 0.86},${100 - r * 0.5} ${100 + r * 0.86},${100 + r * 0.5} ${100},${100 + r} ${100 - r * 0.86},${100 + r * 0.5} ${100 - r * 0.86},${100 - r * 0.5}`} fill="none" stroke="#AAFF00" strokeOpacity="0.24" />
+                      ))}
+                      <polygon points="100,30 156,70 156,130 100,170 54,130 56,72" fill="rgba(170,255,0,0.16)" stroke="#AAFF00" strokeWidth="2.8" />
+                    </svg>
+                  </div>
+                </Surface>
+                <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
+                  <div className="space-y-2.5">
+                    {topStats.map(([label, value]) => (
+                      <div key={label} className="flex border-b border-[var(--oc-border)] pb-2 text-[13px]">
+                        <span className="text-[var(--oc-fg-muted)]">{label}</span>
+                        <b className="ml-auto text-[17px] text-white">{value}</b>
+                      </div>
                     ))}
                   </div>
-                ) : (
-                  <p className="mt-2 text-[13px] text-[var(--oc-fg-muted)]">Sin idiomas cargados.</p>
-                )}
-              </Surface>
-
-              <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
-                <SectionTitle title="Estadisticas generales" />
-                <div className="relative mx-auto mt-4 w-full max-w-[176px] aspect-square">
-                  <svg viewBox="0 0 200 200" className="h-full w-full">
-                    {[36, 58, 80].map((r) => (
-                      <polygon key={r} points={`${100},${100 - r} ${100 + r * 0.86},${100 - r * 0.5} ${100 + r * 0.86},${100 + r * 0.5} ${100},${100 + r} ${100 - r * 0.86},${100 + r * 0.5} ${100 - r * 0.86},${100 - r * 0.5}`} fill="none" stroke="#AAFF00" strokeOpacity="0.24" />
-                    ))}
-                    <polygon points="100,30 156,70 156,130 100,170 54,130 56,72" fill="rgba(170,255,0,0.16)" stroke="#AAFF00" strokeWidth="2.8" />
-                  </svg>
-                </div>
-              </Surface>
-
-              <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
-                <div className="space-y-2.5">
-                  {topStats.map(([label, value]) => (
-                    <div key={label} className="flex border-b border-[var(--oc-border)] pb-2 text-[13px]">
-                      <span className="text-[var(--oc-fg-muted)]">{label}</span>
-                      <b className="ml-auto text-[17px] text-white">{value}</b>
-                    </div>
-                  ))}
-                </div>
-              </Surface>
-            </div>
+                </Surface>
+              </div>
             )}
 
-            {(activeTab === 0 || activeTab === 4) && videos.length > 0 ? (
-              <Surface className="p-[var(--oc-space-5)]">
-                <SectionTitle title="Videos destacados" action="Ver todos" />
-                <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-                  {videos.slice(0, 6).map((video) => <VideoCard key={video.id} video={video} />)}
-                </div>
-              </Surface>
-            ) : null}
-
+            {/* ── TAB 1: TRAYECTORIA ── */}
             {(activeTab === 0 || activeTab === 1) && (
             <div className="grid grid-cols-1 gap-[var(--oc-space-4)] lg:grid-cols-[1fr_300px]">
               {player.career?.length > 0 ? (
@@ -355,7 +346,6 @@ export default function PlayerProfilePage() {
                   <p className="mt-4 text-[14px] text-[var(--oc-fg-muted)]">Este jugador aun no cargo su trayectoria deportiva.</p>
                 </Surface>
               )}
-
               <Surface className="p-5">
                 <SectionTitle title="Posicion en cancha" />
                 <div className="relative mt-4 aspect-[1.65] rounded border border-[rgba(170,255,0,0.24)] bg-[rgba(8,32,23,0.65)]">
@@ -370,6 +360,80 @@ export default function PlayerProfilePage() {
               </Surface>
             </div>
             )}
+
+            {/* ── TAB 2: ESTADÍSTICAS ── */}
+            {activeTab === 2 && (
+              <div className="grid grid-cols-1 gap-[var(--oc-space-4)] lg:grid-cols-2">
+                <Surface className="p-[var(--oc-space-5)]">
+                  <SectionTitle title="Estadisticas generales" />
+                  <div className="relative mx-auto mt-4 w-full max-w-[220px] aspect-square">
+                    <svg viewBox="0 0 200 200" className="h-full w-full">
+                      {[36, 58, 80].map((r) => (
+                        <polygon key={r} points={`${100},${100 - r} ${100 + r * 0.86},${100 - r * 0.5} ${100 + r * 0.86},${100 + r * 0.5} ${100},${100 + r} ${100 - r * 0.86},${100 + r * 0.5} ${100 - r * 0.86},${100 - r * 0.5}`} fill="none" stroke="#AAFF00" strokeOpacity="0.24" />
+                      ))}
+                      <polygon points="100,30 156,70 156,130 100,170 54,130 56,72" fill="rgba(170,255,0,0.16)" stroke="#AAFF00" strokeWidth="2.8" />
+                    </svg>
+                  </div>
+                </Surface>
+                <Surface className="p-[var(--oc-space-5)]">
+                  <SectionTitle title="Datos del jugador" />
+                  <div className="mt-4 space-y-2.5">
+                    {topStats.map(([label, value]) => (
+                      <div key={label} className="flex border-b border-[var(--oc-border)] pb-2 text-[13px]">
+                        <span className="text-[var(--oc-fg-muted)]">{label}</span>
+                        <b className="ml-auto text-[17px] text-white">{value}</b>
+                      </div>
+                    ))}
+                  </div>
+                </Surface>
+              </div>
+            )}
+
+            {/* ── TAB 3: CARACTERÍSTICAS ── */}
+            {activeTab === 3 && (
+              <div className="grid grid-cols-1 gap-[var(--oc-space-4)] lg:grid-cols-2">
+                <Surface className="p-[var(--oc-space-5)]">
+                  <SectionTitle title="Caracteristicas" />
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {player.characteristics?.length
+                      ? player.characteristics.map(item => (
+                          <span key={item} className="rounded-[20px] border border-[rgba(170,255,0,0.3)] bg-[rgba(170,255,0,0.08)] px-3 py-1.5 text-[12px] font-[700] text-[var(--oc-lime)]">{item}</span>
+                        ))
+                      : <p className="text-[13px] text-[var(--oc-fg-muted)]">Sin características cargadas aún.</p>
+                    }
+                  </div>
+                </Surface>
+                <Surface className="p-[var(--oc-space-5)]">
+                  <SectionTitle title="Sobre mi" />
+                  <p className="mt-4 text-[14px] leading-[1.7] text-[var(--oc-fg-muted)]">{player.bio || 'Perfil en actualizacion.'}</p>
+                  <h4 className="mt-5 text-[14px] font-[700] text-white">Idiomas</h4>
+                  {player.languages && player.languages.length > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-3 text-[13px]">
+                      {player.languages.map((lang) => (
+                        <span key={lang}><b className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-[var(--oc-lime)]" />{lang}</span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-[13px] text-[var(--oc-fg-muted)]">Sin idiomas cargados.</p>
+                  )}
+                </Surface>
+              </div>
+            )}
+
+            {/* ── TAB 4: VIDEOS ── */}
+            {(activeTab === 0 || activeTab === 4) && videos.length > 0 ? (
+              <Surface className="p-[var(--oc-space-5)]">
+                <SectionTitle title="Videos destacados" action="Ver todos" />
+                <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+                  {videos.slice(0, 6).map((video) => <VideoCard key={video.id} video={video} />)}
+                </div>
+              </Surface>
+            ) : activeTab === 4 ? (
+              <Surface className="p-[var(--oc-space-5)]">
+                <SectionTitle title="Videos" />
+                <p className="mt-4 text-[14px] text-[var(--oc-fg-muted)]">Este jugador aun no cargo videos.</p>
+              </Surface>
+            ) : null}
 
             <Surface className="p-[var(--oc-space-6)]">
               <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">

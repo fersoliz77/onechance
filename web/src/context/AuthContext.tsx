@@ -1,6 +1,6 @@
 'use client'
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { onAuthStateChanged, auth, getUserRecord } from '@/lib/auth'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { onIdTokenChanged, auth, getUserRecord } from '@/lib/auth'
 import type { User } from 'firebase/auth'
 import type { Role, SystemRole } from '@/types'
 
@@ -25,25 +25,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null)
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
+  const prevUidRef = useRef<string | null>(null)
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (fbUser) => {
+    // onIdTokenChanged fires on login, logout AND on every automatic token refresh (~1h)
+    // This keeps the cookie always up-to-date with a valid, non-expired token
+    const unsub = onIdTokenChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser)
       if (fbUser) {
-        document.cookie = 'oc_auth=1; path=/; SameSite=Lax'
-        const record = await getUserRecord(fbUser.uid)
-        const token = await fbUser.getIdTokenResult()
-        const claimRole = (token.claims as { role?: string }).role
-        const systemRole = claimRole === 'super_admin' || claimRole === 'admin' ? claimRole : (record?.systemRole ?? 'user')
-        setUser({
-          uid: fbUser.uid,
-          email: fbUser.email,
-          name: record?.name ?? '',
-          role: record?.role ?? null,
-          systemRole,
-          permissions: Array.isArray(record?.permissions) ? record.permissions : [],
-        })
+        const idToken = await fbUser.getIdToken()
+        document.cookie = `oc_auth=${idToken}; path=/; SameSite=Lax; max-age=3600`
+
+        // Only re-fetch user record when the logged-in user actually changes
+        if (fbUser.uid !== prevUidRef.current) {
+          prevUidRef.current = fbUser.uid
+          const record = await getUserRecord(fbUser.uid)
+          const token = await fbUser.getIdTokenResult()
+          const claimRole = (token.claims as { role?: string }).role
+          const systemRole = claimRole === 'super_admin' || claimRole === 'admin' ? claimRole : (record?.systemRole ?? 'user')
+          setUser({
+            uid: fbUser.uid,
+            email: fbUser.email,
+            name: record?.name ?? '',
+            role: record?.role ?? null,
+            systemRole,
+            permissions: Array.isArray(record?.permissions) ? record.permissions : [],
+          })
+        }
       } else {
+        prevUidRef.current = null
         document.cookie = 'oc_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
         setUser(null)
       }

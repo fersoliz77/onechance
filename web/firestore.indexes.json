@@ -1,4 +1,49 @@
 {
-  "indexes": [],
+  "indexes": [
+    { "collectionGroup": "players", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status",      "order": "ASCENDING" },
+      { "fieldPath": "position",    "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "players", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status",      "order": "ASCENDING" },
+      { "fieldPath": "nationality", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "players", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status",      "order": "ASCENDING" },
+      { "fieldPath": "ageRange",    "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "players", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status",      "order": "ASCENDING" },
+      { "fieldPath": "gender",      "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "players", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status",      "order": "ASCENDING" },
+      { "fieldPath": "strongFoot",  "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "players", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status",      "order": "ASCENDING" },
+      { "fieldPath": "isFeatured",  "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "coaches", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status",      "order": "ASCENDING" },
+      { "fieldPath": "nationality", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "clubs", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status",      "order": "ASCENDING" },
+      { "fieldPath": "country",     "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "clubs", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status",      "order": "ASCENDING" },
+      { "fieldPath": "division",    "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "agents", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status",      "order": "ASCENDING" },
+      { "fieldPath": "nationality", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "admin_audit_logs", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "actorUid",    "order": "ASCENDING" },
+      { "fieldPath": "createdAt",   "order": "DESCENDING" }
+    ]}
+  ],
   "fieldOverrides": []
 }

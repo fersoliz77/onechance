@@ -31,27 +31,17 @@ export function usePlayersListing() {
     try {
       const data = await getPublishedPlayers()
       setPlayers(data)
-    } catch {
+    } catch (err) {
+      console.error('[usePlayersListing] getPublishedPlayers failed:', err)
       setPlayers([])
-      setError('No se pudieron cargar los jugadores. Verifica tu conexión e intenta de nuevo.')
+      setError('No se pudieron cargar los jugadores. Verificá tu conexión e intentá de nuevo.')
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => {
-    getPublishedPlayers()
-      .then((data) => {
-        setPlayers(data)
-      })
-      .catch(() => {
-        setPlayers([])
-        setError('No se pudieron cargar los jugadores. Verifica tu conexión e intenta de nuevo.')
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { load() }, [])
 
   const visible = useMemo(() => {
     return players.filter(p => {

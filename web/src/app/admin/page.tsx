@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Background from '@/components/layout/Background'
@@ -70,8 +70,11 @@ export default function AdminPage() {
   const [users, setUsers]     = useState<UserRecord[]>([])
   const [videos, setVideos]   = useState<(VideoEntry & { playerUid: string })[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingProfiles, setLoadingProfiles] = useState(false)
+  const [loadingVideos, setLoadingVideos] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [loadError, setLoadError] = useState('')
+  const loadedRef = useRef<Set<string>>(new Set())
 
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
@@ -110,37 +113,58 @@ export default function AdminPage() {
     return () => window.removeEventListener('keydown', handler)
   }, [])
 
-  // Load data
+  // Carga principal: pendientes + usuarios (necesarios para métricas del dashboard)
   useEffect(() => {
     if (!user || !isAdmin) return
-    // Primary sources — failure shown as global error
-    const primarySources = ['solicitudes', 'jugadores', 'técnicos', 'clubes', 'representantes', 'usuarios'] as const
-    Promise.allSettled([
-      getPendingProfiles(), getAllPlayers(), getAllCoaches(), getAllClubs(), getAllAgents(), getAllUsers(),
-    ]).then(results => {
-      const [p, pl, co, cl, ag, u] = results
-      if (p.status  === 'fulfilled') setPending(p.value as PendingItem[])
-      if (pl.status === 'fulfilled') setPlayers(pl.value)
-      if (co.status === 'fulfilled') setCoaches(co.value)
-      if (cl.status === 'fulfilled') setClubs(cl.value)
-      if (ag.status === 'fulfilled') setAgents(ag.value)
-      if (u.status  === 'fulfilled') setUsers(u.value)
+    loadedRef.current = new Set() // reset al hacer refresh
+    const primarySources = ['solicitudes', 'usuarios'] as const
+    Promise.allSettled([getPendingProfiles(), getAllUsers()])
+      .then(results => {
+        const [p, u] = results
+        if (p.status === 'fulfilled') setPending(p.value as PendingItem[])
+        if (u.status === 'fulfilled') setUsers(u.value)
 
-      const failed = results
-        .map((r, i) => (r.status === 'rejected' ? primarySources[i] : null))
-        .filter((x): x is (typeof primarySources)[number] => x !== null)
+        const failed = results
+          .map((r, i) => (r.status === 'rejected' ? primarySources[i] : null))
+          .filter((x): x is (typeof primarySources)[number] => x !== null)
 
-      setLoadError(
-        failed.length > 0
-          ? `No se pudieron cargar: ${failed.join(', ')}. Verificá permisos en Firebase.`
-          : ''
-      )
-      setLoading(false)
-    })
-
-    // Videos — se cargan aparte, errores manejados silenciosamente
-    getAllVideos().then(setVideos).catch(() => {})
+        setLoadError(
+          failed.length > 0
+            ? `No se pudieron cargar: ${failed.join(', ')}. Verificá permisos en Firebase.`
+            : ''
+        )
+        setLoading(false)
+      })
   }, [user, isAdmin, refreshKey])
+
+  // Carga lazy: perfiles completos solo cuando se abre la pestaña "perfiles"
+  useEffect(() => {
+    if (!user || !isAdmin || tab !== 'perfiles') return
+    if (loadedRef.current.has('perfiles')) return
+    loadedRef.current.add('perfiles')
+    setLoadingProfiles(true)
+    Promise.allSettled([getAllPlayers(), getAllCoaches(), getAllClubs(), getAllAgents()])
+      .then(([pl, co, cl, ag]) => {
+        if (pl.status === 'fulfilled') setPlayers(pl.value)
+        if (co.status === 'fulfilled') setCoaches(co.value)
+        if (cl.status === 'fulfilled') setClubs(cl.value)
+        if (ag.status === 'fulfilled') setAgents(ag.value)
+      })
+      .catch((err) => console.error('[Admin] loadProfiles failed:', err))
+      .finally(() => setLoadingProfiles(false))
+  }, [user, isAdmin, tab])
+
+  // Carga lazy: videos solo cuando se abre la pestaña "videos"
+  useEffect(() => {
+    if (!user || !isAdmin || tab !== 'videos') return
+    if (loadedRef.current.has('videos')) return
+    loadedRef.current.add('videos')
+    setLoadingVideos(true)
+    getAllVideos()
+      .then(setVideos)
+      .catch((err) => console.error('[Admin] getAllVideos failed:', err))
+      .finally(() => setLoadingVideos(false))
+  }, [user, isAdmin, tab])
 
   // ── API helper ──
   const callAdminApi = useCallback(async (path: string, payload: Record<string, unknown>) => {

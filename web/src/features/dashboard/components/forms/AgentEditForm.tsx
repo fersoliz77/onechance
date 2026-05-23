@@ -8,6 +8,8 @@ import SurfaceCard from '@/components/ui/SurfaceCard'
 import Textarea from '@/components/ui/Textarea'
 import { COUNTRIES } from '@/types'
 import type { AgentProfile } from '@/types'
+import { calcAgentCompletion } from '@/lib/completion'
+import { updateProfileState } from '@/lib/rtdb'
 
 async function updateProfile(uid: string, role: 'agent', data: Partial<AgentProfile>) {
   const res = await fetch(`/api/profiles/${uid}`, {
@@ -61,6 +63,8 @@ export default function AgentEditForm({ agent, uid, onSaved }: { agent: AgentPro
         notableTransfers: transfers,
       }
       await updateProfile(uid, 'agent', data)
+      const completionPct = calcAgentCompletion({ ...agent, ...data })
+      await updateProfileState(uid, { completionPct }).catch(() => {})
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
       onSaved({ ...agent, ...data })

@@ -2,7 +2,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { register, login, createUserRecord, createPlayerRecord, createCoachRecord, createClubRecord, createAgentRecord } from '@/lib/auth'
+import { register, login, sendPasswordResetEmail, auth, createUserRecord, createPlayerRecord, createCoachRecord, createClubRecord, createAgentRecord } from '@/lib/auth'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
@@ -37,6 +37,8 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
   const [pass, setPass] = useState('')
   const [err, setErr] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resetMode, setResetMode] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
   const router = useRouter()
 
   const submit = async () => {
@@ -50,6 +52,46 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleReset = async () => {
+    if (!email) { setErr('Ingresá tu email para recuperar la contraseña.'); return }
+    setLoading(true)
+    setErr('')
+    try {
+      await sendPasswordResetEmail(auth, email)
+      setResetSent(true)
+    } catch {
+      setErr('No encontramos una cuenta con ese email.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (resetMode) {
+    return (
+      <div>
+        <div className="mb-1.5 text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-label)]">Recuperar acceso</div>
+        <div className="text-white text-[23px] font-medium tracking-[-0.02em] mb-1.5">Resetear contraseña</div>
+        {resetSent ? (
+          <div className="mb-5 rounded-[10px] border border-[rgba(170,255,0,0.3)] bg-[rgba(170,255,0,0.07)] p-4 text-[13px] text-[var(--oc-lime)]">
+            ✓ Te enviamos un email a <b>{email}</b> con el link para resetear tu contraseña.
+          </div>
+        ) : (
+          <>
+            <div className="mb-5 text-[13px] text-[var(--oc-text-muted)]">Ingresá tu email y te mandamos un link para crear una nueva contraseña.</div>
+            <div className="mb-4">
+              <Input placeholder="Correo electrónico" type="email" aria-label="Correo electrónico" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
+            </div>
+            {err && <div className="mb-3 text-[12px] text-[var(--color-oc-red)]">{err}</div>}
+            <Button variant="primary" className="w-full justify-center mb-3" size="lg" onClick={handleReset} disabled={loading}>
+              {loading ? 'Enviando...' : 'Enviar email de recuperación →'}
+            </Button>
+          </>
+        )}
+        <button onClick={() => { setResetMode(false); setResetSent(false); setErr('') }} className="text-[12px] text-[rgba(255,255,255,0.45)] cursor-pointer bg-transparent border-none font-sans hover:text-white">← Volver al login</button>
+      </div>
+    )
   }
 
   return (
@@ -69,7 +111,7 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
         {loading ? 'Ingresando...' : 'Ingresar →'}
       </Button>
       <div className="text-center">
-        <span className="cursor-pointer text-[12px] text-[rgba(170,255,0,0.72)]">¿Olvidaste tu contraseña?</span>
+        <button onClick={() => { setResetMode(true); setErr('') }} className="cursor-pointer text-[12px] text-[rgba(170,255,0,0.72)] bg-transparent border-none font-sans hover:text-[var(--oc-lime)]">¿Olvidaste tu contraseña?</button>
       </div>
     </div>
   )
@@ -88,8 +130,15 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
   const checkBirth = (v: string) => {
     setForm(f => ({ ...f, birthDate: v }))
     if (v) {
-      const age = Math.floor((Date.now() - new Date(v).getTime()) / 31_557_600_000)
+      const born = new Date(v)
+      if (isNaN(born.getTime())) {
+        setErr('Fecha de nacimiento inválida.')
+        setIsMinor(false)
+        return
+      }
+      const age = Math.floor((Date.now() - born.getTime()) / 31_557_600_000)
       setIsMinor(age < 18)
+      setErr('')
     }
   }
 

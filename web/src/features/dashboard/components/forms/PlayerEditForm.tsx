@@ -8,6 +8,8 @@ import SurfaceCard from '@/components/ui/SurfaceCard'
 import Textarea from '@/components/ui/Textarea'
 import { COUNTRIES, POSITIONS } from '@/types'
 import type { PlayerProfile } from '@/types'
+import { calcPlayerCompletion } from '@/lib/completion'
+import { updateProfileState } from '@/lib/rtdb'
 
 async function updateProfile(uid: string, role: 'player', data: Partial<PlayerProfile>) {
   const res = await fetch(`/api/profiles/${uid}`, {
@@ -85,6 +87,8 @@ export default function PlayerEditForm({ player, uid, onSaved }: { player: Playe
       delete (data as Record<string, unknown>).youtube
 
       await updateProfile(uid, 'player', data)
+      const completionPct = calcPlayerCompletion({ ...player, ...data })
+      await updateProfileState(uid, { completionPct }).catch(() => {})
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
       onSaved({ ...player, ...data })
