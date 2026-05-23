@@ -16,6 +16,7 @@ export default function ClubProfilePage() {
   const [loading, setLoading] = useState(true)
   const [showContact, setShowContact] = useState(false)
   const [showContactCta, setShowContactCta] = useState(false)
+  const [activeTab, setActiveTab] = useState(0)
   const router = useRouter()
   const { user } = useAuth()
 
@@ -124,65 +125,73 @@ export default function ClubProfilePage() {
 
           <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
             {['Resumen', 'Institucion', 'Busqueda', 'Logros', 'Contacto', 'Verificacion'].map((tab, i) => (
-              <div key={tab} className={`flex items-center justify-center border-b-2 ${i === 0 ? 'border-[var(--oc-yellow)] text-[var(--oc-yellow)]' : 'border-transparent'}`}>{tab}</div>
+              <button key={tab} type="button" onClick={() => setActiveTab(i)} className={`flex items-center justify-center border-b-2 cursor-pointer bg-transparent transition-colors ${activeTab === i ? 'border-[var(--oc-yellow)] text-[var(--oc-yellow)]' : 'border-transparent hover:text-white'}`}>{tab}</button>
             ))}
           </nav>
 
           <div className="grid gap-[var(--oc-space-4)] lg:grid-cols-[1fr_300px]">
             <div className="space-y-4">
-              <section className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
-                <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Sobre el club</p>
-                <p className="mt-2 text-[14px] leading-[1.75] text-[var(--oc-text-muted)]">{club.bio || 'Este club aun no cargo una descripcion institucional.'}</p>
-              </section>
+              {(activeTab === 0 || activeTab === 1) && (
+                <section className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
+                  <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Sobre el club</p>
+                  <p className="mt-2 text-[14px] leading-[1.75] text-[var(--oc-text-muted)]">{club.bio || 'Este club aun no cargo una descripcion institucional.'}</p>
+                </section>
+              )}
 
-              <section className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
-                <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Busqueda actual de talento</p>
-                {hasSeeking ? (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {club.seeking.map(s => (
-                      <span key={s} className="oc-role-chip px-[11px] py-1 text-[11px]" style={{ '--oc-accent': accent } as CSSProperties}>{s}</span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-2 text-[13px] text-[var(--oc-text-faint)]">Sin posiciones abiertas publicadas.</p>
-                )}
-              </section>
+              {(activeTab === 0 || activeTab === 2) && (
+                <section className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
+                  <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Busqueda actual de talento</p>
+                  {hasSeeking ? (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {club.seeking.map(s => (
+                        <span key={s} className="oc-role-chip px-[11px] py-1 text-[11px]" style={{ '--oc-accent': accent } as CSSProperties}>{s}</span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-[13px] text-[var(--oc-text-faint)]">Sin posiciones abiertas publicadas.</p>
+                  )}
+                </section>
+              )}
 
-              <section className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
-                <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Logros destacados</p>
-                {hasAchievements ? (
-                  <div className="mt-3 space-y-2">
-                    {club.achievements.map((a, i) => (
-                      <div key={`${a}-${i}`} className="flex items-center gap-2.5 text-[14px] text-[var(--oc-text-muted)]">
-                        <span className="text-[16px]">🏆</span>
-                        <span>{a}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-2 text-[13px] text-[var(--oc-text-faint)]">Aun no hay logros cargados.</p>
-                )}
-              </section>
+              {(activeTab === 0 || activeTab === 3) && (
+                <section className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
+                  <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Logros destacados</p>
+                  {hasAchievements ? (
+                    <div className="mt-3 space-y-2">
+                      {club.achievements.map((a, i) => (
+                        <div key={`${a}-${i}`} className="flex items-center gap-2.5 text-[14px] text-[var(--oc-text-muted)]">
+                          <span className="text-[16px]">🏆</span>
+                          <span>{a}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-[13px] text-[var(--oc-text-faint)]">Aun no hay logros cargados.</p>
+                  )}
+                </section>
+              )}
             </div>
 
             <aside className="space-y-3">
-              <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-4)]">
-                <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Cuerpo directivo</p>
-                <div className="mt-3 space-y-2.5">
-                  <div>
-                    <p className="text-[11px] text-[var(--oc-text-faint)]">Presidente</p>
-                    <p className="text-[14px] text-white">{club.president || 'No informado'}</p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-[var(--oc-text-faint)]">Director deportivo</p>
-                    <p className="text-[14px] text-white">{club.currentDirector || 'No informado'}</p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-[var(--oc-text-faint)]">Director tecnico</p>
-                    <p className="text-[14px] text-white">{club.currentCoach || 'No informado'}</p>
+              {(activeTab === 0 || activeTab === 1 || activeTab === 5) && (
+                <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-4)]">
+                  <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Cuerpo directivo</p>
+                  <div className="mt-3 space-y-2.5">
+                    <div>
+                      <p className="text-[11px] text-[var(--oc-text-faint)]">Presidente</p>
+                      <p className="text-[14px] text-white">{club.president || 'No informado'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-[var(--oc-text-faint)]">Director deportivo</p>
+                      <p className="text-[14px] text-white">{club.currentDirector || 'No informado'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-[var(--oc-text-faint)]">Director tecnico</p>
+                      <p className="text-[14px] text-white">{club.currentCoach || 'No informado'}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="rounded-[12px] border border-[color-mix(in_srgb,var(--oc-accent)_28%,transparent)] bg-[color-mix(in_srgb,var(--oc-accent)_8%,transparent)] p-4">
                 <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Contacto</p>

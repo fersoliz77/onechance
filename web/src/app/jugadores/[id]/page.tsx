@@ -77,6 +77,7 @@ export default function PlayerProfilePage() {
   const [loading, setLoading] = useState(true)
   const [showContact, setShowContact] = useState(false)
   const [showContactCta, setShowContactCta] = useState(false)
+  const [activeTab, setActiveTab] = useState(0)
 
   const galleryUrls = photos.length > 0
     ? photos.map((p) => p.url).filter(Boolean)
@@ -254,8 +255,9 @@ export default function PlayerProfilePage() {
                 key={tab}
                 type="button"
                 role="tab"
-                aria-selected={i === 0}
-                className={`flex items-center justify-center border-b-2 ${i === 0 ? 'border-[var(--oc-lime)] text-[var(--oc-lime)]' : 'border-transparent'}`}
+                aria-selected={activeTab === i}
+                onClick={() => setActiveTab(i)}
+                className={`flex items-center justify-center border-b-2 cursor-pointer bg-transparent transition-colors ${activeTab === i ? 'border-[var(--oc-lime)] text-[var(--oc-lime)]' : 'border-transparent hover:text-white'}`}
               >
                 {tab}
               </button>
@@ -263,13 +265,17 @@ export default function PlayerProfilePage() {
           </nav>
 
           <div className="mt-[var(--oc-space-5)] space-y-[var(--oc-space-4)]">
+            {(activeTab === 0 || activeTab === 2 || activeTab === 3) && (
             <div className="grid grid-cols-1 gap-[var(--oc-space-4)] lg:grid-cols-[260px_300px_300px_1fr]">
               <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
                 <SectionTitle title="Caracteristicas" />
                 <div className="mt-5 flex flex-wrap gap-2">
-                  {(player.characteristics?.length ? player.characteristics : ['Velocidad', 'Definicion', 'Potencia']).map((item) => (
-                    <span key={item} className="rounded-[20px] border border-[rgba(170,255,0,0.3)] bg-[rgba(170,255,0,0.08)] px-3 py-1.5 text-[12px] font-[700] text-[var(--oc-lime)]">{item}</span>
-                  ))}
+                  {player.characteristics?.length
+                    ? player.characteristics.map(item => (
+                        <span key={item} className="rounded-[20px] border border-[rgba(170,255,0,0.3)] bg-[rgba(170,255,0,0.08)] px-3 py-1.5 text-[12px] font-[700] text-[var(--oc-lime)]">{item}</span>
+                      ))
+                    : <p className="text-[13px] text-[var(--oc-fg-muted)]">Sin características cargadas aún.</p>
+                  }
                 </div>
               </Surface>
 
@@ -311,8 +317,9 @@ export default function PlayerProfilePage() {
                 </div>
               </Surface>
             </div>
+            )}
 
-            {videos.length > 0 ? (
+            {(activeTab === 0 || activeTab === 4) && videos.length > 0 ? (
               <Surface className="p-[var(--oc-space-5)]">
                 <SectionTitle title="Videos destacados" action="Ver todos" />
                 <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
@@ -321,6 +328,7 @@ export default function PlayerProfilePage() {
               </Surface>
             ) : null}
 
+            {(activeTab === 0 || activeTab === 1) && (
             <div className="grid grid-cols-1 gap-[var(--oc-space-4)] lg:grid-cols-[1fr_300px]">
               {player.career?.length > 0 ? (
                 <Surface className="p-[var(--oc-space-5)]">
@@ -361,6 +369,7 @@ export default function PlayerProfilePage() {
                 <h4 className="mt-4 text-[16px] font-[700] text-white">{player.position || 'Posicion principal'}</h4>
               </Surface>
             </div>
+            )}
 
             <Surface className="p-[var(--oc-space-6)]">
               <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
@@ -385,15 +394,38 @@ export default function PlayerProfilePage() {
                 </div>
                 <div className="rounded-[10px] border border-[var(--oc-border)] p-4">
                   <h4 className="font-[700] text-white">Redes sociales</h4>
-                  <div className="mt-8 flex items-center justify-around text-[29px]">
-                    <span>◎</span>
-                    <span>♪</span>
-                    <span className="text-[var(--oc-lime)]">◉</span>
-                  </div>
+                  {(player.social?.instagram || player.social?.tiktok || player.social?.youtube) ? (
+                    <div className="mt-4 flex flex-col gap-2">
+                      {player.social.instagram && (
+                        <a href={player.social.instagram.startsWith('http') ? player.social.instagram : `https://instagram.com/${player.social.instagram.replace('@','')}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-[13px] text-[rgba(255,255,255,0.6)] hover:text-white transition-colors">
+                          <span className="text-[18px]">◎</span> Instagram
+                        </a>
+                      )}
+                      {player.social.tiktok && (
+                        <a href={player.social.tiktok.startsWith('http') ? player.social.tiktok : `https://tiktok.com/${player.social.tiktok.replace('@','@')}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-[13px] text-[rgba(255,255,255,0.6)] hover:text-white transition-colors">
+                          <span className="text-[18px]">♪</span> TikTok
+                        </a>
+                      )}
+                      {player.social.youtube && (
+                        <a href={player.social.youtube.startsWith('http') ? player.social.youtube : `https://youtube.com/${player.social.youtube}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-[13px] text-[rgba(255,255,255,0.6)] hover:text-white transition-colors">
+                          <span className="text-[18px] text-[var(--oc-lime)]">◉</span> YouTube
+                        </a>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="mt-4 text-[13px] text-[var(--oc-fg-muted)]">Sin redes cargadas.</p>
+                  )}
                 </div>
               </div>
             </Surface>
 
+            {(activeTab === 0 || activeTab === 5) && (
             <Surface className="p-[var(--oc-space-5)]">
               <SectionTitle title="Fotos" action="Ver todas" />
               <div className="mt-[var(--oc-space-4)] grid grid-cols-2 gap-[var(--oc-space-3)] md:grid-cols-3 lg:grid-cols-6">
@@ -405,6 +437,7 @@ export default function PlayerProfilePage() {
                 ))}
               </div>
             </Surface>
+            )}
 
             <div className="rounded-[12px] border border-[var(--oc-border)] bg-[rgba(6,18,23,0.76)] py-5 text-center text-[14px] text-[var(--oc-fg-muted)]">
               ✓ Este perfil fue verificado y aprobado por el equipo de One Chance.

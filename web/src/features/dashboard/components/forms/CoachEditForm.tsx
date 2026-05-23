@@ -20,12 +20,13 @@ async function updateProfile(uid: string, role: 'coach', data: Partial<CoachProf
 
 export default function CoachEditForm({ coach, uid, onSaved }: { coach: CoachProfile; uid: string; onSaved: (c: CoachProfile) => void }) {
   const [form, setForm] = useState({
-    fullName: coach.fullName,
-    bio: coach.bio,
+    fullName:  coach.fullName,
+    bio:       coach.bio,
     nationality: coach.nationality,
     currentClub: coach.currentClub,
-    years: coach.years,
-    age: coach.age,
+    years:     coach.years,
+    age:       coach.age,
+    avatarUrl: coach.avatarUrl ?? '',
   })
   const [skills, setSkills] = useState<string[]>(coach.skills ?? [])
   const [skillInput, setSkillInput] = useState('')
@@ -36,6 +37,7 @@ export default function CoachEditForm({ coach, uid, onSaved }: { coach: CoachPro
   const [trophyInput, setTrophyInput] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
 
   const addSkill = () => {
     const val = skillInput.trim()
@@ -61,12 +63,22 @@ export default function CoachEditForm({ coach, uid, onSaved }: { coach: CoachPro
 
   const save = async () => {
     setSaving(true)
+    setError('')
     try {
-      const data = { ...form, skills, career, languages, trophies }
-      await updateProfile(uid, 'coach', data as Partial<CoachProfile>)
+      const data: Partial<CoachProfile> = {
+        ...form,
+        avatarUrl: form.avatarUrl || undefined,
+        skills,
+        career,
+        languages,
+        trophies,
+      }
+      await updateProfile(uid, 'coach', data)
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
       onSaved({ ...coach, ...data })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al guardar')
     } finally {
       setSaving(false)
     }
@@ -84,6 +96,9 @@ export default function CoachEditForm({ coach, uid, onSaved }: { coach: CoachPro
           <Input placeholder="Edad" type="number" value={String(form.age)} onChange={(e) => setForm((f) => ({ ...f, age: parseInt(e.target.value, 10) || 0 }))} />
         </div>
         <Textarea placeholder="Bio / Descripcion" value={form.bio} onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))} rows={3} />
+
+        <div className="text-[11px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)]">Foto de perfil</div>
+        <Input placeholder="URL de foto de perfil (avatar)" value={form.avatarUrl} onChange={(e) => setForm((f) => ({ ...f, avatarUrl: e.target.value }))} />
 
         <div>
           <div className="mb-2 text-[11px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)]">Habilidades</div>
@@ -149,7 +164,8 @@ export default function CoachEditForm({ coach, uid, onSaved }: { coach: CoachPro
           </div>
         </div>
 
-        {saved ? <div className="text-[12px] text-[#00C853]">Guardado ✓</div> : null}
+        {error && <div className="text-[12px] text-red-400">{error}</div>}
+        {saved  && <div className="text-[12px] text-[#00C853]">Guardado ✓</div>}
         <Button variant="primary" className="w-full justify-center" onClick={save} disabled={saving}>{saving ? 'Guardando...' : 'Guardar cambios'}</Button>
       </div>
     </SurfaceCard>

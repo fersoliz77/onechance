@@ -18,6 +18,7 @@ export default function AgentProfilePage() {
   const [showContact, setShowContact] = useState(false)
   const [showContactCta, setShowContactCta] = useState(false)
   const [videos, setVideos] = useState<VideoEntry[]>([])
+  const [activeTab, setActiveTab] = useState(0)
   const router = useRouter()
   const { user } = useAuth()
 
@@ -142,20 +143,20 @@ export default function AgentProfilePage() {
 
           <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
             {['Resumen', 'Agencia', 'Mercados', 'Transfers', 'Videos', 'Contacto'].map((tab, i) => (
-              <div key={tab} className={`flex items-center justify-center border-b-2 ${i === 0 ? 'border-[var(--oc-purple)] text-[var(--oc-purple)]' : 'border-transparent'}`}>{tab}</div>
+              <button key={tab} type="button" onClick={() => setActiveTab(i)} className={`flex items-center justify-center border-b-2 cursor-pointer bg-transparent transition-colors ${activeTab === i ? 'border-[var(--oc-purple)] text-[var(--oc-purple)]' : 'border-transparent hover:text-white'}`}>{tab}</button>
             ))}
           </nav>
 
           {/* Two-col */}
           <div className="grid gap-[var(--oc-space-4)] lg:grid-cols-[1fr_300px]">
             <div className="flex flex-col gap-3.5">
-              {agent.bio && (
+              {(activeTab === 0 || activeTab === 1) && agent.bio && (
                 <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
                   <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2.5">Sobre el representante</div>
                   <p className="text-[rgba(255,255,255,0.5)] text-[13px] leading-[1.8]">{agent.bio}</p>
                 </div>
               )}
-              {agent.notableTransfers && agent.notableTransfers.length > 0 && (
+              {(activeTab === 0 || activeTab === 3) && agent.notableTransfers && agent.notableTransfers.length > 0 && (
                 <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
                   <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2.5">Transfers destacados</div>
                   <div className="flex flex-col gap-1.5">
@@ -168,28 +169,32 @@ export default function AgentProfilePage() {
                   </div>
                 </div>
               )}
-              <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
-                <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2.5">Videos de jugadores representados</div>
-                {videos.length === 0 ? (
-                  <p className="text-[13px] text-[rgba(255,255,255,0.35)]">Este representante aun no publico videos.</p>
-                ) : (
-                  <div className="grid sm:grid-cols-2 gap-2.5">
-                    {videos.map((video) => (
-                      <a key={video.id} href={video.url ?? '#'} target="_blank" rel="noopener noreferrer" className="relative overflow-hidden rounded-[9px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] aspect-video flex items-center justify-center">
-                        <div className="absolute inset-0 bg-[rgba(0,0,0,0.25)]" />
-                        <div className="relative z-[2] w-9 h-9 rounded-full border border-[rgba(255,255,255,0.5)] flex items-center justify-center text-white text-[13px]">▶</div>
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {(activeTab === 0 || activeTab === 4) && (
+                <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
+                  <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2.5">Videos de jugadores representados</div>
+                  {videos.length === 0 ? (
+                    <p className="text-[13px] text-[rgba(255,255,255,0.35)]">Este representante aun no publico videos.</p>
+                  ) : (
+                    <div className="grid sm:grid-cols-2 gap-2.5">
+                      {videos.map((video) => (
+                        <a key={video.id} href={video.url ?? '#'} target="_blank" rel="noopener noreferrer" className="relative overflow-hidden rounded-[9px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] aspect-video flex items-center justify-center">
+                          <div className="absolute inset-0 bg-[rgba(0,0,0,0.25)]" />
+                          <div className="relative z-[2] w-9 h-9 rounded-full border border-[rgba(255,255,255,0.5)] flex items-center justify-center text-white text-[13px]">▶</div>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex flex-col gap-3">
-              <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-4)]">
-                <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2">Agencia</div>
-                <div className="text-white text-[15px] font-medium">{agent.agencyName || 'Independiente'}</div>
-                <div className="text-[rgba(255,255,255,0.3)] text-[12px] mt-1">{agent.nationality}</div>
-              </div>
+              {(activeTab === 0 || activeTab === 1 || activeTab === 2) && (
+                <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-4)]">
+                  <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2">Agencia</div>
+                  <div className="text-white text-[15px] font-medium">{agent.agencyName || 'Independiente'}</div>
+                  <div className="text-[rgba(255,255,255,0.3)] text-[12px] mt-1">{agent.nationality}</div>
+                </div>
+              )}
               <div className="rounded-[12px] border border-[color-mix(in_srgb,var(--oc-accent)_25%,transparent)] bg-[color-mix(in_srgb,var(--oc-accent)_8%,transparent)] p-4">
                 <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2">Contacto</div>
                 <p className="text-[rgba(255,255,255,0.35)] text-[12px] leading-[1.6] mb-3">

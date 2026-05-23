@@ -20,16 +20,17 @@ async function updateProfile(uid: string, role: 'club', data: Partial<ClubProfil
 
 export default function ClubEditForm({ club, uid, onSaved }: { club: ClubProfile; uid: string; onSaved: (c: ClubProfile) => void }) {
   const [form, setForm] = useState({
-    name: club.name,
-    country: club.country,
-    city: club.city,
-    province: club.province,
-    division: club.division,
-    president: club.president,
+    name:            club.name,
+    country:         club.country,
+    city:            club.city,
+    province:        club.province,
+    division:        club.division,
+    president:       club.president,
     currentDirector: club.currentDirector,
-    currentCoach: club.currentCoach,
-    bio: club.bio,
-    founded: club.founded,
+    currentCoach:    club.currentCoach,
+    bio:             club.bio,
+    founded:         club.founded,
+    imageUrl:        club.imageUrl ?? '',
   })
   const [seeking, setSeeking] = useState<string[]>(club.seeking ?? [])
   const [seekInput, setSeekInput] = useState('')
@@ -37,6 +38,7 @@ export default function ClubEditForm({ club, uid, onSaved }: { club: ClubProfile
   const [achInput, setAchInput] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
 
   const divisions = ['Primera Division', 'Segunda Division', 'Tercera Division', 'Liga Amateur', 'Juveniles', 'Femenino']
 
@@ -56,12 +58,20 @@ export default function ClubEditForm({ club, uid, onSaved }: { club: ClubProfile
 
   const save = async () => {
     setSaving(true)
+    setError('')
     try {
-      const data = { ...form, seeking, achievements }
-      await updateProfile(uid, 'club', data as Partial<ClubProfile>)
+      const data: Partial<ClubProfile> = {
+        ...form,
+        imageUrl: form.imageUrl || undefined,
+        seeking,
+        achievements,
+      }
+      await updateProfile(uid, 'club', data)
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
       onSaved({ ...club, ...data })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al guardar')
     } finally {
       setSaving(false)
     }
@@ -83,6 +93,9 @@ export default function ClubEditForm({ club, uid, onSaved }: { club: ClubProfile
         <Input placeholder="Director tecnico" value={form.currentCoach} onChange={(e) => setForm((f) => ({ ...f, currentCoach: e.target.value }))} />
         <Input placeholder="Anio de fundacion" type="number" value={form.founded ? String(form.founded) : ''} onChange={(e) => setForm((f) => ({ ...f, founded: parseInt(e.target.value, 10) || 0 }))} />
         <Textarea placeholder="Descripcion institucional" value={form.bio} onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))} rows={3} />
+
+        <div className="text-[11px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)]">Imagen del club</div>
+        <Input placeholder="URL de imagen del club" value={form.imageUrl} onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))} />
 
         <div>
           <div className="mb-2 text-[11px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)]">Posiciones buscadas</div>
@@ -117,7 +130,8 @@ export default function ClubEditForm({ club, uid, onSaved }: { club: ClubProfile
           </div>
         </div>
 
-        {saved ? <div className="text-[12px] text-[#00C853]">Guardado ✓</div> : null}
+        {error && <div className="text-[12px] text-red-400">{error}</div>}
+        {saved  && <div className="text-[12px] text-[#00C853]">Guardado ✓</div>}
         <Button variant="primary" className="w-full justify-center" onClick={save} disabled={saving}>{saving ? 'Guardando...' : 'Guardar cambios'}</Button>
       </div>
     </SurfaceCard>

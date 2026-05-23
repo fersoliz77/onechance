@@ -30,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser)
       if (fbUser) {
+        document.cookie = 'oc_auth=1; path=/; SameSite=Lax'
         const record = await getUserRecord(fbUser.uid)
         const token = await fbUser.getIdTokenResult()
         const claimRole = (token.claims as { role?: string }).role
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           permissions: Array.isArray(record?.permissions) ? record.permissions : [],
         })
       } else {
+        document.cookie = 'oc_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
         setUser(null)
       }
       setLoading(false)

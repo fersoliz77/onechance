@@ -1,6 +1,6 @@
 import {
   collection, doc, getDoc, getDocs, updateDoc, setDoc,
-  query, where, serverTimestamp,
+  query, where, serverTimestamp, getCountFromServer,
 } from 'firebase/firestore'
 import { db } from './firebase'
 import type { PlayerProfile, CoachProfile, ClubProfile, AgentProfile, Role, ProfileStatus, UserRecord } from '@/types'
@@ -126,6 +126,21 @@ export async function setOwnProfileStatus(role: Role, uid: string, status: Profi
 export async function getAllUsers(): Promise<UserRecord[]> {
   const snap = await getDocs(collection(db, 'users'))
   return snap.docs.map(d => d.data() as UserRecord)
+}
+
+export async function getPublishedCounts(): Promise<{ players: number; coaches: number; clubs: number; agents: number }> {
+  const [players, coaches, clubs, agents] = await Promise.all([
+    getCountFromServer(query(collection(db, 'players'), where('status', '==', 'published'))),
+    getCountFromServer(query(collection(db, 'coaches'), where('status', '==', 'published'))),
+    getCountFromServer(query(collection(db, 'clubs'),   where('status', '==', 'published'))),
+    getCountFromServer(query(collection(db, 'agents'),  where('status', '==', 'published'))),
+  ])
+  return {
+    players: players.data().count,
+    coaches: coaches.data().count,
+    clubs:   clubs.data().count,
+    agents:  agents.data().count,
+  }
 }
 
 export async function logAdminAction(payload: {

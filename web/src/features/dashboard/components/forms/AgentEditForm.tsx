@@ -20,13 +20,14 @@ async function updateProfile(uid: string, role: 'agent', data: Partial<AgentProf
 
 export default function AgentEditForm({ agent, uid, onSaved }: { agent: AgentProfile; uid: string; onSaved: (a: AgentProfile) => void }) {
   const [form, setForm] = useState({
-    fullName: agent.fullName,
+    fullName:   agent.fullName,
     nationality: agent.nationality,
     agencyName: agent.agencyName,
-    players: agent.players,
-    countries: agent.countries,
-    bio: agent.bio,
-    career: agent.career,
+    players:    agent.players,
+    countries:  agent.countries,
+    bio:        agent.bio,
+    career:     agent.career,
+    avatarUrl:  agent.avatarUrl ?? '',
   })
   const [markets, setMarkets] = useState<string[]>(agent.markets ?? [])
   const [marketInput, setMarketInput] = useState('')
@@ -34,6 +35,7 @@ export default function AgentEditForm({ agent, uid, onSaved }: { agent: AgentPro
   const [transferInput, setTransferInput] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
 
   const addMarket = () => {
     const val = marketInput.trim()
@@ -50,12 +52,20 @@ export default function AgentEditForm({ agent, uid, onSaved }: { agent: AgentPro
 
   const save = async () => {
     setSaving(true)
+    setError('')
     try {
-      const data = { ...form, markets, notableTransfers: transfers }
-      await updateProfile(uid, 'agent', data as Partial<AgentProfile>)
+      const data: Partial<AgentProfile> = {
+        ...form,
+        avatarUrl: form.avatarUrl || undefined,
+        markets,
+        notableTransfers: transfers,
+      }
+      await updateProfile(uid, 'agent', data)
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
       onSaved({ ...agent, ...data })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al guardar')
     } finally {
       setSaving(false)
     }
@@ -74,6 +84,9 @@ export default function AgentEditForm({ agent, uid, onSaved }: { agent: AgentPro
         </div>
         <Input placeholder="Trayectoria resumida" value={form.career} onChange={(e) => setForm((f) => ({ ...f, career: e.target.value }))} />
         <Textarea placeholder="Bio / Descripcion" value={form.bio} onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))} rows={3} />
+
+        <div className="text-[11px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)]">Foto de perfil</div>
+        <Input placeholder="URL de foto de perfil (avatar)" value={form.avatarUrl} onChange={(e) => setForm((f) => ({ ...f, avatarUrl: e.target.value }))} />
 
         <div>
           <div className="mb-2 text-[11px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)]">Mercados donde opera</div>
@@ -108,7 +121,8 @@ export default function AgentEditForm({ agent, uid, onSaved }: { agent: AgentPro
           </div>
         </div>
 
-        {saved ? <div className="text-[12px] text-[#00C853]">Guardado ✓</div> : null}
+        {error && <div className="text-[12px] text-red-400">{error}</div>}
+        {saved  && <div className="text-[12px] text-[#00C853]">Guardado ✓</div>}
         <Button variant="primary" className="w-full justify-center" onClick={save} disabled={saving}>{saving ? 'Guardando...' : 'Guardar cambios'}</Button>
       </div>
     </SurfaceCard>

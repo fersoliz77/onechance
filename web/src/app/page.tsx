@@ -6,7 +6,7 @@ import { type MouseEvent, useEffect, useMemo, useRef, useState } from 'react'
 import AuthModal from '@/components/landing/AuthModal'
 import HeroPlayersTicker from '@/components/landing/HeroPlayersTicker'
 import LandingSections from '@/components/landing/LandingSections'
-import { getPublishedPlayers } from '@/lib/firestore'
+import { getPublishedPlayers, getPublishedCounts } from '@/lib/firestore'
 import type { PlayerProfile } from '@/types'
 
 export default function Landing() {
@@ -18,11 +18,18 @@ export default function Landing() {
   const [showHeroTicker, setShowHeroTicker] = useState(true)
   const metricsRef = useRef<HTMLDivElement | null>(null)
   const heroRef = useRef<HTMLElement | null>(null)
+  const realCounts = useRef({ players: 1200, coaches: 84, clubs: 47, agents: 23 })
 
   useEffect(() => {
     getPublishedPlayers()
       .then((players) => setHeroPlayers(players))
       .catch(() => setHeroPlayers([]))
+  }, [])
+
+  useEffect(() => {
+    getPublishedCounts()
+      .then((counts) => { realCounts.current = counts })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -73,10 +80,11 @@ export default function Landing() {
 
   useEffect(() => {
     if (!metricsVisible) return
+    const targets = realCounts.current
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (prefersReduced) {
       const reducedFrame = window.requestAnimationFrame(() => {
-        setHeroMetrics({ players: 1200, coaches: 84, clubs: 47, agents: 23 })
+        setHeroMetrics(targets)
       })
       return () => window.cancelAnimationFrame(reducedFrame)
     }
@@ -90,10 +98,10 @@ export default function Landing() {
       const progress = Math.min((now - start) / duration, 1)
       const eased = easeOut(progress)
       setHeroMetrics({
-        players: Math.round(1200 * eased),
-        coaches: Math.round(84 * eased),
-        clubs: Math.round(47 * eased),
-        agents: Math.round(23 * eased),
+        players: Math.round(targets.players * eased),
+        coaches: Math.round(targets.coaches * eased),
+        clubs:   Math.round(targets.clubs   * eased),
+        agents:  Math.round(targets.agents  * eased),
       })
       if (progress < 1) frame = window.requestAnimationFrame(tick)
     }
@@ -299,9 +307,9 @@ export default function Landing() {
         <div className="oc-shell flex flex-wrap items-center justify-between gap-4 text-[14px] text-[var(--oc-fg-dim)]">
           <div>© 2026 One Chance. Todos los derechos reservados.</div>
           <div className="flex gap-4">
-            <a href="#">Términos</a>
-            <a href="#">Privacidad</a>
-            <a href="#">Contacto</a>
+            <a href="/terminos" className="hover:text-white transition-colors">Términos</a>
+            <a href="/privacidad" className="hover:text-white transition-colors">Privacidad</a>
+            <a href="mailto:contacto@onechance.app" className="hover:text-white transition-colors">Contacto</a>
           </div>
         </div>
       </footer>

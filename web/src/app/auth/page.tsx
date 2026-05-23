@@ -75,10 +75,10 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
   )
 }
 
-function RegisterForm() {
+function RegisterForm({ initialRole }: { initialRole?: Role }) {
   const [step, setStep] = useState(0)
   const [creds, setCreds] = useState({ email: '', pass: '', confirm: '' })
-  const [role, setRole] = useState<Role | null>(null)
+  const [role, setRole] = useState<Role | null>(initialRole ?? null)
   const [form, setForm] = useState({ fullName: '', birthDate: '', nationality: '', position: '' })
   const [isMinor, setIsMinor] = useState(false)
   const [err, setErr] = useState('')
@@ -97,7 +97,9 @@ function RegisterForm() {
     if (!creds.email || !creds.pass || !creds.confirm) { setErr('Completá todos los campos.'); return }
     if (creds.pass !== creds.confirm) { setErr('Las contraseñas no coinciden.'); return }
     if (creds.pass.length < 6) { setErr('La contraseña debe tener al menos 6 caracteres.'); return }
-    setErr(''); setStep(1)
+    setErr('')
+    // Skip role selection step if role was pre-selected from URL param
+    setStep(role ? 2 : 1)
   }
 
   const step2Submit = async () => {
@@ -222,7 +224,7 @@ function RegisterForm() {
           </div>
           {err && <div className="mb-2.5 text-[12px] text-[var(--color-oc-red)]">{err}</div>}
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setStep(1)} className="flex-1 justify-center">Atrás</Button>
+            <Button variant="outline" onClick={() => setStep(initialRole ? 0 : 1)} className="flex-1 justify-center">Atrás</Button>
             <Button variant="primary" onClick={step2Submit} className="flex-[2] justify-center" disabled={loading}>
               {loading ? 'Creando...' : 'Crear perfil →'}
             </Button>
@@ -233,9 +235,13 @@ function RegisterForm() {
   )
 }
 
+const VALID_ROLES: Role[] = ['player', 'coach', 'club', 'agent']
+
 function AuthContent() {
   const searchParams = useSearchParams()
   const initialTab = searchParams.get('tab') === 'register' ? 'register' : 'login'
+  const roleParam = searchParams.get('role')
+  const initialRole = VALID_ROLES.includes(roleParam as Role) ? (roleParam as Role) : undefined
   const [tab, setTab] = useState(initialTab)
   const { user } = useAuth()
   const router = useRouter()
@@ -268,7 +274,7 @@ function AuthContent() {
           <div className="rounded-[16px] border border-[rgba(170,255,0,0.24)] bg-[linear-gradient(165deg,rgba(20,35,18,0.2),rgba(15,22,18,0.3))] p-7 shadow-[0_24px_64px_rgba(0,0,0,0.5),0_0_0_1px_rgba(170,255,0,0.06),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[22px]">
             {tab === 'login'
               ? <LoginForm onSwitch={() => setTab('register')} />
-              : <RegisterForm />
+              : <RegisterForm initialRole={initialRole} />
             }
           </div>
         </div>

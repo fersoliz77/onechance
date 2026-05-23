@@ -31,7 +31,11 @@
       "Bash(Select-Object FullName)",
       "Bash(node -e \"const p = require\\('./node_modules/zod/package.json'\\); console.log\\(p.version\\)\")",
       "Bash(ls \"/mnt/c/Users/pikachu/Downloads/OneChance/web/src\" 2>/dev/null | head -20)",
-      "Read(//mnt/c/Users/pikachu/Downloads/OneChance/web/**)"
+      "Read(//mnt/c/Users/pikachu/Downloads/OneChance/web/**)",
+      "Bash(node -e \"const pkg = require\\('./web/node_modules/firebase/package.json'\\); console.log\\(pkg.version\\)\")",
+      "Bash(node -e \"const pkg = require\\('./web/node_modules/next/package.json'\\); console.log\\(pkg.version\\)\")",
+      "Bash(Select-String -Pattern \"middleware\")",
+      "Bash(xargs grep -l \"middleware\")"
     ]
   }
 }
