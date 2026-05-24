@@ -44,9 +44,9 @@ export default function LandingSections({ ctaParallaxY, onOpenModal, onCardMove 
         <SectionHeading title="De tu perfil a una oportunidad." />
         <div className="grid gap-5 md:grid-cols-3">
           {[
-            ['1', 'Crea tu perfil', 'Completa tus datos y sube videos en minutos.'],
+            ['1', 'Creá tu perfil', 'Completá tus datos y subí videos en minutos.'],
             ['2', 'Mostrá tu talento', 'Tu perfil llega a clubes y representantes.'],
-            ['3', 'Gana visibilidad', 'Multiplica tus oportunidades con contactos reales.'],
+            ['3', 'Ganá visibilidad', 'Multiplicá tus oportunidades con contactos reales.'],
           ].map((step, index) => (
             <article key={step[0]} data-reveal className="oc-reveal oc-hover-card rounded-[14px] border border-[var(--oc-border)] bg-[var(--oc-bg-card)] px-8 py-8 text-center transition hover:-translate-y-0.5 hover:border-[var(--oc-border-hi)]" style={{ transitionDelay: `${(index + 1) * 60}ms` }} onMouseMove={onCardMove}>
               <div className="oc-content-frame-tight">
