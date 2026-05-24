@@ -23,6 +23,7 @@
 | [12_scripts_guide.md](12_scripts_guide.md) | Guía simple de scripts, workflow CI y seed de datos demo |
 | [15_implementation_plan.md](15_implementation_plan.md) | Plan de implementación completo por fases con checkboxes de progreso |
 | [16_ux_implementation_plan.md](16_ux_implementation_plan.md) | Auditoría UX completa: 20 problemas en 5 fases, qué salió mal y cómo se resuelve |
+| [17_nextjs16_proxy_migration.md](17_nextjs16_proxy_migration.md) | Next.js 16: `middleware.ts` → `proxy.ts`, qué cambió, cómo migrar, error de build explicado |
 
 ## Mockups de referencia
 
