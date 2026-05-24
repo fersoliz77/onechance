@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { getPublishedPlayers } from '@/lib/firestore'
 import type { PlayerProfile } from '@/types'
 
+const SAVED_FILTERS_KEY = 'oc_players_saved_filters_v1'
+const RECENT_SEARCHES_KEY = 'oc_players_recent_searches_v1'
+
 export interface PlayerFilters {
   gender: string
   ageRange: string
@@ -24,6 +27,8 @@ export function usePlayersListing() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState<PlayerFilters>(emptyPlayerFilters)
+  const [savedFilters, setSavedFilters] = useState<PlayerFilters[]>([])
+  const [recentSearches, setRecentSearches] = useState<string[]>([])
 
   const load = async () => {
     setLoading(true)
@@ -43,6 +48,35 @@ export function usePlayersListing() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load() }, [])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const rawFilters = window.localStorage.getItem(SAVED_FILTERS_KEY)
+      if (rawFilters) {
+        const parsed = JSON.parse(rawFilters) as PlayerFilters[]
+        if (Array.isArray(parsed)) setSavedFilters(parsed.slice(0, 5))
+      }
+      const rawSearches = window.localStorage.getItem(RECENT_SEARCHES_KEY)
+      if (rawSearches) {
+        const parsed = JSON.parse(rawSearches) as string[]
+        if (Array.isArray(parsed)) setRecentSearches(parsed.slice(0, 6))
+      }
+    } catch {
+      setSavedFilters([])
+      setRecentSearches([])
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(savedFilters))
+  }, [savedFilters])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recentSearches))
+  }, [recentSearches])
+
   const visible = useMemo(() => {
     return players.filter(p => {
       if (filters.gender && p.gender !== filters.gender) return false
@@ -61,5 +95,51 @@ export function usePlayersListing() {
     })
   }, [players, filters, search])
 
-  return { players, visible, loading, error, reload: load, search, setSearch, filters, setFilters }
+  const saveCurrentFilters = () => {
+    if (Object.values(filters).every(v => !v)) return
+    setSavedFilters(prev => {
+      const next = [filters, ...prev.filter(f => JSON.stringify(f) !== JSON.stringify(filters))]
+      return next.slice(0, 5)
+    })
+  }
+
+  const applySavedFilters = (next: PlayerFilters) => {
+    setFilters(next)
+  }
+
+  const removeSavedFilters = (index: number) => {
+    setSavedFilters(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const registerRecentSearch = (value: string) => {
+    const normalized = value.trim()
+    if (normalized.length < 2) return
+    setRecentSearches(prev => {
+      const dedup = prev.filter(s => s.toLowerCase() !== normalized.toLowerCase())
+      return [normalized, ...dedup].slice(0, 6)
+    })
+  }
+
+  const removeRecentSearch = (value: string) => {
+    setRecentSearches(prev => prev.filter(s => s !== value))
+  }
+
+  return {
+    players,
+    visible,
+    loading,
+    error,
+    reload: load,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    savedFilters,
+    saveCurrentFilters,
+    applySavedFilters,
+    removeSavedFilters,
+    recentSearches,
+    registerRecentSearch,
+    removeRecentSearch,
+  }
 }

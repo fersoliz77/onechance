@@ -200,6 +200,18 @@ export default function PlayerProfilePage() {
     <div className="relative min-h-screen bg-[var(--oc-bg-base)] text-white">
       <Background />
       <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(circle_at_50%_15%,rgba(170,255,0,0.1),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(0,195,255,0.08),transparent_30%)]" />
+      {showContactCta ? (
+        <div className="fixed inset-x-0 bottom-0 z-[90] border-t border-[var(--oc-border-soft)] bg-[rgba(3,12,16,0.94)] p-3 backdrop-blur md:hidden">
+          <div className="mx-auto flex max-w-[520px] gap-2">
+            <button onClick={handleFollow} className={`h-11 flex-1 rounded-[8px] border px-4 text-[13px] font-[700] ${following ? 'border-[var(--oc-lime)] bg-[rgba(170,255,0,0.12)] text-[var(--oc-lime)]' : 'border-[var(--oc-border-hi)] bg-[rgba(0,0,0,0.28)] text-white'}`}>
+              {following ? 'Siguiendo' : 'Seguir'}
+            </button>
+            <button onClick={handleContact} className="h-11 flex-[1.25] rounded-[8px] bg-[var(--oc-lime)] px-4 text-[14px] font-[800] text-black">
+              {user ? 'Contactar ahora' : 'Iniciá sesión para contactar'}
+            </button>
+          </div>
+        </div>
+      ) : null}
       {showContact ? <ContactModal toUid={id} toName={player.fullName} accent="var(--oc-lime)" onClose={() => setShowContact(false)} /> : null}
       {showReport && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(0,0,0,0.7)] backdrop-blur-sm">
@@ -231,7 +243,7 @@ export default function PlayerProfilePage() {
         </div>
       )}
 
-      <div className="relative z-[2] oc-main-offset pb-12">
+      <div className="relative z-[2] oc-main-offset pb-24 md:pb-12">
         <div className="oc-shell oc-page-block">
           <Button variant="ghost" onClick={() => router.push('/jugadores')} className="mb-5 text-[12px]">← Volver al listado</Button>
 
@@ -297,6 +309,7 @@ export default function PlayerProfilePage() {
                       {following ? 'Siguiendo ✓' : 'Seguir'}
                     </button>
                   </div>
+                  <p className="mt-3 text-[12px] text-[var(--oc-fg-muted)]">Perfil actualizado por su titular. Revisá videos y trayectoria antes de contactar.</p>
                 </div>
               </div>
 

@@ -13,7 +13,24 @@ import { COUNTRIES } from '@/types'
 const PAGE_SIZE = 12
 
 export default function JugadoresPage() {
-  const { players, visible, loading, error, reload, search, setSearch, filters, setFilters } = usePlayersListing()
+  const {
+    players,
+    visible,
+    loading,
+    error,
+    reload,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    savedFilters,
+    saveCurrentFilters,
+    applySavedFilters,
+    removeSavedFilters,
+    recentSearches,
+    registerRecentSearch,
+    removeRecentSearch,
+  } = usePlayersListing()
   const [limit, setLimit] = useState(PAGE_SIZE)
   const router = useRouter()
 
@@ -51,7 +68,40 @@ export default function JugadoresPage() {
                     subtitle={`Masculino y femenino · Todas las categorías · ${COUNTRIES.length} países`}
                     tone="green"
                   />
-                  <Input placeholder="Buscar por nombre o puesto..." value={search} onChange={e => setSearch(e.target.value)} icon="⚽" wrapperClass="mb-0 mt-4 w-full md:max-w-[520px]" />
+                  <Input
+                    placeholder="Buscar por nombre o puesto..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    onBlur={e => registerRecentSearch(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') registerRecentSearch((e.target as HTMLInputElement).value)
+                    }}
+                    icon="⚽"
+                    wrapperClass="mb-0 mt-4 w-full md:max-w-[520px]"
+                  />
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={saveCurrentFilters}
+                      className="rounded-[8px] border border-[var(--oc-border-hi)] bg-[rgba(0,0,0,0.24)] px-3 py-1.5 text-[12px] font-[700] text-[var(--oc-lime)]"
+                    >
+                      Guardar filtros actuales
+                    </button>
+                    {recentSearches.length > 0 && (
+                      <span className="text-[12px] text-[var(--oc-fg-muted)]">Búsquedas recientes:</span>
+                    )}
+                    {recentSearches.map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => setSearch(item)}
+                        className="rounded-[20px] border border-[var(--oc-border-soft)] bg-[rgba(255,255,255,0.03)] px-3 py-1 text-[12px] text-white"
+                        title="Aplicar búsqueda"
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="rounded-[var(--oc-radius-lg)] border border-[var(--oc-border-soft)] bg-[rgba(6,19,24,0.86)] p-[var(--oc-space-5)]">
                   <p className="text-[12px] uppercase tracking-[0.06em] text-[var(--oc-fg-dim)]">Resumen</p>
@@ -79,6 +129,33 @@ export default function JugadoresPage() {
           <div className="mt-[var(--oc-space-5)] flex flex-col items-start gap-[var(--oc-space-4)] md:flex-row md:gap-[var(--oc-space-5)]">
             <PlayerFiltersSidebar filters={filters} setFilters={f => { setFilters(f); setLimit(PAGE_SIZE) }} onClear={() => { setFilters(emptyPlayerFilters); setLimit(PAGE_SIZE) }} />
             <div className="w-full flex-1">
+              {savedFilters.length > 0 && (
+                <div className="mb-4 rounded-[12px] border border-[var(--oc-border-soft)] bg-[rgba(6,19,24,0.76)] p-3">
+                  <p className="mb-2 text-[12px] uppercase tracking-[0.05em] text-[var(--oc-fg-muted)]">Filtros guardados</p>
+                  <div className="flex flex-wrap gap-2">
+                    {savedFilters.map((entry, idx) => (
+                      <div key={`${entry.gender}-${entry.ageRange}-${entry.position}-${entry.nationality}-${entry.strongFoot}-${idx}`} className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => { applySavedFilters(entry); setLimit(PAGE_SIZE) }}
+                          className="rounded-[18px] border border-[rgba(170,255,0,0.35)] bg-[rgba(170,255,0,0.1)] px-3 py-1 text-[12px] font-[700] text-[var(--oc-lime)]"
+                        >
+                          {entry.position || 'Todos'} · {entry.nationality || 'Cualquier país'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeSavedFilters(idx)}
+                          className="rounded-full border border-[var(--oc-border-soft)] px-2 py-0.5 text-[11px] text-[var(--oc-fg-muted)]"
+                          aria-label="Eliminar filtro guardado"
+                          title="Eliminar filtro guardado"
+                        >
+                          x
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {loading ? (
                 <EmptyState message="Cargando jugadores..." />
               ) : error ? (
@@ -93,7 +170,24 @@ export default function JugadoresPage() {
                   </button>
                 </div>
               ) : visible.length === 0 ? (
-                <EmptyState message={players.length === 0 ? 'Aún no hay jugadores registrados. Sé el primero.' : 'No se encontraron jugadores con esos filtros.'} />
+                <div className="rounded-[12px] border border-[var(--oc-border-soft)] bg-[rgba(6,18,23,0.82)] p-5">
+                  <EmptyState message={players.length === 0 ? 'Aún no hay jugadores registrados. Sé el primero.' : 'No encontramos resultados con estos filtros.'} />
+                  {players.length > 0 && (
+                    <div className="mt-3 flex justify-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFilters(emptyPlayerFilters)
+                          setSearch('')
+                          removeRecentSearch(search)
+                        }}
+                        className="rounded-[8px] border border-[var(--oc-border-hi)] bg-[rgba(0,0,0,0.28)] px-4 py-2 text-[12px] font-[700] text-white"
+                      >
+                        Limpiar filtros y búsqueda
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <>
                   <div className="oc-list-grid">

@@ -24,6 +24,8 @@
 | [15_implementation_plan.md](15_implementation_plan.md) | Plan de implementación completo por fases con checkboxes de progreso |
 | [16_ux_implementation_plan.md](16_ux_implementation_plan.md) | Auditoría UX completa: 20 problemas en 5 fases, qué salió mal y cómo se resuelve |
 | [17_nextjs16_proxy_migration.md](17_nextjs16_proxy_migration.md) | Next.js 16: `middleware.ts` → `proxy.ts`, qué cambió, cómo migrar, error de build explicado |
+| [18_data_ux_remediation_master_plan_2026-05-23.md](18_data_ux_remediation_master_plan_2026-05-23.md) | Plan maestro paso a paso: qué está mal, qué se hará y cómo quedará (UX, seguridad y estrategia Firestore/Realtime) |
+| [19_ux_ui_v2_execution_log_2026-05-23_2258.md](19_ux_ui_v2_execution_log_2026-05-23_2258.md) | Bitácora de ejecución UX/UI V2 con fecha/hora, cambios aplicados y validación operativa |
 
 ## Mockups de referencia
 
