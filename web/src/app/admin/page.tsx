@@ -130,7 +130,7 @@ export default function AdminPage() {
 
         setLoadError(
           failed.length > 0
-            ? `No se pudieron cargar: ${failed.join(', ')}. Verificá permisos en Firebase.`
+            ? `No se pudieron cargar algunos datos (${failed.join(', ')}). Intentá recargar la página.`
             : ''
         )
         setLoading(false)
@@ -408,7 +408,8 @@ export default function AdminPage() {
           {loadError && (
             <div className="rounded-xl border border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.07)] px-5 py-3 text-sm text-[rgba(245,200,80,0.95)] flex items-center gap-3">
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-              {loadError}
+              <span className="flex-1">{loadError}</span>
+              <button onClick={() => window.location.reload()} className="shrink-0 rounded-[6px] border border-[rgba(245,200,80,0.3)] bg-transparent px-3 py-1 text-[12px] cursor-pointer font-sans text-[rgba(245,200,80,0.95)] hover:bg-[rgba(245,200,80,0.1)]">Recargar</button>
             </div>
           )}
 

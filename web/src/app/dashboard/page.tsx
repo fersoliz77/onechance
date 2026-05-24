@@ -11,12 +11,14 @@ import SurfaceCard from '@/components/ui/SurfaceCard'
 import { ROLE_ACCENT, ROLE_ICONS, ROLE_LABELS, ROLE_ROUTE } from '@/lib/constants'
 import { setOwnProfileStatus } from '@/lib/firestore'
 import { submitForReview } from '@/lib/rtdb'
+import DashboardSkeleton from '@/components/ui/DashboardSkeleton'
 import { AgentEditForm, ClubEditForm, CoachEditForm, PlayerEditForm } from '@/features/dashboard/components/RoleEditForms'
 import StatusCard from '@/features/dashboard/components/StatusCard'
 import PhotosSection from '@/features/dashboard/components/sections/PhotosSection'
 import SettingsSection from '@/features/dashboard/components/sections/SettingsSection'
 import VideosSection from '@/features/dashboard/components/sections/VideosSection'
 import { useDashboardProfile } from '@/features/dashboard/hooks/useDashboardProfile'
+import { getMissingFields } from '@/lib/completion'
 import type { AgentProfile, ClubProfile, CoachProfile, PlayerProfile, Role } from '@/types'
 
 export default function DashboardPage() {
@@ -36,7 +38,7 @@ export default function DashboardPage() {
     setState(s => s ? { ...s, status: 'pending' } : null)
   }
 
-  if (authLoading || loadingProfile) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Cargando…</div></div>
+  if (authLoading || loadingProfile) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] oc-main-offset"><div className="oc-shell-content oc-page-block oc-dashboard-scope max-w-[980px]"><DashboardSkeleton /></div></div></div>
   if (!user) return null
 
   const role = user.role as Role
@@ -74,13 +76,22 @@ export default function DashboardPage() {
               {tab === 'overview' && (
                 <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
                   <div className="flex flex-col gap-4">
-                    {profile ? <StatusCard profile={profile} state={state} role={role} onSubmit={handleSubmit} /> : <div className="oc-dashboard-card rounded-[14px] p-5 text-[rgba(255,255,255,0.45)] text-[13px]">No se encontro tu perfil. Intenta cerrar sesion y volver a ingresar.</div>}
+                    {profile ? <StatusCard profile={profile} state={state} role={role} onSubmit={handleSubmit} /> : <div className="oc-dashboard-card rounded-[14px] p-5 text-[rgba(255,255,255,0.45)] text-[13px]">No se encontró tu perfil. Intentá cerrar sesión y volver a ingresar.</div>}
+                    {profile && role && (() => { const missing = getMissingFields(profile, role); return missing.length > 0 ? (
+                      <SurfaceCard className="p-4">
+                        <div className="mb-2 text-[11px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)]">Completar perfil</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {missing.map(f => <span key={f} className="rounded-[20px] border border-[rgba(255,180,0,0.3)] bg-[rgba(255,180,0,0.08)] px-2.5 py-1 text-[11px] text-[rgba(255,180,0,0.85)]">{f}</span>)}
+                        </div>
+                        <button onClick={() => setTab('edit')} className="mt-3 text-[12px] text-[var(--oc-lime)] cursor-pointer bg-transparent border-none font-sans">Completar ahora →</button>
+                      </SurfaceCard>
+                    ) : null; })()}
                     {role === 'player' && profile && (
                       <SurfaceCard>
                         <SectionKicker className="mb-3">Datos del jugador</SectionKicker>
                         <div className="grid grid-cols-2 gap-2.5">
                           {[
-                            ['Posicion', (profile as PlayerProfile).position || '—'],
+                            ['Posición', (profile as PlayerProfile).position || '—'],
                             ['Nacionalidad', (profile as PlayerProfile).nationality || '—'],
                             ['Pie', (profile as PlayerProfile).strongFoot || '—'],
                             ['Club', (profile as PlayerProfile).currentClub || 'Libre'],
@@ -91,7 +102,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex flex-col gap-3">
                     <SurfaceCard className="p-4">
-                      <SectionKicker className="mb-3">Acciones rapidas</SectionKicker>
+                      <SectionKicker className="mb-3">Acciones rápidas</SectionKicker>
                       <div className="flex flex-col gap-1.5">
                         {profile && role && <Button variant="ghost" size="sm" className="w-full justify-start text-[12px]" onClick={() => router.push(`/${ROLE_ROUTE[role]}/${user.uid}`)}>Ver mi perfil publico -&gt;</Button>}
                         <Button variant="ghost" size="sm" className="w-full justify-start text-[12px]" onClick={() => setTab('edit')}>Editar informacion -&gt;</Button>

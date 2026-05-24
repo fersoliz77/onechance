@@ -22,6 +22,7 @@
 | [13_security_and_operations_runbook.md](13_security_and_operations_runbook.md) | Runbook de seguridad, permisos y rollback operativo |
 | [12_scripts_guide.md](12_scripts_guide.md) | Guía simple de scripts, workflow CI y seed de datos demo |
 | [15_implementation_plan.md](15_implementation_plan.md) | Plan de implementación completo por fases con checkboxes de progreso |
+| [16_ux_implementation_plan.md](16_ux_implementation_plan.md) | Auditoría UX completa: 20 problemas en 5 fases, qué salió mal y cómo se resuelve |
 
 ## Mockups de referencia
 

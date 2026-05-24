@@ -28,6 +28,12 @@ export default function ContactModal({ toUid, toName, accent, onClose }: Contact
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [onClose])
 
+  useEffect(() => {
+    if (!sent) return
+    const t = setTimeout(onClose, 3000)
+    return () => clearTimeout(t)
+  }, [sent, onClose])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!user || !subject.trim() || !body.trim()) return
@@ -78,15 +84,19 @@ export default function ContactModal({ toUid, toName, accent, onClose }: Contact
             <h2 className="text-[17px] font-[700] tracking-[-0.01em] text-white">Enviar mensaje</h2>
             <p className="mt-1 text-[12px] text-[var(--oc-fg-muted)]">a <span className="text-[var(--oc-accent)]">{toName}</span></p>
           </div>
-          <button onClick={onClose} className="-mt-0.5 text-[21px] leading-none text-[var(--oc-fg-dim)] transition-colors hover:text-white">×</button>
+          <button onClick={onClose} aria-label="Cerrar modal" className="-mt-0.5 text-[21px] leading-none text-[var(--oc-fg-dim)] transition-colors hover:text-white">×</button>
         </div>
 
         {sent ? (
           <div className="relative z-[1] py-6 text-center">
             <div className="text-[33px] mb-3">✓</div>
             <p className="text-white text-[15px] font-medium mb-1">Mensaje enviado</p>
-            <p className="text-[rgba(255,255,255,0.4)] text-[13px] mb-5">{toName} recibirá una notificación.</p>
-            <Button variant="outline" size="sm" onClick={onClose} className="w-full justify-center">Cerrar</Button>
+            <p className="text-[rgba(255,255,255,0.4)] text-[13px] mb-1">{toName} recibirá una notificación.</p>
+            <p className="text-[rgba(255,255,255,0.3)] text-[12px] mb-5">Esta ventana se cerrará automáticamente...</p>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" onClick={() => { setSent(false); setSubject(''); setBody('') }} className="flex-1 justify-center">Enviar otro</Button>
+              <Button variant="outline" size="sm" onClick={onClose} className="flex-1 justify-center">Cerrar</Button>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="relative z-[1] flex flex-col gap-[var(--oc-space-4)]">

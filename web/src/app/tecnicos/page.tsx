@@ -61,7 +61,7 @@ export default function TecnicosPage() {
             </div>
           </section>
           <nav className="flex overflow-x-auto rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-[13px] font-[700] text-[var(--oc-fg-muted)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {['Resumen', 'Filtros', 'Tecnicos', 'Experiencia', 'Videos', 'Contacto'].map((tab, i) => (
+            {['Resumen', 'Filtros', 'Técnicos', 'Experiencia', 'Videos', 'Contacto'].map((tab, i) => (
               <div key={tab} className={`h-12 flex-1 min-w-[80px] shrink-0 flex items-center justify-center whitespace-nowrap px-2 border-b-2 ${i === 0 ? 'border-[var(--oc-blue)] text-[var(--oc-blue)]' : 'border-transparent'}`}>{tab}</div>
             ))}
           </nav>

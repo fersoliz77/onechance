@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Background from '@/components/layout/Background'
 import ListPageHeader from '@/components/patterns/ListPageHeader'
@@ -9,8 +10,11 @@ import PlayerFiltersSidebar from '@/features/players/components/PlayerFiltersSid
 import { emptyPlayerFilters, usePlayersListing } from '@/features/players/hooks/usePlayersListing'
 import { COUNTRIES } from '@/types'
 
+const PAGE_SIZE = 12
+
 export default function JugadoresPage() {
   const { players, visible, loading, error, reload, search, setSearch, filters, setFilters } = usePlayersListing()
+  const [limit, setLimit] = useState(PAGE_SIZE)
   const router = useRouter()
 
   return (
@@ -73,7 +77,7 @@ export default function JugadoresPage() {
           </nav>
 
           <div className="mt-[var(--oc-space-5)] flex flex-col items-start gap-[var(--oc-space-4)] md:flex-row md:gap-[var(--oc-space-5)]">
-            <PlayerFiltersSidebar filters={filters} setFilters={setFilters} onClear={() => setFilters(emptyPlayerFilters)} />
+            <PlayerFiltersSidebar filters={filters} setFilters={f => { setFilters(f); setLimit(PAGE_SIZE) }} onClear={() => { setFilters(emptyPlayerFilters); setLimit(PAGE_SIZE) }} />
             <div className="w-full flex-1">
               {loading ? (
                 <EmptyState message="Cargando jugadores..." />
@@ -91,9 +95,18 @@ export default function JugadoresPage() {
               ) : visible.length === 0 ? (
                 <EmptyState message={players.length === 0 ? 'Aún no hay jugadores registrados. Sé el primero.' : 'No se encontraron jugadores con esos filtros.'} />
               ) : (
-                <div className="oc-list-grid">
-                  {visible.map((p) => <PlayerCard key={p.uid} player={p} onClick={() => router.push(`/jugadores/${p.uid}`)} />)}
-                </div>
+                <>
+                  <div className="oc-list-grid">
+                    {visible.slice(0, limit).map((p) => <PlayerCard key={p.uid} player={p} onClick={() => router.push(`/jugadores/${p.uid}`)} />)}
+                  </div>
+                  {limit < visible.length && (
+                    <div className="mt-6 flex justify-center">
+                      <button onClick={() => setLimit(l => l + PAGE_SIZE)} className="rounded-[8px] border border-[var(--oc-border-hi)] bg-[rgba(0,0,0,0.28)] px-6 py-2.5 text-[13px] font-[700] text-white transition-colors hover:border-[var(--oc-lime)] hover:text-[var(--oc-lime)]">
+                        Cargar más ({visible.length - limit} restantes)
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

@@ -42,7 +42,8 @@
       "Bash(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\\\\app\\\\privacidad\")",
       "Bash(Write-Output \"ok\")",
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\\\\app\\\\terminos\")",
-      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\\\\app\\\\privacidad\")"
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\\\\app\\\\privacidad\")",
+      "Bash(Select-Object -First 30)"
     ]
   }
 }

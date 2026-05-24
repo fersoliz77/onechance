@@ -91,7 +91,7 @@ export default function ClubesPage() {
                   </div>
                   <div className="rounded-[10px] border border-[rgba(255,180,0,0.34)] bg-[rgba(255,180,0,0.08)] p-4">
                     <h3 className="text-[18px] font-semibold text-white">Sos un club?</h3>
-                    <p className="mt-2 text-[13px] leading-[1.6] text-[var(--oc-text-muted)]">Publica tu perfil institucional y conecta con jugadores, tecnicos y representantes.</p>
+                    <p className="mt-2 text-[13px] leading-[1.6] text-[var(--oc-text-muted)]">Publicá tu perfil institucional y conectá con jugadores, técnicos y representantes.</p>
                   </div>
                 </div>
               </div>

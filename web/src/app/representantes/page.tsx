@@ -47,7 +47,7 @@ export default function RepresentantesPage() {
                     count={visible.length}
                     entityLabel="REPRESENTANTES"
                     title="Representantes"
-                    subtitle={`Agentes y representantes deportivos · Mercados internacionales · ${COUNTRIES.length} países`}
+                    subtitle={`Representantes deportivos · Mercados internacionales · ${COUNTRIES.length} países`}
                     tone="purple"
                   />
                   <Input placeholder="Buscar por nombre o agencia..." value={search} onChange={e => setSearch(e.target.value)} icon="🤝" wrapperClass="mb-0 mt-4 w-full md:max-w-[520px]" />

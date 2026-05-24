@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
 import ContactModal from '@/components/ui/ContactModal'
+import ProfileSkeleton from '@/components/ui/ProfileSkeleton'
 import { getClub } from '@/lib/firestore'
 import { getProfileState } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
@@ -36,8 +37,8 @@ export default function ClubProfilePage() {
     }
   }, [id])
 
-  if (loading) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Cargando…</div></div>
-  if (!club) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Club no encontrado.</div></div>
+  if (loading) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] oc-main-offset"><div className="oc-shell-content oc-page-block max-w-[1100px]"><ProfileSkeleton /></div></div></div>
+  if (!club) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.6)]">Club no encontrado.</div></div>
 
   const canView = canViewProfile({
     profileStatus: club.status,
@@ -45,7 +46,7 @@ export default function ClubProfilePage() {
     viewerUid: user?.uid,
     viewerSystemRole: user?.systemRole,
   })
-  if (!canView) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Este perfil no esta disponible publicamente.</div></div>
+  if (!canView) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Este perfil no está disponible públicamente.</div></div>
 
   const accent = 'var(--oc-role-club)'
 
@@ -82,18 +83,18 @@ export default function ClubProfilePage() {
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(158deg,transparent_0_16px,rgba(255,255,255,0.05)_17px,transparent_18px)] opacity-55" />
                 <div className="relative z-10 grid h-[96px] w-[96px] place-items-center rounded-[22px] border border-[color-mix(in_srgb,var(--oc-accent)_42%,transparent)] bg-[color-mix(in_srgb,var(--oc-accent)_14%,transparent)] text-[35px] shadow-[0_18px_48px_rgba(0,0,0,0.45)]">🏟️</div>
                 <p className="relative z-10 mt-4 text-[21px] font-semibold tracking-[-0.03em] text-white text-center">{club.name}</p>
-                <p className="relative z-10 mt-1 text-[13px] text-oc-yellow">{club.division || 'Sin categoria'}</p>
+                <p className="relative z-10 mt-1 text-[13px] text-oc-yellow">{club.division || 'Sin categoría'}</p>
                 {club.founded > 0 && <p className="relative z-10 mt-3 text-[12px] text-[var(--oc-text-muted)]">Fundado en {club.founded}</p>}
               </div>
 
               <div className="p-5 md:p-6">
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <span className="oc-role-chip px-2.5 py-1 text-[11px] tracking-[0.07em]" style={{ '--oc-accent': accent } as CSSProperties}>{statusLabel[club.status]}</span>
-                  <span className="text-[13px] text-[var(--oc-text-faint)]">{club.country || 'Sin pais'} · {club.city || 'Sin ciudad'}</span>
+                  <span className="text-[13px] text-[var(--oc-text-faint)]">{club.country || 'Sin país'} · {club.city || 'Sin ciudad'}</span>
                 </div>
 
                 <h1 className="text-[31px] leading-[1.03] font-semibold tracking-[-0.04em] text-white">Perfil institucional</h1>
-                <p className="mt-2 text-[14px] leading-[1.65] text-[var(--oc-text-muted)]">Informacion oficial del club, su estructura y necesidades deportivas actuales.</p>
+                <p className="mt-2 text-[14px] leading-[1.65] text-[var(--oc-text-muted)]">Información oficial del club, su estructura y necesidades deportivas actuales.</p>
 
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
                   {[
@@ -115,7 +116,7 @@ export default function ClubProfilePage() {
                     <p className="mt-1 text-[14px] text-white">{club.president || 'No informado'}</p>
                   </div>
                   <div className="rounded-[10px] border border-[color-mix(in_srgb,var(--oc-accent)_15%,var(--oc-border-soft))] bg-[color-mix(in_srgb,var(--oc-accent)_5%,rgba(255,255,255,0.03))] px-3 py-2.5">
-                    <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Director tecnico</p>
+                    <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Director técnico</p>
                     <p className="mt-1 text-[14px] text-white">{club.currentCoach || 'No informado'}</p>
                   </div>
                 </div>
@@ -124,7 +125,7 @@ export default function ClubProfilePage() {
           </div>
 
           <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
-            {['Resumen', 'Institucion', 'Busqueda', 'Logros', 'Contacto', 'Verificacion'].map((tab, i) => (
+            {['Resumen', 'Institución', 'Búsqueda', 'Logros', 'Contacto', 'Verificación'].map((tab, i) => (
               <button key={tab} type="button" onClick={() => setActiveTab(i)} className={`flex items-center justify-center border-b-2 cursor-pointer bg-transparent transition-colors ${activeTab === i ? 'border-[var(--oc-yellow)] text-[var(--oc-yellow)]' : 'border-transparent hover:text-white'}`}>{tab}</button>
             ))}
           </nav>
@@ -134,13 +135,13 @@ export default function ClubProfilePage() {
               {(activeTab === 0 || activeTab === 1) && (
                 <section className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
                   <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Sobre el club</p>
-                  <p className="mt-2 text-[14px] leading-[1.75] text-[var(--oc-text-muted)]">{club.bio || 'Este club aun no cargo una descripcion institucional.'}</p>
+                  <p className="mt-2 text-[14px] leading-[1.75] text-[var(--oc-text-muted)]">{club.bio || 'Este club aún no cargó una descripción institucional.'}</p>
                 </section>
               )}
 
               {(activeTab === 0 || activeTab === 2) && (
                 <section className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
-                  <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Busqueda actual de talento</p>
+                  <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Búsqueda actual de talento</p>
                   {hasSeeking ? (
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {club.seeking.map(s => (
@@ -166,7 +167,7 @@ export default function ClubProfilePage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="mt-2 text-[13px] text-[var(--oc-text-faint)]">Aun no hay logros cargados.</p>
+                    <p className="mt-2 text-[13px] text-[var(--oc-text-faint)]">Aún no hay logros cargados.</p>
                   )}
                 </section>
               )}
@@ -186,7 +187,7 @@ export default function ClubProfilePage() {
                       <p className="text-[14px] text-white">{club.currentDirector || 'No informado'}</p>
                     </div>
                     <div>
-                      <p className="text-[11px] text-[var(--oc-text-faint)]">Director tecnico</p>
+                      <p className="text-[11px] text-[var(--oc-text-faint)]">Director técnico</p>
                       <p className="text-[14px] text-white">{club.currentCoach || 'No informado'}</p>
                     </div>
                   </div>
@@ -196,12 +197,12 @@ export default function ClubProfilePage() {
               <div className="rounded-[12px] border border-[color-mix(in_srgb,var(--oc-accent)_28%,transparent)] bg-[color-mix(in_srgb,var(--oc-accent)_8%,transparent)] p-4">
                 <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Contacto</p>
                 <p className="mt-2 text-[13px] leading-[1.65] text-[var(--oc-text-muted)]">
-                  {user ? 'Enviá un mensaje directo a este club.' : 'Para contactar a este club, inicia sesion o registrate en One Chance.'}
+                  {user ? 'Enviá un mensaje directo a este club.' : 'Para contactar a este club, iniciá sesión o registrate en One Chance.'}
                 </p>
                 {showContactCta ? (
                   <Button variant="primary" size="sm" className="w-full justify-center mt-3" onClick={handleContact}>Contactar</Button>
                 ) : (
-                  <div className="mt-3 text-[12px] text-[rgba(255,255,255,0.22)]">El contacto directo esta desactivado por este perfil.</div>
+                  <div className="mt-3 text-[12px] text-[rgba(255,255,255,0.22)]">El contacto directo está desactivado por este perfil.</div>
                 )}
               </div>
 

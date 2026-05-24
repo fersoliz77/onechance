@@ -5,6 +5,7 @@ import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import ContactModal from '@/components/ui/ContactModal'
+import ProfileSkeleton from '@/components/ui/ProfileSkeleton'
 import { getCoach } from '@/lib/firestore'
 import { getProfileState, getVideos } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
@@ -39,8 +40,8 @@ export default function CoachProfilePage() {
     }
   }, [id])
 
-  if (loading) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Cargando…</div></div>
-  if (!coach) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Técnico no encontrado.</div></div>
+  if (loading) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] oc-main-offset"><div className="oc-shell-content oc-page-block max-w-[1100px]"><ProfileSkeleton /></div></div></div>
+  if (!coach) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.6)]">Técnico no encontrado.</div></div>
 
   const canView = canViewProfile({
     profileStatus: coach.status,
@@ -48,7 +49,7 @@ export default function CoachProfilePage() {
     viewerUid: user?.uid,
     viewerSystemRole: user?.systemRole,
   })
-  if (!canView) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Este perfil no esta disponible publicamente.</div></div>
+  if (!canView) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.2)]">Este perfil no está disponible públicamente.</div></div>
 
   const accent = 'var(--oc-role-coach)'
 
@@ -103,8 +104,8 @@ export default function CoachProfilePage() {
                     </>
                   )}
                 </div>
-                <h1 className="text-[31px] leading-[1.03] font-semibold tracking-[-0.04em] text-white">Perfil tecnico</h1>
-                <p className="mt-2 text-[14px] leading-[1.65] text-[var(--oc-text-muted)]">Informacion profesional del tecnico, su experiencia y enfoque de trabajo.</p>
+                <h1 className="text-[31px] leading-[1.03] font-semibold tracking-[-0.04em] text-white">Perfil técnico</h1>
+                <p className="mt-2 text-[14px] leading-[1.65] text-[var(--oc-text-muted)]">Información profesional del técnico, su experiencia y enfoque de trabajo.</p>
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 mb-5">
                   {[['Experiencia',`${coach.years || '—'} años`],['Edad',coach.age ? `${coach.age} años` : '—'],['Club',coach.currentClub || 'Libre']].map(([l,v]) => (
                     <div key={l} className="rounded-[9px] border border-[color-mix(in_srgb,var(--oc-accent)_18%,transparent)] bg-[color-mix(in_srgb,var(--oc-accent)_8%,transparent)] p-[10px_12px] text-center">
@@ -134,7 +135,7 @@ export default function CoachProfilePage() {
           </div>
 
           <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
-            {['Resumen', 'Trayectoria', 'Habilidades', 'Videos', 'Contacto', 'Estado'].map((tab, i) => (
+            {['Resumen', 'Trayectoria', 'Habilidades', 'Videos', 'Palmarés', 'Estado'].map((tab, i) => (
               <button key={tab} type="button" onClick={() => setActiveTab(i)} className={`flex items-center justify-center border-b-2 cursor-pointer bg-transparent transition-colors ${activeTab === i ? 'border-[var(--oc-blue)] text-[var(--oc-blue)]' : 'border-transparent hover:text-white'}`}>{tab}</button>
             ))}
           </nav>
@@ -163,7 +164,7 @@ export default function CoachProfilePage() {
                   </div>
                 </div>
               )}
-              {(activeTab === 0 || activeTab === 2) && coach.trophies && coach.trophies.length > 0 && (
+              {(activeTab === 0 || activeTab === 2 || activeTab === 4) && coach.trophies && coach.trophies.length > 0 && (
                 <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
                   <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2.5">Palmarés</div>
                   <div className="flex flex-col gap-1.5">
@@ -180,7 +181,7 @@ export default function CoachProfilePage() {
                 <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
                   <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2.5">Videos</div>
                   {videos.length === 0 ? (
-                    <p className="text-[13px] text-[rgba(255,255,255,0.35)]">Este tecnico aun no publico videos.</p>
+                    <p className="text-[13px] text-[rgba(255,255,255,0.35)]">Este técnico aún no publicó videos.</p>
                   ) : (
                     <div className="grid sm:grid-cols-2 gap-2.5">
                       {videos.map((video) => (
@@ -209,7 +210,7 @@ export default function CoachProfilePage() {
                 {showContactCta ? (
                   <Button variant="primary" size="sm" className="w-full justify-center" onClick={handleContact}>Contactar</Button>
                 ) : (
-                  <div className="text-[12px] text-[rgba(255,255,255,0.22)]">El contacto directo esta desactivado por este perfil.</div>
+                  <div className="text-[12px] text-[rgba(255,255,255,0.22)]">El contacto directo está desactivado por este perfil.</div>
                 )}
               </div>
             </div>

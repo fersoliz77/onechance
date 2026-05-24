@@ -56,6 +56,42 @@ export function calcClubCompletion(p: Partial<ClubProfile>): number {
   return Math.min(100, checks.reduce((sum, c) => sum + (c.ok ? c.weight : 0), 0))
 }
 
+export function getMissingFields(profile: Partial<PlayerProfile | CoachProfile | ClubProfile | AgentProfile>, role: string): string[] {
+  const missing: string[] = []
+  if (role === 'player') {
+    const p = profile as Partial<PlayerProfile>
+    if (!hasValue(p.bio)) missing.push('Descripción')
+    if (!hasValue(p.career)) missing.push('Trayectoria')
+    if (!hasValue(p.characteristics)) missing.push('Características')
+    if (!hasValue(p.avatarUrl)) missing.push('Foto de perfil')
+    if (!hasValue(p.languages)) missing.push('Idiomas')
+    if (!hasValue(p.social?.instagram) && !hasValue(p.social?.tiktok) && !hasValue(p.social?.youtube)) missing.push('Redes sociales')
+  } else if (role === 'coach') {
+    const p = profile as Partial<CoachProfile>
+    if (!hasValue(p.bio)) missing.push('Descripción')
+    if (!hasValue(p.career)) missing.push('Trayectoria')
+    if (!hasValue(p.skills)) missing.push('Habilidades')
+    if (!hasValue(p.avatarUrl)) missing.push('Foto de perfil')
+    if (!hasValue(p.trophies)) missing.push('Palmarés')
+    if (!hasValue(p.languages)) missing.push('Idiomas')
+  } else if (role === 'club') {
+    const p = profile as Partial<ClubProfile>
+    if (!hasValue(p.bio)) missing.push('Descripción')
+    if (!hasValue(p.seeking)) missing.push('Búsqueda activa')
+    if (!hasValue(p.achievements)) missing.push('Logros')
+    if (!hasValue(p.imageUrl)) missing.push('Imagen del club')
+    if (!hasValue(p.stadium)) missing.push('Estadio')
+  } else if (role === 'agent') {
+    const p = profile as Partial<AgentProfile>
+    if (!hasValue(p.bio)) missing.push('Descripción')
+    if (!hasValue(p.career)) missing.push('Trayectoria')
+    if (!hasValue(p.markets)) missing.push('Mercados')
+    if (!hasValue(p.notableTransfers)) missing.push('Transferencias destacadas')
+    if (!hasValue(p.avatarUrl)) missing.push('Foto de perfil')
+  }
+  return missing
+}
+
 export function calcAgentCompletion(p: Partial<AgentProfile>): number {
   const checks = [
     { weight: 10, ok: hasValue(p.fullName) },

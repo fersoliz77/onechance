@@ -9,7 +9,7 @@ type Props = {
 export default function ClubCard({ club, onClick }: Props) {
   const talentLabel = club.seeking && club.seeking.length > 0
     ? club.seeking.slice(0, 2).join(' · ')
-    : 'Sin busqueda activa'
+    : 'Sin búsqueda activa'
   const cover = club.imageUrl || ''
 
   return (
@@ -34,14 +34,14 @@ export default function ClubCard({ club, onClick }: Props) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="truncate text-[21px] font-semibold tracking-[-0.03em] text-white">{club.name}</div>
-              <div className="mt-1 text-[13px] text-[var(--oc-text-muted)]">{club.country || 'Sin pais'} · {club.city || 'Sin ciudad'}</div>
+              <div className="mt-1 text-[13px] text-[var(--oc-text-muted)]">{club.country || 'Sin país'} · {club.city || 'Sin ciudad'}</div>
             </div>
             <span className="rounded-md border border-[rgba(255,180,0,0.35)] bg-[rgba(255,180,0,0.12)] px-2.5 py-1 text-[12px] font-medium text-oc-yellow">
-              {club.division || 'Sin categoria'}
+              {club.division || 'Sin categoría'}
             </span>
           </div>
           <div className="mt-4 grid gap-2 text-[13px] text-[var(--oc-text-muted)] lg:grid-cols-2">
-            <p><span className="text-[var(--oc-text-faint)]">Fundacion:</span> {club.founded > 0 ? club.founded : 'N/D'}</p>
+            <p><span className="text-[var(--oc-text-faint)]">Fundación:</span> {club.founded > 0 ? club.founded : 'N/D'}</p>
             <p><span className="text-[var(--oc-text-faint)]">Presidencia:</span> {club.president || 'N/D'}</p>
             <p><span className="text-[var(--oc-text-faint)]">DT:</span> {club.currentCoach || 'No informado'}</p>
             <p><span className="text-[var(--oc-text-faint)]">Talento buscado:</span> {talentLabel}</p>

@@ -6,6 +6,8 @@ import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import SurfaceCard from '@/components/ui/SurfaceCard'
 import Textarea from '@/components/ui/Textarea'
+import ToastStack from '@/components/admin/ui/ToastStack'
+import { useToastState } from '@/hooks/useToast'
 import { COUNTRIES, POSITIONS } from '@/types'
 import type { ClubProfile } from '@/types'
 import { calcClubCompletion } from '@/lib/completion'
@@ -39,8 +41,8 @@ export default function ClubEditForm({ club, uid, onSaved }: { club: ClubProfile
   const [achievements, setAchievements] = useState<string[]>(club.achievements ?? [])
   const [achInput, setAchInput] = useState('')
   const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const { toasts, toast, remove } = useToastState()
 
   const divisions = ['Primera Division', 'Segunda Division', 'Tercera Division', 'Liga Amateur', 'Juveniles', 'Femenino']
 
@@ -71,11 +73,11 @@ export default function ClubEditForm({ club, uid, onSaved }: { club: ClubProfile
       await updateProfile(uid, 'club', data)
       const completionPct = calcClubCompletion({ ...club, ...data })
       await updateProfileState(uid, { completionPct }).catch(() => {})
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
+      toast.success('Cambios guardados correctamente')
       onSaved({ ...club, ...data })
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al guardar')
+      toast.error(e instanceof Error ? e.message : 'Error al guardar')
+      setError('')
     } finally {
       setSaving(false)
     }
@@ -94,9 +96,9 @@ export default function ClubEditForm({ club, uid, onSaved }: { club: ClubProfile
         <Select value={form.division} onChange={(e) => setForm((f) => ({ ...f, division: e.target.value }))} options={[{ value: '', label: 'Division' }, ...divisions.map((d) => ({ value: d, label: d }))]} />
         <Input placeholder="Presidente" value={form.president} onChange={(e) => setForm((f) => ({ ...f, president: e.target.value }))} />
         <Input placeholder="Director deportivo" value={form.currentDirector} onChange={(e) => setForm((f) => ({ ...f, currentDirector: e.target.value }))} />
-        <Input placeholder="Director tecnico" value={form.currentCoach} onChange={(e) => setForm((f) => ({ ...f, currentCoach: e.target.value }))} />
-        <Input placeholder="Anio de fundacion" type="number" value={form.founded ? String(form.founded) : ''} onChange={(e) => setForm((f) => ({ ...f, founded: parseInt(e.target.value, 10) || 0 }))} />
-        <Textarea placeholder="Descripcion institucional" value={form.bio} onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))} rows={3} />
+        <Input placeholder="Director técnico" value={form.currentCoach} onChange={(e) => setForm((f) => ({ ...f, currentCoach: e.target.value }))} />
+        <Input placeholder="Año de fundación" type="number" value={form.founded ? String(form.founded) : ''} onChange={(e) => setForm((f) => ({ ...f, founded: parseInt(e.target.value, 10) || 0 }))} />
+        <Textarea placeholder="Descripción institucional" value={form.bio} onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))} rows={3} />
 
         <div className="text-[11px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)]">Imagen del club</div>
         <Input placeholder="URL de imagen del club" value={form.imageUrl} onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))} />
@@ -135,9 +137,9 @@ export default function ClubEditForm({ club, uid, onSaved }: { club: ClubProfile
         </div>
 
         {error && <div className="text-[12px] text-red-400">{error}</div>}
-        {saved  && <div className="text-[12px] text-[#00C853]">Guardado ✓</div>}
         <Button variant="primary" className="w-full justify-center" onClick={save} disabled={saving}>{saving ? 'Guardando...' : 'Guardar cambios'}</Button>
       </div>
+      <ToastStack toasts={toasts} onRemove={remove} />
     </SurfaceCard>
   )
 }

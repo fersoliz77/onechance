@@ -15,18 +15,24 @@ const ROLES = [
   { id: 'agent',  icon: '🤝', title: 'Representante',      desc: 'Mostrá tu agencia y los jugadores que representás.' },
 ]
 
+const STEP_NAMES = ['Cuenta', 'Rol', 'Datos']
+
 function StepDots({ total, current }: { total: number; current: number }) {
   return (
-    <div className="flex gap-1.5 items-center justify-center mb-6">
+    <div className="mb-6 flex items-center justify-center gap-3">
       {Array.from({ length: total }).map((_, i) => (
-        <div
-          key={i}
-          className="h-[6px] rounded-[3px] transition-all duration-300"
-          style={{
-            width: i === current ? 18 : 6,
-            background: i === current ? 'var(--oc-lime)' : i < current ? 'rgba(170,255,0,0.42)' : 'var(--oc-surface-2)',
-          }}
-        />
+        <div key={i} className="flex items-center gap-1.5">
+          <div
+            className="h-[6px] rounded-[3px] transition-all duration-300"
+            style={{
+              width: i === current ? 18 : 6,
+              background: i === current ? 'var(--oc-lime)' : i < current ? 'rgba(170,255,0,0.42)' : 'var(--oc-surface-2)',
+            }}
+          />
+          {i === current && (
+            <span className="text-[11px] font-[600] text-[var(--oc-lime)]">{STEP_NAMES[i]}</span>
+          )}
+        </div>
       ))}
     </div>
   )
@@ -102,14 +108,16 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
         ¿No tenés cuenta?{' '}
         <button onClick={onSwitch} className="text-oc-green cursor-pointer bg-none border-none font-sans">Registrate gratis</button>
       </div>
-      <div className="flex flex-col gap-2.5 mb-4">
-        <Input placeholder="Correo electrónico" type="email" aria-label="Correo electrónico" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
-        <Input placeholder="Contraseña" type="password" aria-label="Contraseña" autoComplete="current-password" value={pass} onChange={e => setPass(e.target.value)} />
-      </div>
-      {err && <div className="mb-3 text-[12px] text-[var(--color-oc-red)]">{err}</div>}
-      <Button variant="primary" className="w-full justify-center mb-3" size="lg" onClick={submit} disabled={loading}>
-        {loading ? 'Ingresando...' : 'Ingresar →'}
-      </Button>
+      <form onSubmit={e => { e.preventDefault(); submit() }}>
+        <div className="flex flex-col gap-2.5 mb-4">
+          <Input placeholder="Correo electrónico" type="email" aria-label="Correo electrónico" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
+          <Input placeholder="Contraseña" type="password" aria-label="Contraseña" autoComplete="current-password" value={pass} onChange={e => setPass(e.target.value)} />
+        </div>
+        {err && <div className="mb-3 text-[12px] text-[var(--color-oc-red)]">{err}</div>}
+        <Button type="submit" variant="primary" className="w-full justify-center mb-3" size="lg" disabled={loading}>
+          {loading ? 'Ingresando...' : 'Ingresar →'}
+        </Button>
+      </form>
       <div className="text-center">
         <button onClick={() => { setResetMode(true); setErr('') }} className="cursor-pointer text-[12px] text-[rgba(170,255,0,0.72)] bg-transparent border-none font-sans hover:text-[var(--oc-lime)]">¿Olvidaste tu contraseña?</button>
       </div>
@@ -177,10 +185,17 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
       <div className="text-center py-5">
         <div className="text-[45px] mb-4">⚽</div>
         <div className="text-oc-green text-[21px] font-medium tracking-[-0.02em] mb-2">¡Perfil creado!</div>
-        {isMinor
-          ? <p className="text-[13px] leading-[1.7] text-[var(--oc-text-muted)]">Tu perfil está <span className="text-oc-yellow">pendiente de revisión</span>.<br />Al ser menor de 18 años, un admin debe aprobarlo.</p>
-          : <p className="text-[13px] leading-[1.7] text-[var(--oc-text-muted)]">Redirigiendo a tu panel...</p>
-        }
+        {isMinor ? (
+          <div className="text-left">
+            <div className="mb-4 rounded-[10px] border border-[rgba(255,180,0,0.3)] bg-[rgba(255,180,0,0.08)] p-4 text-[13px] leading-[1.7] text-[rgba(255,180,0,0.9)]">
+              <div className="mb-1 font-medium">Tu perfil está pendiente de revisión</div>
+              <p>Al ser menor de 18 años, un admin debe aprobarlo antes de que sea visible. Recibirás una notificación en tu email en las próximas <strong>48 horas hábiles</strong>.</p>
+            </div>
+            <Button variant="primary" size="sm" className="w-full justify-center mb-2" onClick={() => router.push('/dashboard')}>Ir a mi panel →</Button>
+          </div>
+        ) : (
+          <p className="text-[13px] leading-[1.7] text-[var(--oc-text-muted)]">Redirigiendo a tu panel...</p>
+        )}
       </div>
     )
   }
@@ -195,8 +210,15 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
           <div className="text-white text-[23px] font-medium tracking-[-0.02em] mb-5">Creá tu cuenta</div>
           <div className="flex flex-col gap-2.5 mb-4">
             <Input placeholder="Correo electrónico" type="email" aria-label="Correo electrónico" autoComplete="email" value={creds.email} onChange={e => setCreds(c => ({ ...c, email: e.target.value }))} />
-            <Input placeholder="Contraseña" type="password" aria-label="Contraseña" autoComplete="new-password" value={creds.pass} onChange={e => setCreds(c => ({ ...c, pass: e.target.value }))} />
-            <Input placeholder="Confirmá tu contraseña" type="password" aria-label="Confirmá tu contraseña" autoComplete="new-password" value={creds.confirm} onChange={e => setCreds(c => ({ ...c, confirm: e.target.value }))} />
+            <Input placeholder="Contraseña (mínimo 6 caracteres)" type="password" aria-label="Contraseña" autoComplete="new-password" value={creds.pass} onChange={e => setCreds(c => ({ ...c, pass: e.target.value }))} />
+            <div>
+              <Input placeholder="Confirmá tu contraseña" type="password" aria-label="Confirmá tu contraseña" autoComplete="new-password" value={creds.confirm} onChange={e => setCreds(c => ({ ...c, confirm: e.target.value }))} />
+              {creds.confirm && (
+                <div className={`mt-1 text-[11px] ${creds.pass === creds.confirm ? 'text-[var(--oc-lime)]' : 'text-[var(--color-oc-red)]'}`}>
+                  {creds.pass === creds.confirm ? '✓ Las contraseñas coinciden' : '✕ Las contraseñas no coinciden'}
+                </div>
+              )}
+            </div>
           </div>
           {err && <div className="mb-2.5 text-[12px] text-[var(--color-oc-red)]">{err}</div>}
           <Button variant="primary" className="w-full justify-center" size="lg" onClick={step0Submit}>Continuar →</Button>
@@ -246,7 +268,9 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
                 type="date"
                 value={form.birthDate}
                 onChange={e => checkBirth(e.target.value)}
-                 className="w-full rounded-[8px] border border-[var(--oc-border-strong)] bg-[var(--oc-surface-2)] px-3 py-[9px] text-[13px] text-white outline-none focus-visible:border-[var(--oc-border-green)]"
+                min="1940-01-01"
+                max={new Date().toISOString().split('T')[0]}
+                className="w-full rounded-[8px] border border-[var(--oc-border-strong)] bg-[var(--oc-surface-2)] px-3 py-[9px] text-[13px] text-white outline-none focus-visible:border-[var(--oc-border-green)]"
                 style={{ colorScheme: 'dark' }}
               />
             </div>

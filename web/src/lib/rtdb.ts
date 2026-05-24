@@ -150,6 +150,18 @@ export async function markMessageRead(uid: string, messageId: string) {
   await update(ref(rtdb, `messages/${uid}/${messageId}`), { read: true })
 }
 
+// ── FOLLOWS ───────────────────────────────────────────────────
+export async function isFollowing(viewerUid: string, profileUid: string): Promise<boolean> {
+  const snap = await get(ref(rtdb, `follows/${viewerUid}/${profileUid}`))
+  return snap.exists()
+}
+
+export async function setFollow(viewerUid: string, profileUid: string, follow: boolean) {
+  const r = ref(rtdb, `follows/${viewerUid}/${profileUid}`)
+  if (follow) await set(r, { createdAt: new Date().toISOString() })
+  else await remove(r)
+}
+
 // ── ADMIN: ALL VIDEOS ─────────────────────────────────────────
 export async function getAllVideos(): Promise<(VideoEntry & { playerUid: string })[]> {
   const snap = await get(ref(rtdb, 'videos'))

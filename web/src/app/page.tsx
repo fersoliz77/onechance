@@ -203,7 +203,7 @@ export default function Landing() {
                 [`${(heroMetrics.players / 1000).toFixed(1)}K+`, 'Jugadores'],
                 [String(heroMetrics.coaches), 'Técnicos'],
                 [String(heroMetrics.clubs), 'Clubes'],
-                [String(heroMetrics.agents), 'Agentes'],
+                [String(heroMetrics.agents), 'Representantes'],
               ].map((item) => (
                 <div key={item[1]} className="flex flex-col items-start">
                   <div className="text-[21px] font-[800] leading-none tracking-[-0.02em] text-[var(--oc-lime)]">{item[0]}</div>

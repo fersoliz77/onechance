@@ -6,6 +6,8 @@ import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import SurfaceCard from '@/components/ui/SurfaceCard'
 import Textarea from '@/components/ui/Textarea'
+import ToastStack from '@/components/admin/ui/ToastStack'
+import { useToastState } from '@/hooks/useToast'
 import { COUNTRIES } from '@/types'
 import type { CoachProfile } from '@/types'
 import { calcCoachCompletion } from '@/lib/completion'
@@ -38,8 +40,8 @@ export default function CoachEditForm({ coach, uid, onSaved }: { coach: CoachPro
   const [trophies, setTrophies] = useState<string[]>(coach.trophies ?? [])
   const [trophyInput, setTrophyInput] = useState('')
   const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const { toasts, toast, remove } = useToastState()
 
   const addSkill = () => {
     const val = skillInput.trim()
@@ -78,11 +80,11 @@ export default function CoachEditForm({ coach, uid, onSaved }: { coach: CoachPro
       await updateProfile(uid, 'coach', data)
       const completionPct = calcCoachCompletion({ ...coach, ...data })
       await updateProfileState(uid, { completionPct }).catch(() => {})
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
+      toast.success('Cambios guardados correctamente')
       onSaved({ ...coach, ...data })
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al guardar')
+      toast.error(e instanceof Error ? e.message : 'Error al guardar')
+      setError('')
     } finally {
       setSaving(false)
     }
@@ -96,10 +98,10 @@ export default function CoachEditForm({ coach, uid, onSaved }: { coach: CoachPro
         <Select value={form.nationality} onChange={(e) => setForm((f) => ({ ...f, nationality: e.target.value }))} options={[{ value: '', label: 'Nacionalidad' }, ...COUNTRIES.map((c) => ({ value: c, label: c }))]} />
         <Input placeholder="Club actual" value={form.currentClub} onChange={(e) => setForm((f) => ({ ...f, currentClub: e.target.value }))} />
         <div className="grid grid-cols-2 gap-2">
-          <Input placeholder="Anios de experiencia" type="number" value={String(form.years)} onChange={(e) => setForm((f) => ({ ...f, years: parseInt(e.target.value, 10) || 0 }))} />
+          <Input placeholder="Años de experiencia" type="number" value={String(form.years)} onChange={(e) => setForm((f) => ({ ...f, years: parseInt(e.target.value, 10) || 0 }))} />
           <Input placeholder="Edad" type="number" value={String(form.age)} onChange={(e) => setForm((f) => ({ ...f, age: parseInt(e.target.value, 10) || 0 }))} />
         </div>
-        <Textarea placeholder="Bio / Descripcion" value={form.bio} onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))} rows={3} />
+        <Textarea placeholder="Bio / Descripción" value={form.bio} onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))} rows={3} />
 
         <div className="text-[11px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)]">Foto de perfil</div>
         <Input placeholder="URL de foto de perfil (avatar)" value={form.avatarUrl} onChange={(e) => setForm((f) => ({ ...f, avatarUrl: e.target.value }))} />
@@ -144,8 +146,8 @@ export default function CoachEditForm({ coach, uid, onSaved }: { coach: CoachPro
               <div key={i} className="grid grid-cols-[1fr_1fr_90px_auto] gap-1.5">
                 <Input placeholder="Club" value={entry.club} onChange={(e) => updateCareer(i, 'club', e.target.value)} />
                 <Input placeholder="Rol" value={entry.role} onChange={(e) => updateCareer(i, 'role', e.target.value)} />
-                <Input placeholder="Anios" value={entry.years} onChange={(e) => updateCareer(i, 'years', e.target.value)} />
-                <Button variant="ghost" size="sm" onClick={() => removeCareerEntry(i)} className="!px-2 text-[11px]">✕</Button>
+                <Input placeholder="Años" value={entry.years} onChange={(e) => updateCareer(i, 'years', e.target.value)} />
+                <Button variant="ghost" size="sm" onClick={() => removeCareerEntry(i)} aria-label="Eliminar entrada" className="!px-2 text-[11px]">✕</Button>
               </div>
             ))}
           </div>
@@ -169,9 +171,9 @@ export default function CoachEditForm({ coach, uid, onSaved }: { coach: CoachPro
         </div>
 
         {error && <div className="text-[12px] text-red-400">{error}</div>}
-        {saved  && <div className="text-[12px] text-[#00C853]">Guardado ✓</div>}
         <Button variant="primary" className="w-full justify-center" onClick={save} disabled={saving}>{saving ? 'Guardando...' : 'Guardar cambios'}</Button>
       </div>
+      <ToastStack toasts={toasts} onRemove={remove} />
     </SurfaceCard>
   )
 }

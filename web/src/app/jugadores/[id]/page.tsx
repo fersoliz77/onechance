@@ -4,11 +4,12 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { getPlayer } from '@/lib/firestore'
-import { getPhotos, getProfileState, getVideos, type PhotoEntry } from '@/lib/rtdb'
+import { getPhotos, getProfileState, getVideos, isFollowing, setFollow, type PhotoEntry } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
 import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
 import ContactModal from '@/components/ui/ContactModal'
+import ProfileSkeleton from '@/components/ui/ProfileSkeleton'
 import { canViewProfile } from '@/lib/publicProfileAccess'
 import type { PlayerProfile, VideoEntry } from '@/types'
 
@@ -78,6 +79,11 @@ export default function PlayerProfilePage() {
   const [showContact, setShowContact] = useState(false)
   const [showContactCta, setShowContactCta] = useState(false)
   const [activeTab, setActiveTab] = useState(0)
+  const [following, setFollowing] = useState(false)
+  const [shareMsg, setShareMsg] = useState('')
+  const [showReport, setShowReport] = useState(false)
+  const [reportText, setReportText] = useState('')
+  const [reportSent, setReportSent] = useState(false)
 
   const galleryUrls = photos.length > 0
     ? photos.map((p) => p.url).filter(Boolean)
@@ -87,6 +93,7 @@ export default function PlayerProfilePage() {
     let active = true
     ;(async () => {
       const [pRes, vRes, sRes, phRes] = await Promise.allSettled([getPlayer(id), getVideos(id), getProfileState(id), getPhotos(id)])
+      if (user?.uid) isFollowing(user.uid, id).then(setFollowing).catch(() => {})
       if (!active) return
 
       setPlayer(pRes.status === 'fulfilled' ? pRes.value : null)
@@ -98,13 +105,13 @@ export default function PlayerProfilePage() {
     return () => {
       active = false
     }
-  }, [id])
+  }, [id, user?.uid])
 
   if (loading) {
     return (
       <div className="relative min-h-screen">
         <Background />
-        <div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.25)]">Cargando perfil...</div>
+        <div className="relative z-[2] oc-main-offset"><div className="oc-shell-content oc-page-block max-w-[1100px]"><ProfileSkeleton /></div></div>
       </div>
     )
   }
@@ -133,7 +140,7 @@ export default function PlayerProfilePage() {
       <div className="relative min-h-screen">
         <Background />
         <div className="relative z-[2] pt-28 text-center">
-          <div className="mb-4 text-[15px] text-[rgba(255,255,255,0.35)]">Este perfil no esta disponible publicamente.</div>
+          <div className="mb-4 text-[15px] text-[rgba(255,255,255,0.35)]">Este perfil no está disponible públicamente.</div>
           <Button variant="outline" size="sm" onClick={() => router.push('/jugadores')}>← Volver al listado</Button>
         </div>
       </div>
@@ -144,7 +151,7 @@ export default function PlayerProfilePage() {
   const stats = [
     ['Altura', player.height ? `${player.height} m` : 'N/D'],
     ['Peso', player.weight ? `${player.weight} kg` : 'N/D'],
-    ['Pierna habil', toFootLabel(player.strongFoot)],
+    ['Pierna hábil', toFootLabel(player.strongFoot)],
     ['Categoria', player.currentClub ? 'Competitiva' : 'Libre'],
     ['Estado', player.status === 'published' ? 'Verificado' : 'En revision'],
     ['N de perfil', player.uid.slice(0, 5).toUpperCase()],
@@ -152,9 +159,9 @@ export default function PlayerProfilePage() {
 
   const topStats = [
     ['Estado', player.status === 'published' ? 'Publicado' : 'En revision'],
-    ['Edad', age === 'N/D' ? 'No informada' : `${age} anios`],
+    ['Edad', age === 'N/D' ? 'No informada' : `${age} años`],
     ['Nacionalidad', player.nationality || 'N/D'],
-    ['Posicion', player.position || 'N/D'],
+    ['Posición', player.position || 'N/D'],
     ['Club', player.currentClub || 'Libre'],
     ['Perfil ID', player.uid.slice(0, 8).toUpperCase()],
   ]
@@ -164,11 +171,65 @@ export default function PlayerProfilePage() {
     else router.push('/auth?tab=register')
   }
 
+  async function handleShare() {
+    const url = window.location.href
+    if (navigator.share) {
+      try { await navigator.share({ title: player!.fullName, url }) } catch { /* user cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(url)
+      setShareMsg('¡Link copiado!')
+      setTimeout(() => setShareMsg(''), 2500)
+    }
+  }
+
+  async function handleFollow() {
+    if (!user) { router.push('/auth?tab=register'); return }
+    const next = !following
+    setFollowing(next)
+    await setFollow(user.uid, id, next).catch(() => setFollowing(!next))
+  }
+
+  function handleSendReport() {
+    if (!reportText.trim()) return
+    setReportSent(true)
+    setReportText('')
+    setTimeout(() => { setReportSent(false); setShowReport(false) }, 2500)
+  }
+
   return (
     <div className="relative min-h-screen bg-[var(--oc-bg-base)] text-white">
       <Background />
       <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(circle_at_50%_15%,rgba(170,255,0,0.1),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(0,195,255,0.08),transparent_30%)]" />
       {showContact ? <ContactModal toUid={id} toName={player.fullName} accent="var(--oc-lime)" onClose={() => setShowContact(false)} /> : null}
+      {showReport && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(0,0,0,0.7)] backdrop-blur-sm">
+          <div className="mx-4 w-full max-w-[400px] rounded-[16px] border border-[var(--oc-border)] bg-[rgba(8,20,26,0.97)] p-6">
+            {reportSent ? (
+              <div className="py-4 text-center">
+                <div className="text-[28px]">✓</div>
+                <p className="mt-2 text-[15px] font-[700] text-white">Reporte enviado</p>
+                <p className="mt-1 text-[13px] text-[var(--oc-fg-muted)]">Gracias por ayudarnos a mantener la comunidad.</p>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-[16px] font-[700] text-white">Reportar perfil</h3>
+                <p className="mt-1 text-[13px] text-[var(--oc-fg-muted)]">¿Por qué reportás este perfil?</p>
+                <textarea
+                  className="mt-4 w-full rounded-[10px] border border-[var(--oc-border)] bg-[rgba(255,255,255,0.05)] p-3 text-[13px] text-white placeholder-[rgba(255,255,255,0.3)] focus:outline-none focus:border-[rgba(255,255,255,0.3)] resize-none"
+                  rows={4}
+                  placeholder="Describí el motivo del reporte..."
+                  value={reportText}
+                  onChange={(e) => setReportText(e.target.value)}
+                />
+                <div className="mt-4 flex gap-2">
+                  <button onClick={() => setShowReport(false)} className="flex-1 rounded-[8px] border border-[var(--oc-border)] py-2 text-[13px] text-[var(--oc-fg-muted)]">Cancelar</button>
+                  <button onClick={handleSendReport} disabled={!reportText.trim()} className="flex-1 rounded-[8px] bg-red-500 py-2 text-[13px] font-[700] text-white disabled:opacity-40">Enviar reporte</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="relative z-[2] oc-main-offset pb-12">
         <div className="oc-shell oc-page-block">
@@ -192,8 +253,10 @@ export default function PlayerProfilePage() {
                   <span>{player.fullName}</span>
                 </div>
                 <div className="flex gap-2">
-                  <button className="rounded-[8px] border border-[var(--oc-border-hi)] bg-[rgba(0,0,0,0.22)] px-3 py-1.5 text-[var(--oc-lime)]">Compartir</button>
-                  <button className="rounded-[8px] border border-[var(--oc-border-hi)] bg-[rgba(0,0,0,0.22)] px-3 py-1.5">Reportar</button>
+                  <button onClick={handleShare} className="rounded-[8px] border border-[var(--oc-border-hi)] bg-[rgba(0,0,0,0.22)] px-3 py-1.5 text-[var(--oc-lime)] transition-colors hover:bg-[rgba(170,255,0,0.1)]">
+                    {shareMsg || 'Compartir'}
+                  </button>
+                  <button onClick={() => setShowReport(true)} className="rounded-[8px] border border-[var(--oc-border-hi)] bg-[rgba(0,0,0,0.22)] px-3 py-1.5 transition-colors hover:bg-[rgba(255,255,255,0.05)]">Reportar</button>
                 </div>
               </div>
 
@@ -217,8 +280,8 @@ export default function PlayerProfilePage() {
                   </div>
                   <h1 className="text-[37px] font-[800] tracking-[-0.03em] text-white md:text-[47px]">{player.fullName}</h1>
                   <div className="mt-5 flex flex-wrap items-center gap-x-7 gap-y-2 text-[15px] font-[600] text-slate-200">
-                    <span>Posicion: {player.position || 'N/D'}</span>
-                    <span>{age} anos</span>
+                    <span>Posición: {player.position || 'N/D'}</span>
+                    <span>{age} años</span>
                     <span>{player.nationality || 'N/D'}</span>
                   </div>
                   <div className="mt-[var(--oc-space-8)] flex items-center gap-[var(--oc-space-5)]">
@@ -230,7 +293,9 @@ export default function PlayerProfilePage() {
                   </div>
                   <div className="mt-[var(--oc-space-6)] flex flex-wrap gap-[var(--oc-space-3)]">
                     {showContactCta ? <button onClick={handleContact} className="h-11 min-w-[160px] rounded-[8px] bg-[var(--oc-lime)] px-5 text-[15px] font-[800] text-black shadow-[0_0_24px_rgba(170,255,0,0.25)]">Contactar</button> : null}
-                    <button className="h-11 min-w-[160px] rounded-[8px] border border-[var(--oc-border-hi)] bg-[rgba(0,0,0,0.28)] px-5 text-[14px] font-[700]">Seguir</button>
+                    <button onClick={handleFollow} className={`h-11 min-w-[160px] rounded-[8px] border px-5 text-[14px] font-[700] transition-all ${following ? 'border-[var(--oc-lime)] bg-[rgba(170,255,0,0.12)] text-[var(--oc-lime)]' : 'border-[var(--oc-border-hi)] bg-[rgba(0,0,0,0.28)]'}`}>
+                      {following ? 'Siguiendo ✓' : 'Seguir'}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -250,7 +315,7 @@ export default function PlayerProfilePage() {
           </section>
 
           <nav role="tablist" className="grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6" aria-label="Secciones del perfil">
-            {['Resumen', 'Trayectoria', 'Estadisticas', 'Caracteristicas', 'Videos', 'Fotos'].map((tab, i) => (
+            {['Resumen', 'Trayectoria', 'Estadísticas', 'Características', 'Videos', 'Fotos'].map((tab, i) => (
               <button
                 key={tab}
                 type="button"
@@ -270,7 +335,7 @@ export default function PlayerProfilePage() {
             {activeTab === 0 && (
               <div className="grid grid-cols-1 gap-[var(--oc-space-4)] lg:grid-cols-[260px_300px_300px_1fr]">
                 <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
-                  <SectionTitle title="Caracteristicas" />
+                  <SectionTitle title="Características" />
                   <div className="mt-5 flex flex-wrap gap-2">
                     {player.characteristics?.length
                       ? player.characteristics.map(item => (
@@ -295,7 +360,7 @@ export default function PlayerProfilePage() {
                   )}
                 </Surface>
                 <Surface className="min-h-[255px] p-[var(--oc-space-5)]">
-                  <SectionTitle title="Estadisticas generales" />
+                  <SectionTitle title="Estadísticas generales" />
                   <div className="relative mx-auto mt-4 w-full max-w-[176px] aspect-square">
                     <svg viewBox="0 0 200 200" className="h-full w-full">
                       {[36, 58, 80].map((r) => (
@@ -343,11 +408,11 @@ export default function PlayerProfilePage() {
               ) : (
                 <Surface className="p-[var(--oc-space-5)]">
                   <SectionTitle title="Trayectoria" />
-                  <p className="mt-4 text-[14px] text-[var(--oc-fg-muted)]">Este jugador aun no cargo su trayectoria deportiva.</p>
+                  <p className="mt-4 text-[14px] text-[var(--oc-fg-muted)]">Este jugador aún no cargó su trayectoria deportiva.</p>
                 </Surface>
               )}
               <Surface className="p-5">
-                <SectionTitle title="Posicion en cancha" />
+                <SectionTitle title="Posición en cancha" />
                 <div className="relative mt-4 aspect-[1.65] rounded border border-[rgba(170,255,0,0.24)] bg-[rgba(8,32,23,0.65)]">
                   <div className="absolute inset-3 border border-[rgba(255,255,255,0.12)]" />
                   <div className="absolute left-3 top-1/2 h-16 w-10 -translate-y-1/2 border border-[rgba(255,255,255,0.12)]" />
@@ -356,7 +421,7 @@ export default function PlayerProfilePage() {
                   <div className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(255,255,255,0.12)]" />
                   <div className="absolute left-[57%] top-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[var(--oc-lime)] text-black shadow-[0_0_24px_rgba(170,255,0,0.6)]">▶</div>
                 </div>
-                <h4 className="mt-4 text-[16px] font-[700] text-white">{player.position || 'Posicion principal'}</h4>
+                <h4 className="mt-4 text-[16px] font-[700] text-white">{player.position || 'Posición principal'}</h4>
               </Surface>
             </div>
             )}
@@ -365,7 +430,7 @@ export default function PlayerProfilePage() {
             {activeTab === 2 && (
               <div className="grid grid-cols-1 gap-[var(--oc-space-4)] lg:grid-cols-2">
                 <Surface className="p-[var(--oc-space-5)]">
-                  <SectionTitle title="Estadisticas generales" />
+                  <SectionTitle title="Estadísticas generales" />
                   <div className="relative mx-auto mt-4 w-full max-w-[220px] aspect-square">
                     <svg viewBox="0 0 200 200" className="h-full w-full">
                       {[36, 58, 80].map((r) => (
@@ -393,7 +458,7 @@ export default function PlayerProfilePage() {
             {activeTab === 3 && (
               <div className="grid grid-cols-1 gap-[var(--oc-space-4)] lg:grid-cols-2">
                 <Surface className="p-[var(--oc-space-5)]">
-                  <SectionTitle title="Caracteristicas" />
+                  <SectionTitle title="Características" />
                   <div className="mt-5 flex flex-wrap gap-2">
                     {player.characteristics?.length
                       ? player.characteristics.map(item => (
@@ -431,7 +496,7 @@ export default function PlayerProfilePage() {
             ) : activeTab === 4 ? (
               <Surface className="p-[var(--oc-space-5)]">
                 <SectionTitle title="Videos" />
-                <p className="mt-4 text-[14px] text-[var(--oc-fg-muted)]">Este jugador aun no cargo videos.</p>
+                <p className="mt-4 text-[14px] text-[var(--oc-fg-muted)]">Este jugador aún no cargó videos.</p>
               </Surface>
             ) : null}
 
@@ -439,22 +504,25 @@ export default function PlayerProfilePage() {
               <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
                 <div>
                   <h2 className="text-[29px] font-[800] tracking-[-0.02em] text-white">Contacto del jugador</h2>
-                  <p className="mt-3 text-[14px] text-[var(--oc-fg-muted)]">La informacion de contacto esta disponible para usuarios registrados en la plataforma.</p>
-                  {showContactCta ? (
-                    <button onClick={handleContact} className="mt-6 h-11 w-full max-w-[320px] rounded-[8px] bg-[var(--oc-lime)] text-[14px] font-[800] text-black">{user ? 'Contactar' : 'Iniciar sesion / Registrarme'}</button>
+                  <p className="mt-3 text-[14px] text-[var(--oc-fg-muted)]">La información de contacto está disponible para usuarios registrados en la plataforma.</p>
+                  {user?.uid === id ? (
+                    <div className="mt-4">
+                      <p className="text-[13px] text-[rgba(255,255,255,0.45)] mb-3">Estás viendo tu propio perfil.</p>
+                      <button onClick={() => router.push('/dashboard')} className="h-10 rounded-[8px] border border-[rgba(170,255,0,0.4)] bg-[rgba(170,255,0,0.1)] px-4 text-[13px] font-[700] text-[var(--oc-lime)]">Completar mi perfil →</button>
+                    </div>
+                  ) : showContactCta ? (
+                    <button onClick={handleContact} className="mt-6 h-11 w-full max-w-[320px] rounded-[8px] bg-[var(--oc-lime)] text-[14px] font-[800] text-black">{user ? 'Contactar' : 'Iniciá sesión / Registrate'}</button>
                   ) : (
-                    <p className="mt-4 text-[13px] text-[var(--oc-fg-dim)]">El contacto directo esta desactivado por este perfil.</p>
+                    <p className="mt-4 text-[13px] text-[var(--oc-fg-dim)]">El contacto directo está desactivado por este perfil.</p>
                   )}
                 </div>
                 <div className="rounded-[10px] border border-[var(--oc-border)] p-4">
                   <p className="text-[13px] text-[var(--oc-fg-muted)]">Representante</p>
                   <p className="mt-1 font-[700] text-white">No especificado</p>
-                  <button className="mt-5 h-10 w-full rounded-[8px] border border-[var(--oc-border-hi)] text-[13px] font-[700]">Ver perfil</button>
                 </div>
                 <div className="rounded-[10px] border border-[var(--oc-border)] p-4">
                   <p className="text-[13px] text-[var(--oc-fg-muted)]">Club actual</p>
                   <p className="mt-1 font-[700] text-white">{player.currentClub || 'Libre'}</p>
-                  <button className="mt-5 h-10 w-full rounded-[8px] border border-[var(--oc-border-hi)] text-[13px] font-[700]">Ver club</button>
                 </div>
                 <div className="rounded-[10px] border border-[var(--oc-border)] p-4">
                   <h4 className="font-[700] text-white">Redes sociales</h4>
