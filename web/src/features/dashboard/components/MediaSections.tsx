@@ -10,6 +10,12 @@ import { storage } from '@/lib/firebase'
 import { addPhoto, addVideo, getPhotos, getVideos, removePhoto, removeVideo, toggleVideoStatus, type PhotoEntry, updateVisibility } from '@/lib/rtdb'
 import type { ProfileState, VideoEntry } from '@/types'
 
+function youtubeThumb(url: string | null): string | null {
+  if (!url) return null
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([^&?/\s]{11})/)
+  return m?.[1] ? `https://img.youtube.com/vi/${m[1]}/default.jpg` : null
+}
+
 export function VideosSection({ uid }: { uid: string }) {
   const [videos, setVideos] = useState<VideoEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -30,9 +36,49 @@ export function VideosSection({ uid }: { uid: string }) {
   }
   const handleRemove = async (videoId: string) => { await removeVideo(uid, videoId); setVideos(v => v.filter(x => x.id !== videoId)) }
   const handleToggle = async (v: VideoEntry) => { const next = v.status === 'active' ? 'hidden' : 'active'; await toggleVideoStatus(uid, v.id, next); setVideos(vs => vs.map(x => x.id === v.id ? { ...x, status: next } : x)) }
-  const platformIcon = (p: VideoEntry['platform']) => p === 'youtube' ? '▶' : p === 'vimeo' ? '🎬' : p === 'tiktok' ? '🎵' : p === 'instagram' ? '📸' : '🔗'
+  const platformIcon = (p: VideoEntry['platform']) => p === 'youtube' ? '▶' : p === 'vimeo' ? '▶' : p === 'tiktok' ? '♪' : p === 'instagram' ? '◎' : '↗'
 
-  return <SurfaceCard><div className="text-white text-[14px] font-medium mb-4">Mis videos</div><div className="flex flex-col gap-2 mb-4"><Input placeholder="URL del video (YouTube, Vimeo, TikTok...)" value={url} onChange={e => setUrl(e.target.value)} /><Input placeholder="Titulo del video (opcional)" value={title} onChange={e => setTitle(e.target.value)} /><Button variant="outline" size="sm" onClick={handleAdd} disabled={adding || !url.trim()}>{adding ? 'Agregando...' : '+ Agregar video'}</Button></div>{loading ? <div className="text-[rgba(255,255,255,0.2)] text-[12px]">Cargando…</div> : videos.length === 0 ? <div className="text-[rgba(255,255,255,0.2)] text-[12px] text-center py-4">No tenes videos agregados aun.</div> : <div className="flex flex-col gap-2">{videos.map(v => <div key={v.id} className="flex items-center gap-3 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)] rounded-[9px] px-3 py-2.5"><span className="text-[15px] shrink-0">{platformIcon(v.platform)}</span><div className="flex-1 min-w-0"><div className="text-white text-[13px] truncate">{v.title}</div><div className="text-[rgba(255,255,255,0.25)] text-[11px] truncate">{v.url}</div></div><div className="flex gap-1.5 shrink-0"><button onClick={() => handleToggle(v)} className="text-[10px] px-2 py-1 rounded-[5px] cursor-pointer" style={{ background: v.status === 'active' ? 'rgba(0,200,83,0.12)' : 'rgba(255,255,255,0.05)', color: v.status === 'active' ? '#00C853' : 'rgba(255,255,255,0.3)' }}>{v.status === 'active' ? 'Visible' : 'Oculto'}</button><button onClick={() => handleRemove(v.id)} className="text-[10px] px-2 py-1 rounded-[5px] cursor-pointer bg-[rgba(255,60,60,0.08)] text-[rgba(255,60,60,0.6)]">✕</button></div></div>)}</div>}</SurfaceCard>
+  return (
+    <SurfaceCard>
+      <div className="text-white text-[14px] font-medium mb-4">Mis videos</div>
+      <div className="flex flex-col gap-2 mb-4">
+        <Input placeholder="URL del video (YouTube, Vimeo, TikTok...)" value={url} onChange={e => setUrl(e.target.value)} />
+        <Input placeholder="Titulo del video (opcional)" value={title} onChange={e => setTitle(e.target.value)} />
+        <Button variant="outline" size="sm" onClick={handleAdd} disabled={adding || !url.trim()}>{adding ? 'Agregando...' : '+ Agregar video'}</Button>
+      </div>
+      {loading ? (
+        <div className="text-[rgba(255,255,255,0.2)] text-[12px]">Cargando…</div>
+      ) : videos.length === 0 ? (
+        <div className="text-[rgba(255,255,255,0.2)] text-[12px] text-center py-4">No tenes videos agregados aun.</div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {videos.map(v => {
+            const thumb = youtubeThumb(v.url)
+            return (
+              <div key={v.id} className="flex items-center gap-3 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)] rounded-[9px] px-3 py-2">
+                {/* Miniatura */}
+                <div className="shrink-0 w-14 h-9 rounded-[5px] overflow-hidden bg-[rgba(255,255,255,0.06)] flex items-center justify-center relative">
+                  {thumb ? (
+                    <Image src={thumb} alt={v.title} fill className="object-cover" sizes="56px" />
+                  ) : (
+                    <span className="text-[14px] text-[rgba(255,255,255,0.3)]">{platformIcon(v.platform)}</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white text-[13px] truncate">{v.title}</div>
+                  <div className="text-[rgba(255,255,255,0.25)] text-[11px] truncate">{v.url}</div>
+                </div>
+                <div className="flex gap-1.5 shrink-0">
+                  <button onClick={() => handleToggle(v)} className="text-[10px] px-2 py-1 rounded-[5px] cursor-pointer" style={{ background: v.status === 'active' ? 'rgba(0,200,83,0.12)' : 'rgba(255,255,255,0.05)', color: v.status === 'active' ? '#00C853' : 'rgba(255,255,255,0.3)' }}>{v.status === 'active' ? 'Visible' : 'Oculto'}</button>
+                  <button onClick={() => handleRemove(v.id)} className="text-[10px] px-2 py-1 rounded-[5px] cursor-pointer bg-[rgba(255,60,60,0.08)] text-[rgba(255,60,60,0.6)]">✕</button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </SurfaceCard>
+  )
 }
 
 export function PhotosSection({ uid }: { uid: string }) {

@@ -12,6 +12,7 @@ import { useAuth } from '@/context/AuthContext'
 import { canViewProfile } from '@/lib/publicProfileAccess'
 import { registerProfileVisit } from '@/lib/profileViews'
 import type { CoachProfile, VideoEntry } from '@/types'
+import VideoCard from '@/components/ui/VideoCard'
 
 export default function CoachProfilePage() {
   const { id } = useParams<{ id: string }>()
@@ -201,10 +202,7 @@ export default function CoachProfilePage() {
                   ) : (
                     <div className="grid sm:grid-cols-2 gap-2.5">
                       {videos.map((video) => (
-                        <a key={video.id} href={video.url ?? '#'} target="_blank" rel="noopener noreferrer" className="relative overflow-hidden rounded-[9px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] aspect-video flex items-center justify-center">
-                          <div className="absolute inset-0 bg-[rgba(0,0,0,0.25)]" />
-                          <div className="relative z-[2] w-9 h-9 rounded-full border border-[rgba(255,255,255,0.5)] flex items-center justify-center text-white text-[13px]">▶</div>
-                        </a>
+                        <VideoCard key={video.id} video={video} />
                       ))}
                     </div>
                   )}

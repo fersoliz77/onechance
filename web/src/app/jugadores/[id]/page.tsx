@@ -13,6 +13,7 @@ import ProfileSkeleton from '@/components/ui/ProfileSkeleton'
 import { canViewProfile } from '@/lib/publicProfileAccess'
 import { registerProfileVisit } from '@/lib/profileViews'
 import type { PlayerProfile, VideoEntry } from '@/types'
+import VideoCard from '@/components/ui/VideoCard'
 
 function computeAge(iso: string): string {
   if (!iso) return 'N/D'
@@ -49,25 +50,6 @@ function SectionTitle({ title, action }: { title: string; action?: string }) {
   )
 }
 
-function VideoCard({ video }: { video: VideoEntry }) {
-  const icon = video.platform === 'youtube' ? '▶' : video.platform === 'vimeo' ? '🎬' : video.platform === 'tiktok' ? '🎵' : video.platform === 'instagram' ? '◎' : '↗'
-  return (
-    <a
-      href={video.url ?? '#'}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="overflow-hidden rounded-[12px] border border-[var(--oc-border)] bg-[rgba(0,0,0,0.25)] transition-all hover:-translate-y-[1px] hover:border-[rgba(170,255,0,0.4)]"
-    >
-      <div className="relative flex aspect-video items-center justify-center bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(0,0,0,0.45))]">
-        <span className="text-[31px] opacity-85">{icon}</span>
-      </div>
-      <div className="p-3">
-        <p className="truncate text-[13px] font-[700] text-white">{video.title}</p>
-        <p className="mt-1 text-[12px] capitalize text-[var(--oc-fg-muted)]">{video.platform ?? 'enlace'}</p>
-      </div>
-    </a>
-  )
-}
 
 export default function PlayerProfilePage() {
   const { id } = useParams<{ id: string }>()
