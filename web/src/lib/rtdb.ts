@@ -184,6 +184,23 @@ export async function adminToggleVideo(playerUid: string, videoId: string, statu
   await update(ref(rtdb, `videos/${playerUid}/${videoId}`), { status })
 }
 
+// ── PROFILE METRICS (REALTIME VISITS) ─────────────────────────
+export function subscribeProfileVisits(uid: string, cb: (visits: number) => void) {
+  const r = ref(rtdb, `profileMetrics/${uid}/visits`)
+  const handler = (snap: { exists: () => boolean; val: () => unknown }) => {
+    if (!snap.exists()) {
+      cb(0)
+      return
+    }
+    const val = snap.val()
+    cb(typeof val === 'number' ? val : 0)
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onValue(r, handler as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return () => off(r, 'value', handler as any)
+}
+
 // ── ADMIN: RECENT ACTIVITY ────────────────────────────────────
 export async function getRecentAuditActivity(limitCount = 5): Promise<{ id: string; action: string; actorEmail?: string; createdAt?: string }[]> {
   const snap = await get(ref(rtdb, 'audit_activity'))

@@ -4,13 +4,14 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { getPlayer } from '@/lib/firestore'
-import { getPhotos, getProfileState, getVideos, isFollowing, setFollow, type PhotoEntry } from '@/lib/rtdb'
+import { getPhotos, getProfileState, getVideos, isFollowing, setFollow, subscribeProfileVisits, type PhotoEntry } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
 import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
 import ContactModal from '@/components/ui/ContactModal'
 import ProfileSkeleton from '@/components/ui/ProfileSkeleton'
 import { canViewProfile } from '@/lib/publicProfileAccess'
+import { registerProfileVisit } from '@/lib/profileViews'
 import type { PlayerProfile, VideoEntry } from '@/types'
 
 function computeAge(iso: string): string {
@@ -84,6 +85,7 @@ export default function PlayerProfilePage() {
   const [showReport, setShowReport] = useState(false)
   const [reportText, setReportText] = useState('')
   const [reportSent, setReportSent] = useState(false)
+  const [visits, setVisits] = useState(0)
 
   const galleryUrls = photos.length > 0
     ? photos.map((p) => p.url).filter(Boolean)
@@ -106,6 +108,20 @@ export default function PlayerProfilePage() {
       active = false
     }
   }, [id, user?.uid])
+
+  useEffect(() => subscribeProfileVisits(id, setVisits), [id])
+
+  useEffect(() => {
+    if (!player) return
+    const canView = canViewProfile({
+      profileStatus: player.status,
+      profileUid: player.uid,
+      viewerUid: user?.uid,
+      viewerSystemRole: user?.systemRole,
+    })
+    if (!canView) return
+    registerProfileVisit(id, user?.uid)
+  }, [id, player, user?.systemRole, user?.uid])
 
   if (loading) {
     return (
@@ -164,6 +180,7 @@ export default function PlayerProfilePage() {
     ['Posición', player.position || 'N/D'],
     ['Club', player.currentClub || 'Libre'],
     ['Perfil ID', player.uid.slice(0, 8).toUpperCase()],
+    ['Visitas', visits.toLocaleString('es-AR')],
   ]
 
   function handleContact() {

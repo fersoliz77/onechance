@@ -6,9 +6,10 @@ import Button from '@/components/ui/Button'
 import ContactModal from '@/components/ui/ContactModal'
 import ProfileSkeleton from '@/components/ui/ProfileSkeleton'
 import { getClub } from '@/lib/firestore'
-import { getProfileState } from '@/lib/rtdb'
+import { getProfileState, subscribeProfileVisits } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
 import { canViewProfile } from '@/lib/publicProfileAccess'
+import { registerProfileVisit } from '@/lib/profileViews'
 import type { ClubProfile } from '@/types'
 
 export default function ClubProfilePage() {
@@ -18,6 +19,7 @@ export default function ClubProfilePage() {
   const [showContact, setShowContact] = useState(false)
   const [showContactCta, setShowContactCta] = useState(false)
   const [activeTab, setActiveTab] = useState(0)
+  const [visits, setVisits] = useState(0)
   const router = useRouter()
   const { user } = useAuth()
 
@@ -36,6 +38,20 @@ export default function ClubProfilePage() {
       active = false
     }
   }, [id])
+
+  useEffect(() => subscribeProfileVisits(id, setVisits), [id])
+
+  useEffect(() => {
+    if (!club) return
+    const canView = canViewProfile({
+      profileStatus: club.status,
+      profileUid: club.uid,
+      viewerUid: user?.uid,
+      viewerSystemRole: user?.systemRole,
+    })
+    if (!canView) return
+    registerProfileVisit(id, user?.uid)
+  }, [id, club, user?.systemRole, user?.uid])
 
   if (loading) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] oc-main-offset"><div className="oc-shell-content oc-page-block max-w-[1100px]"><ProfileSkeleton /></div></div></div>
   if (!club) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.6)]">Club no encontrado.</div></div>
@@ -119,6 +135,11 @@ export default function ClubProfilePage() {
                     <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Director técnico</p>
                     <p className="mt-1 text-[14px] text-white">{club.currentCoach || 'No informado'}</p>
                   </div>
+                </div>
+
+                <div className="mt-4 rounded-[10px] border border-[color-mix(in_srgb,var(--oc-accent)_15%,var(--oc-border-soft))] bg-[color-mix(in_srgb,var(--oc-accent)_5%,rgba(255,255,255,0.03))] px-3 py-2.5">
+                  <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Visitas profesionales</p>
+                  <p className="mt-1 text-[14px] text-white">{visits.toLocaleString('es-AR')}</p>
                 </div>
               </div>
             </div>

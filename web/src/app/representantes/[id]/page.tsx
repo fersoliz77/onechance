@@ -7,9 +7,10 @@ import Badge from '@/components/ui/Badge'
 import ContactModal from '@/components/ui/ContactModal'
 import ProfileSkeleton from '@/components/ui/ProfileSkeleton'
 import { getAgent } from '@/lib/firestore'
-import { getProfileState, getVideos } from '@/lib/rtdb'
+import { getProfileState, getVideos, subscribeProfileVisits } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
 import { canViewProfile } from '@/lib/publicProfileAccess'
+import { registerProfileVisit } from '@/lib/profileViews'
 import type { AgentProfile, VideoEntry } from '@/types'
 
 export default function AgentProfilePage() {
@@ -20,6 +21,7 @@ export default function AgentProfilePage() {
   const [showContactCta, setShowContactCta] = useState(false)
   const [videos, setVideos] = useState<VideoEntry[]>([])
   const [activeTab, setActiveTab] = useState(0)
+  const [visits, setVisits] = useState(0)
   const router = useRouter()
   const { user } = useAuth()
 
@@ -39,6 +41,20 @@ export default function AgentProfilePage() {
       active = false
     }
   }, [id])
+
+  useEffect(() => subscribeProfileVisits(id, setVisits), [id])
+
+  useEffect(() => {
+    if (!agent) return
+    const canView = canViewProfile({
+      profileStatus: agent.status,
+      profileUid: agent.uid,
+      viewerUid: user?.uid,
+      viewerSystemRole: user?.systemRole,
+    })
+    if (!canView) return
+    registerProfileVisit(id, user?.uid)
+  }, [id, agent, user?.systemRole, user?.uid])
 
   if (loading) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] oc-main-offset"><div className="oc-shell-content oc-page-block max-w-[1100px]"><ProfileSkeleton /></div></div></div>
   if (!agent) return <div className="relative min-h-screen"><Background /><div className="relative z-[2] pt-28 text-center text-[rgba(255,255,255,0.6)]">Representante no encontrado.</div></div>
@@ -110,11 +126,12 @@ export default function AgentProfilePage() {
                 </div>
                 <h1 className="text-[31px] leading-[1.03] font-semibold tracking-[-0.04em] text-white">Perfil de representante</h1>
                 <p className="mt-2 text-[14px] leading-[1.65] text-[var(--oc-text-muted)]">Información comercial, mercados activos y estructura de representación deportiva.</p>
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 mb-5">
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-5">
                   {[
                     ['Jugadores', agent.players > 0 ? String(agent.players) : '—'],
                     ['Países', agent.countries > 0 ? String(agent.countries) : '—'],
                     ['Agencia', agent.agencyName || 'Independiente'],
+                    ['Visitas', visits.toLocaleString('es-AR')],
                   ].map(([l,v]) => (
                     <div key={l} className="rounded-[9px] border border-[color-mix(in_srgb,var(--oc-accent)_18%,transparent)] bg-[color-mix(in_srgb,var(--oc-accent)_8%,transparent)] p-[10px_12px] text-center">
                       <div className="truncate text-[14px] font-medium leading-none text-[var(--oc-accent)]">{v}</div>
