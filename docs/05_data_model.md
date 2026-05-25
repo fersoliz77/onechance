@@ -8,9 +8,26 @@ Separación entre Firestore y Realtime Database según documento de arquitectura
 ```
 users/{uid}
   role: 'player' | 'coach' | 'club' | 'agent'
+  systemRole: 'user' | 'admin' | 'super_admin'
   email: string
   createdAt: timestamp
 ```
+
+#### Semántica de roles en `users/{uid}`
+
+- `role` define el tipo de perfil público dentro del producto (Jugador, Técnico, Club, Representante).
+- `systemRole` define permisos internos de administración.
+- Ambos campos son independientes y pueden coexistir.
+
+Ejemplos válidos:
+
+- `role='agent'` + `systemRole='user'` -> Representante estándar.
+- `role='agent'` + `systemRole='super_admin'` -> Representante con permisos máximos de administración.
+
+Regla de UX recomendada:
+
+- En zonas administrativas o de identidad interna, priorizar mostrar `systemRole`.
+- En vistas públicas o de scouting, mostrar `role`.
 
 ### Colección `players`
 ```

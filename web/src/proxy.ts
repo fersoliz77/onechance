@@ -40,12 +40,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth?tab=login', request.url))
   }
 
-  if (isAdmin) {
-    const role = payload.role as string | undefined
-    if (role !== 'admin' && role !== 'super_admin') {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
-  }
+  // No bloquear /admin en proxy por claim JWT: puede estar desactualizado
+  // aunque Firestore ya tenga systemRole=admin/super_admin.
+  // La autorización real del panel y de las APIs se valida server-side.
+  if (isAdmin) return NextResponse.next()
 
   return NextResponse.next()
 }

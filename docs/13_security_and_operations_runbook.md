@@ -21,6 +21,13 @@
   - Espejo para reglas RTDB: `Realtime Database userRoles/{uid}/systemRole`.
   - Valores: `user | admin | super_admin`.
 
+## Modelo mental rapido (evita confusiones)
+
+- `systemRole='user'` no es un perfil futbolistico; significa "sin permisos admin".
+- Los perfiles futbolisticos son siempre `role` (`player|coach|club|agent`).
+- Un mismo usuario puede ser, por ejemplo, `role='agent'` y `systemRole='super_admin'`.
+- Si hay que mostrar un unico rol en UI interna, priorizar `systemRole`.
+
 ## Diferencia operativa entre admin y super_admin
 
 - `admin`
@@ -68,6 +75,11 @@
 
 ## Criterios de QA de roles
 
-- `user`: no accede a `/admin` ni puede ejecutar acciones admin.
+- `user`: no accede a `/admin` ni puede ejecutar acciones admin; puede ser player/coach/club/agent.
 - `admin`: opera moderación (perfiles/videos/destacados) sin acceso a gobernanza global.
 - `super_admin`: acceso completo, incluyendo gestión de roles y configuración de plataforma.
+
+## Comportamiento de UI recomendado para el menu de cuenta
+
+- Si `systemRole` es `admin` o `super_admin`, mostrar ese rol en el label principal.
+- Si `systemRole` es `user`, mostrar `role` (Jugador/Tecnico/Club/Representante).

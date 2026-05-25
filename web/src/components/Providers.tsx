@@ -1,10 +1,12 @@
 'use client'
 import { AuthProvider } from '@/context/AuthContext'
-import Nav from '@/components/layout/Nav'
 import Background from '@/components/layout/Background'
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import dynamic from 'next/dynamic'
+
+const Nav = dynamic(() => import('@/components/layout/Nav'), { ssr: false })
 
 export default function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname()

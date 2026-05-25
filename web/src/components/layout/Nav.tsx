@@ -103,9 +103,23 @@ function UserMenu({ name, role, systemRole }: { name: string; role: Role | null;
   const ref = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
-  const accent = role ? ROLE_ACCENT[role] : 'var(--oc-role-player)'
+  const systemRoleLabel =
+    systemRole === 'super_admin'
+      ? 'Super Admin'
+      : systemRole === 'admin'
+        ? 'Admin'
+        : null
+
+  const accent =
+    systemRole === 'super_admin'
+      ? '#AAFF00'
+      : systemRole === 'admin'
+        ? '#22D3EE'
+        : role
+          ? ROLE_ACCENT[role]
+          : 'var(--oc-role-player)'
   const initial = name ? name.charAt(0).toUpperCase() : '?'
-  const roleLabel = role ? ROLE_LABELS[role] : 'Usuario'
+  const roleLabel = systemRoleLabel ?? (role ? ROLE_LABELS[role] : 'Usuario')
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -180,13 +194,20 @@ function UserMenu({ name, role, systemRole }: { name: string; role: Role | null;
 }
 
 export default function Nav() {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [navHidden, setNavHidden] = useState(false)
   const [navCompact, setNavCompact] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    setHydrated(true)
+  }, [])
+
+  const authenticatedUser = hydrated && !loading ? user : null
 
   useEffect(() => {
     let lastY = 0
@@ -244,10 +265,10 @@ export default function Nav() {
 
         {/* Auth area */}
         <div className="flex gap-1.5 sm:gap-2 items-center">
-          {user ? (
+          {authenticatedUser ? (
             <>
-              <NotificationBell uid={user.uid} />
-              <UserMenu name={user.name || user.email || ''} role={user.role} systemRole={user.systemRole} />
+              <NotificationBell uid={authenticatedUser.uid} />
+              <UserMenu name={authenticatedUser.name || authenticatedUser.email || ''} role={authenticatedUser.role} systemRole={authenticatedUser.systemRole} />
               <button
                 aria-label="Abrir menu"
                 aria-expanded={mobileOpen}
@@ -294,7 +315,7 @@ export default function Nav() {
               {l.label}
             </Link>
           ))}
-          {!user && (
+          {!authenticatedUser && (
             <>
               <div className="my-2 border-t border-[rgba(255,255,255,0.06)]" />
               <button
@@ -305,7 +326,7 @@ export default function Nav() {
               </button>
             </>
           )}
-          {user && (
+          {authenticatedUser && (
             <>
               <div className="my-2 border-t border-[rgba(255,255,255,0.06)]" />
               <button
