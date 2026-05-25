@@ -26,6 +26,12 @@
 | [17_nextjs16_proxy_migration.md](17_nextjs16_proxy_migration.md) | Next.js 16: `middleware.ts` → `proxy.ts`, qué cambió, cómo migrar, error de build explicado |
 | [18_data_ux_remediation_master_plan_2026-05-23.md](18_data_ux_remediation_master_plan_2026-05-23.md) | Plan maestro paso a paso: qué está mal, qué se hará y cómo quedará (UX, seguridad y estrategia Firestore/Realtime) |
 | [19_ux_ui_v2_execution_log_2026-05-23_2258.md](19_ux_ui_v2_execution_log_2026-05-23_2258.md) | Bitácora de ejecución UX/UI V2 con fecha/hora, cambios aplicados y validación operativa |
+| [20_messaging_system.md](20_messaging_system.md) | Sistema de mensajería moderada: flujo de estados, esquema Firestore/RTDB, API routes, componentes, seguridad |
+| [21_firebase_infrastructure.md](21_firebase_infrastructure.md) | Reglas de Firebase: deploy, sincronización prod/repo, permisos por colección/path, qué no hacer |
+| [22_ai_agent_setup.md](22_ai_agent_setup.md) | Configuración de agentes IA (Antigravity, OpenCode, Claude Code, Copilot) — archivos de reglas y cómo se cargan |
+| [23_profile_visit_tracking.md](23_profile_visit_tracking.md) | Tracking de visitas a perfiles: flujo, API routes admin, paths RTDB, deduplicación por sesión |
+| [24_notification_system.md](24_notification_system.md) | Sistema de notificaciones en tiempo real: tipos, entrega via Admin SDK, componente NotificationBell |
+| [25_execution_log_2026-05-25.md](25_execution_log_2026-05-25.md) | Bitácora del 2026-05-25: mensajería, auditoría Firebase, configuración IAs, decisiones de diseño |
 
 ## Mockups de referencia
 

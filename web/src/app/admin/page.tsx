@@ -3,8 +3,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import Background from '@/components/layout/Background'
-import { getPendingProfiles, getAllPlayers, getAllUsers, getAllCoaches, getAllClubs, getAllAgents } from '@/lib/firestore'
-import { getAllVideos } from '@/lib/rtdb'
+import { getPendingProfiles, getAllUsers } from '@/lib/firestore'
 import type { PlayerProfile, CoachProfile, ClubProfile, AgentProfile, VideoEntry, ProfileStatus, UserRecord } from '@/types'
 import { isAdminRole, isSuperAdminRole } from '@/lib/permissions'
 import { logAudit, type AuditAction } from '@/lib/auditLog'
@@ -12,6 +11,7 @@ import { useToastState } from '@/hooks/useToast'
 import { useRateLimit } from '@/hooks/useRateLimit'
 import { buildAdminMetrics } from '@/lib/adminMetrics'
 
+import { subscribeAdminInbox } from '@/lib/rtdb'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader, { type Density } from '@/components/admin/AdminHeader'
 import AdminStats from '@/components/admin/AdminStats'
@@ -23,6 +23,7 @@ import AdminQuickActions from '@/components/admin/AdminQuickActions'
 import AdminConfigPanel from '@/components/admin/AdminConfigPanel'
 import AdminProfilesTab from '@/components/admin/AdminProfilesTab'
 import AdminSubscriptionsTab from '@/components/admin/AdminSubscriptionsTab'
+import AdminMessagesTab from '@/components/admin/AdminMessagesTab'
 import CommandPalette from '@/components/admin/CommandPalette'
 import ToastStack from '@/components/admin/ui/ToastStack'
 import ConfirmModal from '@/components/admin/ui/ConfirmModal'
@@ -42,8 +43,54 @@ export type PendingItem = {
   _col: string
   [key: string]: unknown
 }
-export type AdminTab = 'dashboard' | 'perfiles' | 'usuarios' | 'solicitudes' | 'videos' | 'estadisticas' | 'configuracion' | 'moderacion' | 'suscripciones'
+export type AdminTab = 'dashboard' | 'perfiles' | 'usuarios' | 'solicitudes' | 'videos' | 'visitas' | 'estadisticas' | 'configuracion' | 'moderacion' | 'suscripciones'
 type MonthRange = 3 | 6 | 12
+
+type VisitMetricRow = {
+  uid: string
+  visits: number
+  visitsInternal: number
+  visitsExternal: number
+  lastVisitedAt: string | null
+}
+
+type VisitorRow = {
+  uid: string
+  name: string | null
+  email: string | null
+  role: string | null
+  systemRole: string | null
+  count: number
+  lastVisitedAt: string | null
+}
+
+type VisitTopRow = {
+  uid: string
+  total: number
+  internal: number
+  external: number
+}
+
+type VisitTopRange = 7 | 14 | 30
+
+const VISIT_TOP_RANGE_STORAGE_KEY = 'oc-admin-visits-top-range'
+const VISIT_PAGE_SIZE_STORAGE_KEY = 'oc-admin-visits-page-size'
+
+function getStoredVisitTopRange(): VisitTopRange {
+  if (typeof window === 'undefined') return 7
+  const raw = window.localStorage.getItem(VISIT_TOP_RANGE_STORAGE_KEY)
+  if (raw === '14') return 14
+  if (raw === '30') return 30
+  return 7
+}
+
+function getStoredVisitPageSize(): number {
+  if (typeof window === 'undefined') return 10
+  const raw = window.localStorage.getItem(VISIT_PAGE_SIZE_STORAGE_KEY)
+  if (raw === '20') return 20
+  if (raw === '50') return 50
+  return 10
+}
 
 interface ConfirmState {
   open: boolean
@@ -70,8 +117,9 @@ export default function AdminPage() {
   const [users, setUsers]     = useState<UserRecord[]>([])
   const [videos, setVideos]   = useState<(VideoEntry & { playerUid: string })[]>([])
   const [loading, setLoading] = useState(true)
-  const [loadingProfiles, setLoadingProfiles] = useState(false)
-  const [loadingVideos, setLoadingVideos] = useState(false)
+  const [loadingVisits, setLoadingVisits] = useState(false)
+  const [pendingMessagesCount, setPendingMessagesCount] = useState(0)
+  const [loadingVisitors, setLoadingVisitors] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [loadError, setLoadError] = useState('')
   const loadedRef = useRef<Set<string>>(new Set())
@@ -85,6 +133,14 @@ export default function AdminPage() {
   const [rejectTarget, setRejectTarget] = useState<PendingItem | null>(null)
   const [userSearch, setUserSearch] = useState('')
   const [userRoleFilter, setUserRoleFilter] = useState<string>('all')
+  const [visitMetrics, setVisitMetrics] = useState<VisitMetricRow[]>([])
+  const [visitSearch, setVisitSearch] = useState('')
+  const [selectedVisitUid, setSelectedVisitUid] = useState<string | null>(null)
+  const [selectedVisitors, setSelectedVisitors] = useState<VisitorRow[]>([])
+  const [topVisits7d, setTopVisits7d] = useState<VisitTopRow[]>([])
+  const [visitTopRange, setVisitTopRange] = useState<VisitTopRange>(getStoredVisitTopRange)
+  const [visitPage, setVisitPage] = useState(1)
+  const [visitPageSize, setVisitPageSize] = useState(getStoredVisitPageSize)
 
   const { toasts, toast, remove: removeToast } = useToastState()
   const { execute } = useRateLimit(2000)
@@ -97,6 +153,13 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) router.push('/')
   }, [user, authLoading, isAdmin, router])
+
+  // Admin inbox badge — realtime RTDB subscription
+  useEffect(() => {
+    if (!user || !isAdmin) return
+    const unsub = subscribeAdminInbox(count => setPendingMessagesCount(count))
+    return unsub
+  }, [user, isAdmin])
 
   const toggleDensity = () => setDensity(d => {
     const next = d === 'comfortable' ? 'compact' : 'comfortable'
@@ -140,31 +203,113 @@ export default function AdminPage() {
   // Carga lazy: perfiles completos solo cuando se abre la pestaña "perfiles"
   useEffect(() => {
     if (!user || !isAdmin || tab !== 'perfiles') return
-    if (loadedRef.current.has('perfiles')) return
-    loadedRef.current.add('perfiles')
-    setLoadingProfiles(true)
-    Promise.allSettled([getAllPlayers(), getAllCoaches(), getAllClubs(), getAllAgents()])
-      .then(([pl, co, cl, ag]) => {
-        if (pl.status === 'fulfilled') setPlayers(pl.value)
-        if (co.status === 'fulfilled') setCoaches(co.value)
-        if (cl.status === 'fulfilled') setClubs(cl.value)
-        if (ag.status === 'fulfilled') setAgents(ag.value)
-      })
-      .catch((err) => console.error('[Admin] loadProfiles failed:', err))
-      .finally(() => setLoadingProfiles(false))
-  }, [user, isAdmin, tab])
+    const cacheKey = `perfiles:${refreshKey}`
+    if (loadedRef.current.has(cacheKey)) return
+    loadedRef.current.add(cacheKey)
+    const load = async () => {
+      try {
+        if (!firebaseUser) return
+        const token = await firebaseUser.getIdToken()
+        const res = await fetch('/api/admin/profiles', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!res.ok) throw new Error('Failed to load profiles')
+        const body = await res.json() as {
+          players?: PlayerProfile[]
+          coaches?: CoachProfile[]
+          clubs?: ClubProfile[]
+          agents?: AgentProfile[]
+        }
+        setPlayers(Array.isArray(body.players) ? body.players : [])
+        setCoaches(Array.isArray(body.coaches) ? body.coaches : [])
+        setClubs(Array.isArray(body.clubs) ? body.clubs : [])
+        setAgents(Array.isArray(body.agents) ? body.agents : [])
+      } catch (err) {
+        console.error('[Admin] loadProfiles failed:', err)
+        toast.error('No se pudieron cargar todos los perfiles')
+      } finally {
+      }
+    }
+    load()
+  }, [user, isAdmin, tab, firebaseUser, toast, refreshKey])
+
+  // Carga lazy: metricas de visitas solo cuando se abre la pestaña "visitas"
+  useEffect(() => {
+    if (!user || !isAdmin || tab !== 'visitas') return
+    if (loadedRef.current.has('visitas')) return
+    loadedRef.current.add('visitas')
+    setLoadingVisits(true)
+
+    const load = async () => {
+      try {
+        if (!firebaseUser) return
+        const token = await firebaseUser.getIdToken()
+        const res = await fetch('/api/admin/profile-visits-summary', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!res.ok) throw new Error('No se pudieron cargar métricas de visitas')
+        const body = await res.json() as { items?: VisitMetricRow[] }
+        setVisitMetrics(Array.isArray(body.items) ? body.items : [])
+
+      } catch (err) {
+        console.error('[Admin] profile visits load failed:', err)
+      } finally {
+        setLoadingVisits(false)
+      }
+    }
+
+    load()
+  }, [user, isAdmin, tab, firebaseUser])
+
+  useEffect(() => {
+    if (!user || !isAdmin || tab !== 'visitas' || !firebaseUser) return
+    const loadTop = async () => {
+      try {
+        const token = await firebaseUser.getIdToken()
+        const topRes = await fetch(`/api/admin/profile-visits-top7d?days=${visitTopRange}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!topRes.ok) throw new Error('No se pudo cargar top de visitas')
+        const topBody = await topRes.json() as { items?: VisitTopRow[] }
+        setTopVisits7d(Array.isArray(topBody.items) ? topBody.items : [])
+      } catch (err) {
+        console.error('[Admin] profile visits top load failed:', err)
+        setTopVisits7d([])
+      }
+    }
+    loadTop()
+  }, [user, isAdmin, tab, firebaseUser, visitTopRange])
+
+  useEffect(() => {
+    window.localStorage.setItem(VISIT_TOP_RANGE_STORAGE_KEY, String(visitTopRange))
+  }, [visitTopRange])
+
+  useEffect(() => {
+    window.localStorage.setItem(VISIT_PAGE_SIZE_STORAGE_KEY, String(visitPageSize))
+  }, [visitPageSize])
 
   // Carga lazy: videos solo cuando se abre la pestaña "videos"
   useEffect(() => {
     if (!user || !isAdmin || tab !== 'videos') return
     if (loadedRef.current.has('videos')) return
     loadedRef.current.add('videos')
-    setLoadingVideos(true)
-    getAllVideos()
-      .then(setVideos)
-      .catch((err) => console.error('[Admin] getAllVideos failed:', err))
-      .finally(() => setLoadingVideos(false))
-  }, [user, isAdmin, tab])
+    const load = async () => {
+      try {
+        if (!firebaseUser) return
+        const token = await firebaseUser.getIdToken()
+        const res = await fetch('/api/admin/video', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!res.ok) throw new Error('Failed to load videos')
+        const body = await res.json() as { items?: (VideoEntry & { playerUid: string })[] }
+        setVideos(Array.isArray(body.items) ? body.items : [])
+      } catch (err) {
+        console.error('[Admin] getAllVideos failed:', err)
+      } finally {
+      }
+    }
+    load()
+  }, [user, isAdmin, tab, firebaseUser])
 
   // ── API helper ──
   const callAdminApi = useCallback(async (path: string, payload: Record<string, unknown>) => {
@@ -191,6 +336,44 @@ export default function AdminPage() {
       throw new Error(body.error ?? `Error HTTP ${res.status}`)
     }
   }, [firebaseUser])
+
+  const callAdminApiJson = useCallback(async <T,>(path: string, payload?: Record<string, unknown>, method: 'GET' | 'POST' = 'POST') => {
+    if (!firebaseUser) throw new Error('No auth user')
+    const exec = async (forceRefresh = false) => {
+      const token = await firebaseUser.getIdToken(forceRefresh)
+      return fetch(path, {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ...(method === 'POST' ? { 'Content-Type': 'application/json' } : {}),
+        },
+        ...(method === 'POST' ? { body: JSON.stringify(payload ?? {}) } : {}),
+      })
+    }
+
+    let res = await exec(false)
+    if (res.status === 401) res = await exec(true)
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({})) as { error?: string }
+      throw new Error(body.error ?? `Error HTTP ${res.status}`)
+    }
+    return res.json() as Promise<T>
+  }, [firebaseUser])
+
+  const loadProfileVisitors = useCallback(async (profileUid: string) => {
+    setSelectedVisitUid(profileUid)
+    setLoadingVisitors(true)
+    try {
+      const body = await callAdminApiJson<{ items?: VisitorRow[] }>('/api/admin/profile-visitors', { profileUid })
+      setSelectedVisitors(Array.isArray(body.items) ? body.items : [])
+    } catch (err) {
+      console.error('[Admin] profile visitors load failed:', err)
+      toast.error('No se pudo cargar el detalle de visitantes')
+      setSelectedVisitors([])
+    } finally {
+      setLoadingVisitors(false)
+    }
+  }, [callAdminApiJson, toast])
 
   // ── Handlers with toast + audit + rate limit ──
   const handleStatus = useCallback((item: PendingItem, status: ProfileStatus) => {
@@ -344,7 +527,6 @@ export default function AdminPage() {
   if (!user || !isAdmin) return null
 
   const publishedPlayers  = players.filter(p => p.status === 'published')
-  const featuredPlayers   = players.filter(p => p.isFeatured)
   const totalProfiles     = players.length + coaches.length + clubs.length + agents.length
   const roleDistribution  = {
     player: users.filter(u => u.role === 'player').length,
@@ -353,6 +535,22 @@ export default function AdminPage() {
     agent:  users.filter(u => u.role === 'agent').length,
   }
   const playerNames = Object.fromEntries(players.map(p => [p.uid, p.fullName]))
+  const usersByUid = Object.fromEntries(users.map(u => [u.uid, u]))
+  const totalVisits = visitMetrics.reduce((acc, item) => acc + item.visits, 0)
+  const totalInternalVisits = visitMetrics.reduce((acc, item) => acc + item.visitsInternal, 0)
+  const totalExternalVisits = visitMetrics.reduce((acc, item) => acc + item.visitsExternal, 0)
+  const visitQuery = visitSearch.toLowerCase().trim()
+  const filteredVisitMetrics = visitMetrics
+    .filter(item => {
+      const owner = usersByUid[item.uid]
+      const name = (owner?.name ?? '').toLowerCase()
+      const email = (owner?.email ?? '').toLowerCase()
+      return !visitQuery || item.uid.toLowerCase().includes(visitQuery) || name.includes(visitQuery) || email.includes(visitQuery)
+    })
+    .sort((a, b) => b.visits - a.visits)
+  const totalVisitPages = Math.max(1, Math.ceil(filteredVisitMetrics.length / visitPageSize))
+  const safeVisitPage = Math.min(visitPage, totalVisitPages)
+  const pagedVisitMetrics = filteredVisitMetrics.slice((safeVisitPage - 1) * visitPageSize, safeVisitPage * visitPageSize)
   return (
     <div className="flex min-h-screen bg-[#0A0A0A] text-white" style={{ fontFamily: 'var(--font-dm-sans), system-ui, sans-serif' }}>
       {/* Ambient */}
@@ -384,6 +582,7 @@ export default function AdminPage() {
         tab={tab}
         onTab={(t) => { setTab(t); setMobileSidebarOpen(false) }}
         pendingCount={pending.length}
+        pendingMessagesCount={pendingMessagesCount}
         isSuperAdmin={isSuperAdmin}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
@@ -548,6 +747,193 @@ export default function AdminPage() {
             <AdminVideos videos={videos} playerNames={playerNames} onToggle={handleToggleVideo} onRemove={confirmRemoveVideo} />
           )}
 
+          {/* VISITAS */}
+          {tab === 'visitas' && (
+            <div className="space-y-5">
+              <SectionHeader title="Analytics de visitas" subtitle="Totales por perfil y detalle de visitantes internos" />
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <KpiCard label="Visitas totales" value={totalVisits.toLocaleString('es-AR')} />
+                <KpiCard label="Visitas internas" value={totalInternalVisits.toLocaleString('es-AR')} />
+                <KpiCard label="Visitas externas" value={totalExternalVisits.toLocaleString('es-AR')} />
+              </div>
+
+              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-[rgba(255,255,255,0.07)] flex items-center justify-between gap-3">
+                  <p className="text-white font-semibold">Top 10 perfiles más visitados (últimos {visitTopRange} días)</p>
+                  <div className="flex items-center gap-1.5">
+                    {([7, 14, 30] as const).map(days => (
+                      <button
+                        key={days}
+                        onClick={() => setVisitTopRange(days)}
+                        className="text-[11px] px-2.5 py-1 rounded-md border cursor-pointer"
+                        style={{
+                          background: visitTopRange === days ? 'rgba(170,255,0,0.12)' : 'rgba(255,255,255,0.04)',
+                          color: visitTopRange === days ? '#AAFF00' : 'rgba(255,255,255,0.55)',
+                          borderColor: visitTopRange === days ? 'rgba(170,255,0,0.3)' : 'rgba(255,255,255,0.14)',
+                        }}
+                      >
+                        {days}d
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm min-w-[640px]">
+                    <thead>
+                      <tr className="border-b border-[rgba(255,255,255,0.07)]">
+                        {['#','Perfil','Rol','Total 7d','Internas','Externas'].map(h => (
+                          <th key={h} className="px-5 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.05em] text-[rgba(255,255,255,0.3)]">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {topVisits7d.map((item, idx) => {
+                        const owner = usersByUid[item.uid]
+                        return (
+                          <tr key={item.uid} className="border-b border-[rgba(255,255,255,0.05)]">
+                            <td className="px-5 py-3 text-[rgba(255,255,255,0.55)]">{idx + 1}</td>
+                            <td className="px-5 py-3">
+                              <p className="text-white font-medium">{owner?.name || 'Perfil sin nombre'}</p>
+                              <p className="text-[12px] text-[rgba(255,255,255,0.3)]">{owner?.email || item.uid}</p>
+                            </td>
+                            <td className="px-5 py-3"><RoleBadge role={owner?.role} /></td>
+                            <td className="px-5 py-3 text-white font-semibold">{item.total.toLocaleString('es-AR')}</td>
+                            <td className="px-5 py-3 text-[rgba(255,255,255,0.75)]">{item.internal.toLocaleString('es-AR')}</td>
+                            <td className="px-5 py-3 text-[rgba(255,255,255,0.75)]">{item.external.toLocaleString('es-AR')}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {topVisits7d.length === 0 && <div className="py-10 text-center text-[rgba(255,255,255,0.25)]">Aún no hay datos de los últimos 7 días.</div>}
+              </div>
+
+              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-4">
+                <div className="relative max-w-[420px]">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[rgba(255,255,255,0.25)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg>
+                  <input
+                    value={visitSearch}
+                    onChange={e => setVisitSearch(e.target.value)}
+                    placeholder="Buscar por nombre, email o UID"
+                    className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-lg pl-9 pr-4 py-2.5 text-[14px] text-white placeholder:text-[rgba(255,255,255,0.2)] outline-none focus:border-[rgba(170,255,0,0.4)]"
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm min-w-[760px]">
+                    <thead>
+                      <tr className="border-b border-[rgba(255,255,255,0.07)]">
+                        {['Perfil','Rol','Total','Internas','Externas','Última visita','Detalle'].map(h => (
+                          <th key={h} className="px-5 py-3.5 text-left text-[12px] font-semibold uppercase tracking-[0.05em] text-[rgba(255,255,255,0.3)]">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {!loadingVisits && pagedVisitMetrics.map(item => {
+                        const owner = usersByUid[item.uid]
+                        return (
+                          <tr key={item.uid} className="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.02)]">
+                            <td className="px-5 py-3">
+                              <div>
+                                <p className="text-white font-medium">{owner?.name || 'Perfil sin nombre'}</p>
+                                <p className="text-[12px] text-[rgba(255,255,255,0.3)]">{owner?.email || item.uid}</p>
+                              </div>
+                            </td>
+                            <td className="px-5 py-3"><RoleBadge role={owner?.role} /></td>
+                            <td className="px-5 py-3 text-white font-semibold">{item.visits.toLocaleString('es-AR')}</td>
+                            <td className="px-5 py-3 text-[rgba(255,255,255,0.75)]">{item.visitsInternal.toLocaleString('es-AR')}</td>
+                            <td className="px-5 py-3 text-[rgba(255,255,255,0.75)]">{item.visitsExternal.toLocaleString('es-AR')}</td>
+                            <td className="px-5 py-3 text-[rgba(255,255,255,0.45)]">{item.lastVisitedAt ? new Date(item.lastVisitedAt).toLocaleString('es-AR') : '—'}</td>
+                            <td className="px-5 py-3">
+                              <button
+                                onClick={() => loadProfileVisitors(item.uid)}
+                                className="text-[12px] px-2.5 py-1 rounded-md bg-[rgba(170,255,0,0.12)] text-[#AAFF00] border border-[rgba(170,255,0,0.3)] cursor-pointer"
+                              >
+                                Ver visitantes
+                              </button>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="px-5 py-3 border-t border-[rgba(255,255,255,0.07)] flex flex-wrap items-center justify-between gap-3">
+                  <div className="text-[12px] text-[rgba(255,255,255,0.35)]">
+                    Mostrando {filteredVisitMetrics.length === 0 ? 0 : (safeVisitPage - 1) * visitPageSize + 1} - {Math.min(safeVisitPage * visitPageSize, filteredVisitMetrics.length)} de {filteredVisitMetrics.length}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={visitPageSize}
+                      onChange={(e) => setVisitPageSize(Number(e.target.value))}
+                      className="rounded-md border border-[rgba(255,255,255,0.16)] bg-[rgba(255,255,255,0.03)] px-2 py-1.5 text-[12px] text-white"
+                    >
+                      {[10, 20, 50].map(size => <option key={size} value={size}>/{size}</option>)}
+                    </select>
+                    <button
+                      onClick={() => setVisitPage(p => Math.max(1, p - 1))}
+                      disabled={safeVisitPage <= 1}
+                      className="text-[12px] px-2.5 py-1.5 rounded border border-[rgba(255,255,255,0.16)] text-[rgba(255,255,255,0.75)] disabled:opacity-40 cursor-pointer"
+                    >
+                      Anterior
+                    </button>
+                    <span className="text-[12px] text-[rgba(255,255,255,0.5)]">{safeVisitPage}/{totalVisitPages}</span>
+                    <button
+                      onClick={() => setVisitPage(p => Math.min(totalVisitPages, p + 1))}
+                      disabled={safeVisitPage >= totalVisitPages}
+                      className="text-[12px] px-2.5 py-1.5 rounded border border-[rgba(255,255,255,0.16)] text-[rgba(255,255,255,0.75)] disabled:opacity-40 cursor-pointer"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </div>
+                {loadingVisits && <div className="py-12 text-center text-[rgba(255,255,255,0.3)]">Cargando métricas…</div>}
+                {!loadingVisits && filteredVisitMetrics.length === 0 && <div className="py-12 text-center text-[rgba(255,255,255,0.25)]">Sin métricas para mostrar.</div>}
+              </div>
+
+              {selectedVisitUid && (
+                <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-[rgba(255,255,255,0.07)] flex items-center justify-between">
+                    <div>
+                      <p className="text-white font-semibold">Visitantes internos del perfil</p>
+                      <p className="text-[12px] text-[rgba(255,255,255,0.35)]">UID: {selectedVisitUid}</p>
+                    </div>
+                    <button onClick={() => { setSelectedVisitUid(null); setSelectedVisitors([]) }} className="text-[12px] px-2 py-1 rounded border border-[rgba(255,255,255,0.2)] text-[rgba(255,255,255,0.6)] cursor-pointer">Cerrar</button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm min-w-[700px]">
+                      <thead>
+                        <tr className="border-b border-[rgba(255,255,255,0.07)]">
+                          {['Nombre','Email','Rol','Sistema','Visitas','Última visita'].map(h => (
+                            <th key={h} className="px-5 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.05em] text-[rgba(255,255,255,0.3)]">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {!loadingVisitors && selectedVisitors.map(v => (
+                          <tr key={v.uid} className="border-b border-[rgba(255,255,255,0.05)]">
+                            <td className="px-5 py-3 text-white">{v.name || 'Usuario interno'}</td>
+                            <td className="px-5 py-3 text-[rgba(255,255,255,0.7)]">{isSuperAdmin ? (v.email || '—') : 'Solo visible para Super Admin'}</td>
+                            <td className="px-5 py-3"><RoleBadge role={v.role ?? undefined} /></td>
+                            <td className="px-5 py-3 text-[rgba(255,255,255,0.7)]">{v.systemRole ?? 'user'}</td>
+                            <td className="px-5 py-3 text-white font-semibold">{v.count.toLocaleString('es-AR')}</td>
+                            <td className="px-5 py-3 text-[rgba(255,255,255,0.45)]">{v.lastVisitedAt ? new Date(v.lastVisitedAt).toLocaleString('es-AR') : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {loadingVisitors && <div className="py-10 text-center text-[rgba(255,255,255,0.3)]">Cargando visitantes…</div>}
+                  {!loadingVisitors && selectedVisitors.length === 0 && <div className="py-10 text-center text-[rgba(255,255,255,0.25)]">No hay visitantes internos registrados todavía.</div>}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* ESTADÍSTICAS */}
           {tab === 'estadisticas' && (
             <div className="space-y-6">
@@ -577,17 +963,9 @@ export default function AdminPage() {
           {/* SUSCRIPCIONES */}
           {tab === 'suscripciones' && <AdminSubscriptionsTab />}
 
-          {/* MODERACIÓN — placeholder */}
+          {/* MODERACIÓN — mensajería */}
           {tab === 'moderacion' && (
-            <div className="space-y-4">
-              <SectionHeader title="Moderación" subtitle="Próximamente disponible" />
-              <div className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] py-20 flex flex-col items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[rgba(170,255,0,0.08)] border border-[rgba(170,255,0,0.2)] flex items-center justify-center">
-                  <svg className="w-6 h-6 text-[rgba(170,255,0,0.6)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                </div>
-                <p className="text-[rgba(255,255,255,0.3)] text-sm">Esta sección está en desarrollo.</p>
-              </div>
-            </div>
+            <AdminMessagesTab onPendingCountChange={setPendingMessagesCount} />
           )}
         </div>
 
@@ -618,4 +996,13 @@ function RoleBadge({ role }: { role?: string }) {
   }
   const s = map[role ?? ''] ?? { label: role ?? '—', color:'rgba(255,255,255,0.4)', bg:'rgba(255,255,255,0.06)' }
   return <span className="text-[12px] font-semibold px-2.5 py-1 rounded-full" style={{ color:s.color, background:s.bg }}>{s.label}</span>
+}
+
+function KpiCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-4">
+      <p className="text-[11px] uppercase tracking-[0.08em] text-[rgba(255,255,255,0.35)]">{label}</p>
+      <p className="mt-1 text-[26px] font-semibold tracking-[-0.02em] text-white">{value}</p>
+    </div>
+  )
 }

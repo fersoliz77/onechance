@@ -13,9 +13,12 @@ export default function RejectModal({ open, profileName, onConfirm, onCancel }: 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    if (open) {
-      setReason('')
-      setTimeout(() => textareaRef.current?.focus(), 80)
+    if (!open) return
+    const resetTimer = window.setTimeout(() => setReason(''), 0)
+    const focusTimer = window.setTimeout(() => textareaRef.current?.focus(), 80)
+    return () => {
+      window.clearTimeout(resetTimer)
+      window.clearTimeout(focusTimer)
     }
   }, [open])
 

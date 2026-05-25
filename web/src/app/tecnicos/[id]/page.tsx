@@ -79,7 +79,7 @@ export default function CoachProfilePage() {
       <Background />
       <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(circle_at_50%_15%,rgba(90,143,255,0.11),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(0,195,255,0.07),transparent_30%)]" />
       {showContact && coach && (
-        <ContactModal toUid={id} toName={coach.fullName} accent={accent} onClose={() => setShowContact(false)} />
+        <ContactModal toUid={id} toName={coach.fullName} toRole="coach" accent={accent} onClose={() => setShowContact(false)} />
       )}
       <div className="relative z-[2] oc-main-offset">
         <div className="oc-shell oc-page-block">

@@ -474,7 +474,13 @@ export default function AdminProfileDrawer({ profile, role, onClose, onSaved }: 
   const [saved,   setSaved]   = useState(false)
 
   useEffect(() => {
-    if (profile) { setDraft({ ...profile }); setError(''); setSaved(false) }
+    if (!profile) return
+    const id = window.setTimeout(() => {
+      setDraft({ ...profile })
+      setError('')
+      setSaved(false)
+    }, 0)
+    return () => window.clearTimeout(id)
   }, [profile])
 
   const set = useCallback((k: string, v: unknown) => {

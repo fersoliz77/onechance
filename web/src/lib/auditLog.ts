@@ -19,6 +19,9 @@ export type AuditAction =
   | 'plan_create'
   | 'plan_update'
   | 'plan_delete'
+  | 'message_approve'
+  | 'message_reject'
+  | 'message_unblock'
 
 export interface AuditEntry {
   adminUid: string
@@ -60,6 +63,9 @@ const ACTION_LABEL: Record<AuditAction, string> = {
   plan_create:        'Plan de suscripción creado',
   plan_update:        'Plan de suscripción actualizado',
   plan_delete:        'Plan de suscripción eliminado',
+  message_approve:    'Conversación aprobada',
+  message_reject:     'Conversación rechazada',
+  message_unblock:    'Bloqueo de conversación levantado',
 }
 
 export async function getRecentAuditLogs(n = 5): Promise<RecentActivity[]> {

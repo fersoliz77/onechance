@@ -2,27 +2,65 @@
   "rules": {
     "userRoles": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin' || auth.token.role === 'admin' || auth.token.role === 'super_admin')",
-        ".write": "auth != null && ((auth.uid === $uid && !data.exists() && newData.child('systemRole').val() === 'user') || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin' || auth.token.role === 'super_admin')"
+        ".read":  "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')",
+        ".write": "auth != null && ((auth.uid === $uid && !data.exists() && newData.child('systemRole').val() === 'user') || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')"
       }
     },
     "profiles": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin' || auth.token.role === 'admin' || auth.token.role === 'super_admin')",
-        ".write": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin' || auth.token.role === 'admin' || auth.token.role === 'super_admin')"
+        ".read":  "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')"
       }
     },
     "videos": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin' || auth.token.role === 'admin' || auth.token.role === 'super_admin')",
-        ".write": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin' || auth.token.role === 'admin' || auth.token.role === 'super_admin')"
+        ".read":  "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')"
       }
     },
     "photos": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin' || auth.token.role === 'admin' || auth.token.role === 'super_admin')",
-        ".write": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin' || auth.token.role === 'admin' || auth.token.role === 'super_admin')"
+        ".read":  "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')"
       }
+    },
+    "messages": {
+      "$uid": {
+        ".read":  "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    },
+    "notifications": {
+      "$uid": {
+        ".read":  "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    },
+    "adminInbox": {
+      ".read":  "auth != null && (root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')",
+      ".write": false
+    },
+    "userConversations": {
+      "$uid": {
+        ".read":  "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    },
+    "follows": {
+      "$viewerUid": {
+        ".read":  "auth != null && auth.uid === $viewerUid",
+        ".write": "auth != null && auth.uid === $viewerUid"
+      }
+    },
+    "profileMetrics": {
+      "$uid": {
+        ".read":  "auth != null",
+        ".write": false
+      }
+    },
+    "audit_activity": {
+      ".read":  "auth != null && (root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')",
+      ".write": false
     }
   }
 }

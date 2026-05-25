@@ -201,6 +201,56 @@ export function subscribeProfileVisits(uid: string, cb: (visits: number) => void
   return () => off(r, 'value', handler as any)
 }
 
+// ── USER CONVERSATION MIRROR (sender status, realtime) ───────
+export interface UserConvMirror {
+  id: string
+  toUid: string
+  toName: string
+  toRole: string
+  subject: string
+  status: 'pending' | 'approved'
+  messageCount: number
+  updatedAt: string
+  createdAt?: string
+}
+
+export function subscribeMessages(uid: string, cb: (msgs: MessageEntry[]) => void) {
+  const r = ref(rtdb, `messages/${uid}`)
+  const handler = (snap: { exists: () => boolean; val: () => unknown }) => {
+    if (!snap.exists()) { cb([]); return }
+    const val = snap.val() as Record<string, Omit<MessageEntry, 'id'>>
+    cb(Object.entries(val).map(([id, m]) => ({ id, ...m })).sort((a, b) => b.createdAt.localeCompare(a.createdAt)))
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onValue(r, handler as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return () => off(r, 'value', handler as any)
+}
+
+export function subscribeUserConversations(uid: string, cb: (convs: UserConvMirror[]) => void) {
+  const r = ref(rtdb, `userConversations/${uid}`)
+  const handler = (snap: { exists: () => boolean; val: () => unknown }) => {
+    if (!snap.exists()) { cb([]); return }
+    const val = snap.val() as Record<string, Omit<UserConvMirror, 'id'>>
+    cb(Object.entries(val).map(([id, c]) => ({ id, ...c })).sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? '')))
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onValue(r, handler as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return () => off(r, 'value', handler as any)
+}
+
+export function subscribeAdminInbox(cb: (count: number) => void) {
+  const r = ref(rtdb, 'adminInbox')
+  const handler = (snap: { exists: () => boolean; val: () => unknown }) => {
+    cb(snap.exists() ? Object.keys(snap.val() as object).length : 0)
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onValue(r, handler as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return () => off(r, 'value', handler as any)
+}
+
 // ── ADMIN: RECENT ACTIVITY ────────────────────────────────────
 export async function getRecentAuditActivity(limitCount = 5): Promise<{ id: string; action: string; actorEmail?: string; createdAt?: string }[]> {
   const snap = await get(ref(rtdb, 'audit_activity'))

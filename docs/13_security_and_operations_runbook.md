@@ -83,3 +83,52 @@
 
 - Si `systemRole` es `admin` o `super_admin`, mostrar ese rol en el label principal.
 - Si `systemRole` es `user`, mostrar `role` (Jugador/Tecnico/Club/Representante).
+
+---
+
+## Sistema de mensajería — operaciones de admin
+
+### Moderar un mensaje pendiente
+
+1. Ir a `/admin` → tab Mensajes → subtab Pendientes
+2. Leer el mensaje y decidir:
+   - **Aprobar** → `POST /api/admin/messages/{id}/approve` — entrega todos los mensajes encolados al inbox del destinatario
+   - **Rechazar** → `POST /api/admin/messages/{id}/reject` — bloquea la conversación silenciosamente
+
+La aprobación es **idempotente**: si la red falla y el admin reintenta, no se entregan mensajes duplicados.
+
+### Desbloquear un par rechazado
+
+1. Ir a `/admin` → tab Mensajes → subtab Rechazadas
+2. Ejecutar "Desbloquear" → `POST /api/admin/messages/{id}/unblock`
+3. La conversación pasa a estado `archived`; el par queda libre para iniciar una nueva conversación desde cero
+
+### Lo que el emisor siempre ve
+
+- `pending` → "Enviado ✓" (procesando, sin saber que hay moderación)
+- `rejected` → "Enviado ✓" (nunca se entera del rechazo)
+- `approved` → "✓ Entregado"
+- `archived` → "Enviado ✓" (la conversación vieja ya no existe para él)
+
+### Límites operativos
+
+- Máximo 3 mensajes encolados por conversación mientras está pending. El 4to se ignora silenciosamente.
+- Un mensaje de reply (B→A) cuando la dirección inversa (A→B) ya está aprobada va directo sin moderación.
+- Auto-mensaje (A→A) bloqueado en el API, nunca llega a moderación.
+
+---
+
+## Firebase — procedimiento de deploy de reglas
+
+Ver `docs/21_firebase_infrastructure.md` para el procedimiento completo.
+
+Resumen ejecutivo:
+
+```bash
+# Después de cualquier cambio en firestore.rules, database.rules.json o firestore.indexes.json:
+cd web
+firebase deploy --only firestore:rules,firestore:indexes,database
+```
+
+**Regla crítica:** los tres archivos se despliegan siempre juntos. Nunca parcial.
+Los archivos en `web/` son la única fuente de verdad. La consola de Firebase no es canónica.

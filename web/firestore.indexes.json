@@ -43,6 +43,14 @@
     { "collectionGroup": "admin_audit_logs", "queryScope": "COLLECTION", "fields": [
       { "fieldPath": "actorUid",    "order": "ASCENDING" },
       { "fieldPath": "createdAt",   "order": "DESCENDING" }
+    ]},
+    { "collectionGroup": "conversations", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "fromUid", "order": "ASCENDING" },
+      { "fieldPath": "toUid",   "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "conversations", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "fromUid", "order": "ASCENDING" },
+      { "fieldPath": "status",  "order": "ASCENDING" }
     ]}
   ],
   "fieldOverrides": []

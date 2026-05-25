@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { auth } from '@/lib/firebase'
-import { ROLE_LABELS, ROLE_ACCENT } from '@/lib/constants'
+import { ROLE_ACCENT } from '@/lib/constants'
 import type { SubscriptionPlan, PlanDraft, PlanCurrency, PlanInterval } from '@/types/plans'
 import type { Role } from '@/types'
 
@@ -135,7 +135,8 @@ export default function PlanDrawer({ plan, open, onClose, onSaved }: Props) {
   const [error,  setError]  = useState('')
 
   useEffect(() => {
-    if (open) {
+    if (!open) return
+    const id = window.setTimeout(() => {
       setDraft(plan ? {
         name: plan.name, role: plan.role, price: plan.price, currency: plan.currency,
         interval: plan.interval, features: [...plan.features],
@@ -143,7 +144,8 @@ export default function PlanDrawer({ plan, open, onClose, onSaved }: Props) {
         stripePriceId: plan.stripePriceId,
       } : BLANK)
       setError('')
-    }
+    }, 0)
+    return () => window.clearTimeout(id)
   }, [open, plan])
 
   const set = useCallback(<K extends keyof PlanDraft>(k: K, v: PlanDraft[K]) => {

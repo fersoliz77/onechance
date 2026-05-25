@@ -2,18 +2,19 @@
 
 import { type CSSProperties, useEffect, useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { sendMessage, addNotification } from '@/lib/rtdb'
 import Button from './Button'
+import type { Role } from '@/types'
 
 interface ContactModalProps {
-  toUid: string
-  toName: string
-  accent: string
+  toUid:   string
+  toName:  string
+  toRole?: Role
+  accent:  string
   onClose: () => void
 }
 
-export default function ContactModal({ toUid, toName, accent, onClose }: ContactModalProps) {
-  const { user } = useAuth()
+export default function ContactModal({ toUid, toName, toRole = 'player', accent, onClose }: ContactModalProps) {
+  const { user, firebaseUser } = useAuth()
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
@@ -36,30 +37,26 @@ export default function ContactModal({ toUid, toName, accent, onClose }: Contact
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!user || !subject.trim() || !body.trim()) return
+    if (!user || !firebaseUser || !subject.trim() || !body.trim()) return
     setSending(true)
     setError(null)
     try {
-      const now = new Date().toISOString()
-      await sendMessage(toUid, {
-        fromUid: user.uid,
-        fromName: user.name || user.email || 'Usuario',
-        fromRole: user.role ?? 'player',
-        subject: subject.trim(),
-        body: body.trim(),
-        read: false,
-        createdAt: now,
+      const token = await firebaseUser.getIdToken()
+      const res = await fetch('/api/messages/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          toUid,
+          toName,
+          toRole,
+          subject: subject.trim(),
+          body:    body.trim(),
+        }),
       })
-      await addNotification(toUid, {
-        type: 'contact_received',
-        message: `${user.name || user.email || 'Un usuario'} te envió un mensaje: "${subject.trim()}"`,
-        read: false,
-        createdAt: now,
-        fromName: user.name || user.email || 'Usuario',
-      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       setSent(true)
     } catch {
-      setError('No se pudo enviar el mensaje. Intenta de nuevo.')
+      setError('No se pudo enviar el mensaje. Intentá de nuevo.')
     } finally {
       setSending(false)
     }
@@ -91,7 +88,7 @@ export default function ContactModal({ toUid, toName, accent, onClose }: Contact
           <div className="relative z-[1] py-6 text-center">
             <div className="text-[33px] mb-3">✓</div>
             <p className="text-white text-[15px] font-medium mb-1">Mensaje enviado</p>
-            <p className="text-[rgba(255,255,255,0.4)] text-[13px] mb-1">{toName} recibirá una notificación.</p>
+            <p className="text-[rgba(255,255,255,0.4)] text-[13px] mb-1">Tu mensaje fue enviado correctamente.</p>
             <p className="text-[rgba(255,255,255,0.3)] text-[12px] mb-5">Esta ventana se cerrará automáticamente...</p>
             <div className="flex gap-2">
               <Button variant="ghost" size="sm" onClick={() => { setSent(false); setSubject(''); setBody('') }} className="flex-1 justify-center">Enviar otro</Button>

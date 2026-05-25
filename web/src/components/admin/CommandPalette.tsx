@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import type { AdminTab } from '@/app/admin/page'
 
 interface NavItem { label: string; tab: AdminTab; keywords?: string[] }
@@ -11,6 +11,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Usuarios',        tab: 'usuarios',      keywords: ['user','people','accounts'] },
   { label: 'Solicitudes',     tab: 'solicitudes',   keywords: ['pendientes','pending','aprobar'] },
   { label: 'Videos',          tab: 'videos',        keywords: ['media','clips'] },
+  { label: 'Visitas',         tab: 'visitas',       keywords: ['visitors','trafico','profile views'] },
   { label: 'Estadísticas',    tab: 'estadisticas',  keywords: ['stats','charts','analytics'] },
   { label: 'Suscripciones',   tab: 'suscripciones', keywords: ['billing','planes'] },
   { label: 'Moderación',      tab: 'moderacion',    keywords: ['reports','ban'] },
@@ -45,10 +46,10 @@ export default function CommandPalette({ open, onClose, onNav, extraActions = []
     !q || a.label.toLowerCase().includes(q)
   )
 
-  const allItems: Array<{ type: 'nav'; item: NavItem } | { type: 'action'; item: ActionItem }> = [
+  const allItems: Array<{ type: 'nav'; item: NavItem } | { type: 'action'; item: ActionItem }> = useMemo(() => [
     ...filteredNav.map(item => ({ type: 'nav' as const, item })),
     ...filteredActions.map(item => ({ type: 'action' as const, item })),
-  ]
+  ], [filteredNav, filteredActions])
 
   const execute = useCallback((idx: number) => {
     const entry = allItems[idx]
@@ -56,10 +57,6 @@ export default function CommandPalette({ open, onClose, onNav, extraActions = []
     if (entry.type === 'nav') { onNav(entry.item.tab); onClose() }
     else { entry.item.action(); onClose() }
   }, [allItems, onNav, onClose])
-
-  useEffect(() => {
-    setSelectedIndex(0)
-  }, [query])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -105,7 +102,10 @@ export default function CommandPalette({ open, onClose, onNav, extraActions = []
           <input
             ref={inputRef}
             value={query}
-            onChange={e => setQuery(e.target.value)}
+            onChange={e => {
+              setQuery(e.target.value)
+              setSelectedIndex(0)
+            }}
             placeholder="Buscar sección o acción…"
             className="flex-1 bg-transparent text-white text-[16px] outline-none placeholder:text-[rgba(255,255,255,0.25)]"
             aria-label="Búsqueda del panel de administración"

@@ -68,9 +68,6 @@ interface Props {
 function Tip({ children, label, side = 'top' }: { children: ReactNode; label: string; side?: 'top' | 'bottom' }) {
   const ref = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => { setMounted(true) }, [])
 
   const show = () => {
     const r = ref.current?.getBoundingClientRect()
@@ -81,7 +78,7 @@ function Tip({ children, label, side = 'top' }: { children: ReactNode; label: st
     )
   }
 
-  const tip = pos && mounted ? createPortal(
+  const tip = pos ? createPortal(
     <div
       style={{
         position: 'fixed',
@@ -157,18 +154,6 @@ const ROLE_FILTERS: { value: Role | 'all'; label: string }[] = [
   { value: 'agent',  label: 'Representantes' },
 ]
 
-function StatusBadge({ status }: { status: ProfileStatus }) {
-  const m = STATUS_META[status]
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap"
-      style={{ color: m.color, background: m.bg, borderColor: m.border }}>
-      <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
-      {m.label}
-    </span>
-  )
-}
-
 function RolePill({ role }: { role: Role }) {
   const color = ROLE_ACCENT[role]
   const label = ROLE_LABELS[role]
@@ -193,9 +178,6 @@ function StatusDropdown({ row, onChangeStatus, onRequestReject }: StatusDropdown
   const triggerRef              = useRef<HTMLButtonElement>(null)
   const menuRef                 = useRef<HTMLDivElement>(null)
   const [pos, setPos]           = useState<{ x: number; y: number } | null>(null)
-  const [mounted, setMounted]   = useState(false)
-
-  useEffect(() => { setMounted(true) }, [])
 
   const handleOpen = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -253,7 +235,7 @@ function StatusDropdown({ row, onChangeStatus, onRequestReject }: StatusDropdown
         <svg className="w-2.5 h-2.5 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="m6 9 6 6 6-6"/></svg>
       </button>
 
-      {open && pos && mounted && createPortal(
+      {open && pos && createPortal(
         <div
           ref={menuRef}
           style={{ position: 'fixed', left: pos.x, top: pos.y, zIndex: 9999, minWidth: 172 }}

@@ -156,9 +156,9 @@ function DeleteConfirm({ plan, onConfirm, onCancel }: {
       >
         <div className="space-y-1">
           <p className="text-white font-semibold text-[16px]">Eliminar plan</p>
-          <p className="text-[13px] text-[rgba(255,255,255,0.45)]">
-            ¿Eliminar <span className="text-white font-medium">"{plan.name}"</span>? Esta acción no se puede deshacer.
-          </p>
+            <p className="text-[13px] text-[rgba(255,255,255,0.45)]">
+              ¿Eliminar <span className="text-white font-medium">{plan.name}</span>? Esta acción no se puede deshacer.
+            </p>
         </div>
         <div className="flex gap-2 pt-1">
           <button
@@ -205,7 +205,10 @@ export default function AdminSubscriptionsTab() {
     }
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    const id = window.setTimeout(() => { void load() }, 0)
+    return () => window.clearTimeout(id)
+  }, [load])
 
   const getToken = async () => auth.currentUser?.getIdToken()
 

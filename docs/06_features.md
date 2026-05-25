@@ -33,6 +33,15 @@
 - [ ] Moderación de videos (ocultar/eliminar)
 - [ ] Gestión de destacados
 
+### Fase 5 — Comunicación
+- [x] Sistema de mensajería moderada entre todos los roles (jugador, técnico, club, representante)
+- [x] Moderación invisible: el emisor nunca sabe que existe moderación
+- [x] Cola de admin para primeros mensajes entre pares nuevos
+- [x] Hilo aprobado: mensajes futuros entre el par van directo sin moderación
+- [x] Reply directo desde el inbox del destinatario
+- [x] Badge de pendientes en tiempo real para admins
+- [x] Panel de moderación con tabs (Pendientes / Aprobadas / Rechazadas / Todas)
+
 ---
 
 ## Feature: Videos

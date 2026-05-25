@@ -43,7 +43,22 @@
       "Bash(Write-Output \"ok\")",
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\\\\app\\\\terminos\")",
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\\\\web\\\\src\\\\app\\\\privacidad\")",
-      "Bash(Select-Object -First 30)"
+      "Bash(Select-Object -First 30)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\pikachu\\\\Downloads\\\\OneChance\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(findstr \"next\")",
+      "Bash(findstr /i \"next\")",
+      "Bash(firebase firestore:rules:get)",
+      "Bash(firebase help *)",
+      "Bash(firebase --version)",
+      "Bash(firebase firestore:indexes)",
+      "Bash(firebase database:get /.settings/rules.json)",
+      "Bash(firebase database:get --help)",
+      "Bash(firebase login:list)",
+      "Bash(where gcloud *)",
+      "Bash(gcloud auth *)",
+      "Bash(firebase database:get \"/\" --instance onechance-platform-default-rtdb --shallow)",
+      "Bash(node -e ' *)"
     ]
   }
 }

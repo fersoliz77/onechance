@@ -27,8 +27,28 @@ export function usePlayersListing() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState<PlayerFilters>(emptyPlayerFilters)
-  const [savedFilters, setSavedFilters] = useState<PlayerFilters[]>([])
-  const [recentSearches, setRecentSearches] = useState<string[]>([])
+  const [savedFilters, setSavedFilters] = useState<PlayerFilters[]>(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const raw = window.localStorage.getItem(SAVED_FILTERS_KEY)
+      if (!raw) return []
+      const parsed = JSON.parse(raw) as PlayerFilters[]
+      return Array.isArray(parsed) ? parsed.slice(0, 5) : []
+    } catch {
+      return []
+    }
+  })
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const raw = window.localStorage.getItem(RECENT_SEARCHES_KEY)
+      if (!raw) return []
+      const parsed = JSON.parse(raw) as string[]
+      return Array.isArray(parsed) ? parsed.slice(0, 6) : []
+    } catch {
+      return []
+    }
+  })
 
   const load = async () => {
     setLoading(true)
@@ -45,26 +65,9 @@ export function usePlayersListing() {
     }
   }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { load() }, [])
-
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    try {
-      const rawFilters = window.localStorage.getItem(SAVED_FILTERS_KEY)
-      if (rawFilters) {
-        const parsed = JSON.parse(rawFilters) as PlayerFilters[]
-        if (Array.isArray(parsed)) setSavedFilters(parsed.slice(0, 5))
-      }
-      const rawSearches = window.localStorage.getItem(RECENT_SEARCHES_KEY)
-      if (rawSearches) {
-        const parsed = JSON.parse(rawSearches) as string[]
-        if (Array.isArray(parsed)) setRecentSearches(parsed.slice(0, 6))
-      }
-    } catch {
-      setSavedFilters([])
-      setRecentSearches([])
-    }
+    const id = window.setTimeout(() => { void load() }, 0)
+    return () => window.clearTimeout(id)
   }, [])
 
   useEffect(() => {

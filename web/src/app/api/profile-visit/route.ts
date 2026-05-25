@@ -40,6 +40,9 @@ export async function POST(req: Request) {
       }
     }
 
+    const now = new Date()
+    const dateKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}`
+
     const metricsRef = getAdminRtdb().ref(`profileMetrics/${profileUid}`)
     await metricsRef.transaction((current) => {
       const base = current && typeof current === 'object' ? current as Record<string, unknown> : {}
@@ -51,7 +54,21 @@ export async function POST(req: Request) {
         visits: total + 1,
         visitsInternal: internal + (viewer ? 1 : 0),
         visitsExternal: external + (viewer ? 0 : 1),
-        lastVisitedAt: new Date().toISOString(),
+        lastVisitedAt: now.toISOString(),
+      }
+    })
+
+    const dailyRef = getAdminRtdb().ref(`profileVisitsDaily/${dateKey}/${profileUid}`)
+    await dailyRef.transaction((current) => {
+      const base = current && typeof current === 'object' ? current as Record<string, unknown> : {}
+      const total = typeof base.total === 'number' ? base.total : 0
+      const internal = typeof base.internal === 'number' ? base.internal : 0
+      const external = typeof base.external === 'number' ? base.external : 0
+      return {
+        total: total + 1,
+        internal: internal + (viewer ? 1 : 0),
+        external: external + (viewer ? 0 : 1),
+        updatedAt: now.toISOString(),
       }
     })
 
@@ -67,7 +84,7 @@ export async function POST(req: Request) {
           role: viewer.role ?? null,
           systemRole: viewer.systemRole ?? 'user',
           count: count + 1,
-          lastVisitedAt: new Date().toISOString(),
+          lastVisitedAt: now.toISOString(),
         }
       })
     }

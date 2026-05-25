@@ -17,6 +17,7 @@ import StatusCard from '@/features/dashboard/components/StatusCard'
 import PhotosSection from '@/features/dashboard/components/sections/PhotosSection'
 import SettingsSection from '@/features/dashboard/components/sections/SettingsSection'
 import VideosSection from '@/features/dashboard/components/sections/VideosSection'
+import MessagesSection from '@/features/dashboard/components/sections/MessagesSection'
 import { useDashboardProfile } from '@/features/dashboard/hooks/useDashboardProfile'
 import { getMissingFields } from '@/lib/completion'
 import type { AgentProfile, ClubProfile, CoachProfile, PlayerProfile, Role } from '@/types'
@@ -24,7 +25,7 @@ import type { AgentProfile, ClubProfile, CoachProfile, PlayerProfile, Role } fro
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
-  const [tab, setTab] = useState<'overview' | 'edit' | 'videos' | 'photos' | 'settings'>('overview')
+  const [tab, setTab] = useState<'overview' | 'edit' | 'videos' | 'photos' | 'settings' | 'mensajes'>('overview')
   const { profile, setProfile, state, setState, loadingProfile } = useDashboardProfile(user?.uid, user?.role)
 
   useEffect(() => {
@@ -47,7 +48,8 @@ export default function DashboardPage() {
     { id: 'overview', icon: '◉', label: 'Mi perfil' },
     { id: 'edit', icon: '✎', label: 'Editar datos' },
     ...(role === 'player' ? [{ id: 'videos', icon: '▶', label: 'Videos' }] : []),
-    { id: 'photos', icon: '□', label: 'Fotos' },
+    { id: 'photos',   icon: '□', label: 'Fotos' },
+    { id: 'mensajes', icon: '✉', label: 'Mensajes' },
     { id: 'settings', icon: '⚙', label: 'Configuracion' },
   ] as { id: typeof tab; icon: string; label: string }[]
 
@@ -125,6 +127,7 @@ export default function DashboardPage() {
 
               {tab === 'videos' && role === 'player' && <VideosSection uid={user.uid} />}
               {tab === 'photos' && <PhotosSection uid={user.uid} />}
+              {tab === 'mensajes' && <MessagesSection accent={accent} />}
               {tab === 'settings' && <SettingsSection uid={user.uid} state={state} onStateChange={setState} />}
             </div>
           </div>

@@ -2,6 +2,39 @@ import { NextResponse } from 'next/server'
 import { getAdminRtdb } from '@/lib/firebase-admin'
 import { requireAdmin, writeAuditLog, parseBody, VideoActionSchema } from '../_lib'
 
+type VideoNode = {
+  type: 'embed' | 'upload'
+  platform: 'youtube' | 'vimeo' | 'tiktok' | 'instagram' | null
+  title: string
+  url: string | null
+  storageRef: string | null
+  status: 'active' | 'hidden'
+  createdAt: string
+}
+
+export async function GET(req: Request) {
+  const auth = await requireAdmin(req)
+  if (!auth.ok) return auth.response
+
+  try {
+    const snap = await getAdminRtdb().ref('videos').get()
+    if (!snap.exists()) return NextResponse.json({ items: [] })
+
+    const all = snap.val() as Record<string, Record<string, VideoNode>>
+    const items: Array<VideoNode & { id: string; playerUid: string }> = []
+
+    for (const [playerUid, videos] of Object.entries(all)) {
+      for (const [id, value] of Object.entries(videos ?? {})) {
+        items.push({ id, playerUid, ...value })
+      }
+    }
+
+    return NextResponse.json({ items })
+  } catch {
+    return NextResponse.json({ error: 'Failed to load videos' }, { status: 500 })
+  }
+}
+
 export async function POST(req: Request) {
   const auth = await requireAdmin(req)
   if (!auth.ok) return auth.response

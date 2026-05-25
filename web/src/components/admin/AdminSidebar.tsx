@@ -11,9 +11,10 @@ const MENU: MenuItem[] = [
   { id: 'usuarios',      icon: 'users',        label: 'Usuarios' },
   { id: 'solicitudes',   icon: 'file',         label: 'Solicitudes' },
   { id: 'videos',        icon: 'video',        label: 'Videos' },
+  { id: 'visitas',       icon: 'chart',        label: 'Visitas' },
   { id: 'estadisticas',  icon: 'chart',        label: 'Estadísticas' },
   { id: 'suscripciones', icon: 'card',         label: 'Suscripciones' },
-  { id: 'moderacion',    icon: 'shield',       label: 'Moderación' },
+  { id: 'moderacion',    icon: 'shield',       label: 'Mensajes' },
   { id: 'configuracion', icon: 'settings',     label: 'Configuración' },
 ]
 
@@ -62,12 +63,13 @@ interface Props {
   tab: AdminTab
   onTab: (t: AdminTab) => void
   pendingCount: number
+  pendingMessagesCount: number
   isSuperAdmin: boolean
   mobileOpen?: boolean
   onMobileClose?: () => void
 }
 
-export default function AdminSidebar({ tab, onTab, pendingCount, mobileOpen = false, onMobileClose }: Props) {
+export default function AdminSidebar({ tab, onTab, pendingCount, pendingMessagesCount, mobileOpen = false, onMobileClose }: Props) {
   const [collapsed, setCollapsed] = useState(() =>
     typeof window !== 'undefined' && localStorage.getItem('oc-admin-sidebar') === 'collapsed'
   )
@@ -136,7 +138,10 @@ export default function AdminSidebar({ tab, onTab, pendingCount, mobileOpen = fa
         <nav className="flex-1 overflow-y-auto px-2 space-y-0.5 pb-3">
           {MENU.map(item => {
             const active = tab === item.id
-            const count = item.id === 'solicitudes' ? pendingCount : undefined
+            const count =
+              item.id === 'solicitudes' ? pendingCount :
+              item.id === 'moderacion'  ? pendingMessagesCount :
+              undefined
             return (
               <div key={item.id} title={collapsed ? item.label : undefined}>
                 <button

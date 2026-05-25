@@ -112,6 +112,41 @@ agents/{uid}
   avatarUrl?: string
 ```
 
+### Colección `conversations`
+
+Solo leída por admins y escrita únicamente por el Admin SDK (API routes).
+El cliente nunca toca esta colección.
+
+```
+conversations/{convId}
+  fromUid:         string          // emisor
+  fromName:        string
+  fromRole:        'player' | 'coach' | 'club' | 'agent'
+  toUid:           string          // destinatario
+  toName:          string
+  toRole:          'player' | 'coach' | 'club' | 'agent'
+  subject:         string
+  status:          'pending' | 'approved' | 'rejected' | 'archived'
+  messageCount:    number          // 1–3 (máx mientras pending)
+  messages:        PendingMessage[]  // cuerpos encolados
+  createdAt:       string          // ISO
+  updatedAt:       string
+  // campos admin-only (nunca se devuelven al cliente):
+  moderatorUid?:   string
+  moderatorEmail?: string
+  moderatedAt?:    string
+  rejectionReason?: string
+
+// PendingMessage
+  id:     string
+  body:   string
+  sentAt: string
+```
+
+Índices compuestos requeridos:
+- `(fromUid ASC, toUid ASC)` — para buscar conversación forward/reverse en O(1)
+- `(fromUid ASC, status ASC)` — para queries por emisor + estado
+
 ---
 
 ## Realtime Database — datos dinámicos
@@ -141,6 +176,45 @@ agents/{uid}
   /{photoId}
     url: string
     storagePath: string
+    createdAt: string
+
+// --- Mensajería (escritura solo via Admin SDK) ---
+
+/messages/{toUid}
+  /{msgId}
+    fromUid:   string
+    fromName:  string
+    fromRole:  'player' | 'coach' | 'club' | 'agent'
+    subject:   string
+    body:      string
+    read:      boolean
+    createdAt: string
+
+/notifications/{toUid}
+  /{notifId}
+    type:      string
+    message:   string
+    read:      boolean
+    createdAt: string
+    fromName:  string
+
+/userConversations/{fromUid}
+  /{convId}
+    toUid:        string
+    toName:       string
+    toRole:       string
+    subject:      string
+    status:       'pending' | 'approved'  // nunca 'rejected' (invisible al emisor)
+    messageCount: number
+    createdAt:    string
+    updatedAt:    string
+
+/adminInbox/{convId}
+    fromName:  string
+    fromRole:  string
+    toName:    string
+    toRole:    string
+    subject:   string
     createdAt: string
 ```
 

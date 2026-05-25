@@ -201,11 +201,7 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [navHidden, setNavHidden] = useState(false)
   const [navCompact, setNavCompact] = useState(false)
-  const [hydrated, setHydrated] = useState(false)
-
-  useEffect(() => {
-    setHydrated(true)
-  }, [])
+  const [hydrated] = useState(true)
 
   const authenticatedUser = hydrated && !loading ? user : null
 

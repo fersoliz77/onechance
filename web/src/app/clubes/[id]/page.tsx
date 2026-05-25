@@ -86,7 +86,7 @@ export default function ClubProfilePage() {
       <Background />
       <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(circle_at_50%_15%,rgba(255,180,0,0.1),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(0,195,255,0.07),transparent_30%)]" />
       {showContact && club && (
-        <ContactModal toUid={id} toName={club.name} accent={accent} onClose={() => setShowContact(false)} />
+        <ContactModal toUid={id} toName={club.name} toRole="club" accent={accent} onClose={() => setShowContact(false)} />
       )}
       <div className="relative z-[2] oc-main-offset">
         <div className="oc-shell oc-page-block">
