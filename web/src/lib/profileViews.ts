@@ -1,3 +1,5 @@
+import { auth } from '@/lib/auth'
+
 export async function registerProfileVisit(profileUid: string, viewerUid?: string) {
   if (!profileUid) return
   if (viewerUid && viewerUid === profileUid) return
@@ -7,9 +9,13 @@ export async function registerProfileVisit(profileUid: string, viewerUid?: strin
   if (window.sessionStorage.getItem(key) === '1') return
 
   try {
+    const token = await auth.currentUser?.getIdToken().catch(() => undefined)
     const res = await fetch('/api/profile-visit', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ profileUid }),
     })
     if (res.ok) window.sessionStorage.setItem(key, '1')
