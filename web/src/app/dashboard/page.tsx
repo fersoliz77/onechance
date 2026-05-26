@@ -78,7 +78,14 @@ export default function DashboardPage() {
               {tab === 'overview' && (
                 <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
                   <div className="flex flex-col gap-4">
-                    {profile ? <StatusCard profile={profile} state={state} role={role} onSubmit={handleSubmit} /> : <div className="oc-dashboard-card rounded-[14px] p-5 text-[rgba(255,255,255,0.45)] text-[13px]">No se encontró tu perfil. Intentá cerrar sesión y volver a ingresar.</div>}
+                    {profile ? <StatusCard profile={profile} state={state} role={role} onSubmit={handleSubmit} /> : (
+                      <div className="oc-dashboard-card rounded-[14px] p-5 text-[13px]">
+                        <div>
+                          <div className="text-white mb-1.5">Estamos preparando tu perfil...</div>
+                          <div className="text-[rgba(255,255,255,0.45)]">Esto puede tardar unos segundos después de crear la cuenta.</div>
+                        </div>
+                      </div>
+                    )}
                     {profile && role && (() => { const missing = getMissingFields(profile, role); return missing.length > 0 ? (
                       <SurfaceCard className="p-4">
                         <div className="mb-2 text-[11px] uppercase tracking-[0.07em] text-[rgba(255,255,255,0.3)]">Completar perfil</div>
