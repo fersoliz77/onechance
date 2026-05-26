@@ -80,6 +80,11 @@ export default function DashboardPage() {
                   <div className="flex flex-col gap-4">
                     {profile ? <StatusCard profile={profile} state={state} role={role} onSubmit={handleSubmit} /> : (
                       <div className="oc-dashboard-card rounded-[14px] p-5 text-[13px]">
+                        <div className="mb-4 space-y-2" aria-hidden="true">
+                          <div className="h-4 w-[58%] rounded bg-[rgba(255,255,255,0.1)] animate-pulse" />
+                          <div className="h-3 w-[84%] rounded bg-[rgba(255,255,255,0.08)] animate-pulse" />
+                          <div className="h-3 w-[72%] rounded bg-[rgba(255,255,255,0.08)] animate-pulse" />
+                        </div>
                         <div>
                           <div className="text-white mb-1.5">Estamos preparando tu perfil...</div>
                           <div className="text-[rgba(255,255,255,0.45)]">Esto puede tardar unos segundos después de crear la cuenta.</div>
