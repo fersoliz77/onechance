@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { logout } from '@/lib/auth'
 import { Button } from '@/components/ui/Button'
+import AuthModal from '@/components/landing/AuthModal'
 import { isAdminRole } from '@/lib/permissions'
 import { ROLE_ACCENT, ROLE_LABELS } from '@/lib/constants'
 import { subscribeNotifications, markAllNotificationsRead, type NotificationEntry } from '@/lib/rtdb'
@@ -202,6 +203,7 @@ export default function Nav() {
   const [navHidden, setNavHidden] = useState(false)
   const [navCompact, setNavCompact] = useState(false)
   const [hydrated] = useState(true)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
 
   const authenticatedUser = hydrated && !loading ? user : null
 
@@ -280,7 +282,7 @@ export default function Nav() {
                 Ingresar
               </Button>
               <button
-                onClick={() => router.push('/auth?tab=register')}
+                onClick={() => setAuthModalOpen(true)}
                 className="hidden h-10 min-w-[140px] px-7 rounded-[8px] sm:inline-flex items-center justify-center gap-2.5 no-underline text-[14px] font-[700] leading-none tracking-[-0.01em] text-black bg-[var(--oc-lime)] shadow-[0_8px_32px_rgba(170,255,0,0.25)] transition-all duration-200 hover:-translate-y-[2px] hover:bg-[#C4FF40] cursor-pointer"
               >
                 Publicar perfil
@@ -315,7 +317,7 @@ export default function Nav() {
             <>
               <div className="my-2 border-t border-[rgba(255,255,255,0.06)]" />
               <button
-                onClick={() => { setMobileOpen(false); router.push('/auth?tab=register') }}
+                onClick={() => { setMobileOpen(false); setAuthModalOpen(true) }}
                 className="rounded-[8px] px-3 py-2 text-[15px] text-black text-left cursor-pointer border-none bg-[var(--oc-lime)] font-[700]"
               >
                 Publicar perfil
@@ -341,6 +343,7 @@ export default function Nav() {
           )}
         </div>
       </div>
+      <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </nav>
   )
 }

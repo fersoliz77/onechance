@@ -5,7 +5,6 @@ import { useAuth } from '@/context/AuthContext'
 import { register, login, sendPasswordResetEmail, auth, createUserRecord, createPlayerRecord, createCoachRecord, createClubRecord, createAgentRecord } from '@/lib/auth'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
-import Select from '@/components/ui/Select'
 import { POSITIONS, COUNTRIES, type Role } from '@/types'
 
 const ROLES = [
@@ -16,6 +15,31 @@ const ROLES = [
 ]
 
 const STEP_NAMES = ['Cuenta', 'Rol', 'Datos']
+const INTENT_KEY = 'oc_auth_intent'
+const ROLE_KEY = 'oc_selected_role'
+
+function getRoleDashboardPath(role: Role) {
+  return `/dashboard?role=${role}`
+}
+
+function persistAuthIntent(role?: Role) {
+  try {
+    sessionStorage.setItem(INTENT_KEY, 'create-profile')
+    if (role) sessionStorage.setItem(ROLE_KEY, role)
+  } catch {
+    // no-op
+  }
+}
+
+function readPersistedRole(): Role | undefined {
+  try {
+    if (sessionStorage.getItem(INTENT_KEY) !== 'create-profile') return undefined
+    const stored = sessionStorage.getItem(ROLE_KEY)
+    return VALID_ROLES.includes(stored as Role) ? (stored as Role) : undefined
+  } catch {
+    return undefined
+  }
+}
 
 function StepDots({ total, current }: { total: number; current: number }) {
   return (
@@ -34,6 +58,117 @@ function StepDots({ total, current }: { total: number; current: number }) {
           )}
         </div>
       ))}
+    </div>
+  )
+}
+
+function RoleSelect({ value, onChange }: { value: Role | ''; onChange: (next: Role) => void }) {
+  const [open, setOpen] = useState(false)
+  const selected = ROLES.find(r => r.id === value)
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full h-[var(--oc-control-h-md)] rounded-[8px] border border-[var(--oc-border-strong)] bg-[var(--oc-surface-2)] px-3 text-left text-[14px] lg:text-[15px] text-white outline-none cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-[rgba(0,200,83,0.28)] focus-visible:border-[rgba(0,200,83,0.38)] flex items-center"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span className={selected ? 'text-white' : 'text-[rgba(255,255,255,0.35)]'}>{selected?.title ?? 'Seleccioná tu rol'}</span>
+        <span className={`ml-auto text-[rgba(255,255,255,0.7)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} aria-hidden="true">
+          <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 8L10 12L14 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      </button>
+
+      {open && (
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 overflow-hidden rounded-[10px] border border-[var(--oc-border-strong)] bg-[linear-gradient(170deg,rgba(16,28,22,0.98),rgba(10,16,13,0.98))] shadow-[0_16px_44px_rgba(0,0,0,0.45)] backdrop-blur-[10px]">
+          <div role="listbox" aria-label="Rol del perfil" className="p-1.5">
+            {ROLES.map(r => {
+              const active = value === r.id
+              return (
+                <button
+                  key={r.id}
+                  type="button"
+                  role="option"
+                  aria-selected={active}
+                  onClick={() => { onChange(r.id as Role); setOpen(false) }}
+                  className="w-full h-10 rounded-[8px] px-3 text-left text-[14px] transition-colors cursor-pointer"
+                  style={{
+                    color: active ? '#132008' : 'rgba(255,255,255,0.88)',
+                    background: active ? 'var(--oc-lime)' : 'transparent',
+                  }}
+                >
+                  <span className="mr-2" aria-hidden="true">{r.icon}</span>
+                  {r.title}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DarkDropdown({
+  value,
+  placeholder,
+  options,
+  onChange,
+}: {
+  value: string
+  placeholder: string
+  options: Array<{ value: string; label: string }>
+  onChange: (next: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const selected = options.find(o => o.value === value)
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full h-[var(--oc-control-h-md)] rounded-[8px] border border-[var(--oc-border-strong)] bg-[var(--oc-surface-2)] px-3 text-left text-[14px] lg:text-[15px] outline-none cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-[rgba(0,200,83,0.28)] focus-visible:border-[rgba(0,200,83,0.38)] flex items-center"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span className={selected ? 'text-white' : 'text-[rgba(255,255,255,0.35)]'}>{selected?.label ?? placeholder}</span>
+        <span className={`ml-auto text-[rgba(255,255,255,0.7)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} aria-hidden="true">
+          <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 8L10 12L14 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      </button>
+
+      {open && (
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 max-h-[220px] overflow-y-auto rounded-[10px] border border-[var(--oc-border-strong)] bg-[linear-gradient(170deg,rgba(16,28,22,0.98),rgba(10,16,13,0.98))] shadow-[0_16px_44px_rgba(0,0,0,0.45)] backdrop-blur-[10px]">
+          <div role="listbox" className="p-1.5">
+            {options.map(o => {
+              const active = value === o.value
+              return (
+                <button
+                  key={o.value || '__empty__'}
+                  type="button"
+                  role="option"
+                  aria-selected={active}
+                  onClick={() => { onChange(o.value); setOpen(false) }}
+                  className="w-full min-h-10 rounded-[8px] px-3 py-2 text-left text-[14px] leading-[1.35] transition-colors cursor-pointer"
+                  style={{
+                    color: active ? '#132008' : 'rgba(255,255,255,0.88)',
+                    background: active ? 'var(--oc-lime)' : 'transparent',
+                  }}
+                >
+                  {o.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -128,12 +263,16 @@ function LoginForm({ onSwitch }: { onSwitch: () => void }) {
 function RegisterForm({ initialRole }: { initialRole?: Role }) {
   const [step, setStep] = useState(0)
   const [creds, setCreds] = useState({ email: '', pass: '', confirm: '' })
-  const [role, setRole] = useState<Role | null>(initialRole ?? null)
-  const [form, setForm] = useState({ fullName: '', birthDate: '', nationality: '', position: '' })
+  const [role, setRole] = useState<Role | null>(() => initialRole ?? readPersistedRole() ?? null)
+  const [form, setForm] = useState({ fullName: '', birthDate: '2000-01-01', nationality: '', position: '' })
   const [isMinor, setIsMinor] = useState(false)
   const [err, setErr] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    if (initialRole) persistAuthIntent(initialRole)
+  }, [initialRole])
 
   const checkBirth = (v: string) => {
     setForm(f => ({ ...f, birthDate: v }))
@@ -154,9 +293,9 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
     if (!creds.email || !creds.pass || !creds.confirm) { setErr('Completá todos los campos.'); return }
     if (creds.pass !== creds.confirm) { setErr('Las contraseñas no coinciden.'); return }
     if (creds.pass.length < 6) { setErr('La contraseña debe tener al menos 6 caracteres.'); return }
+    if (!role) { setErr('Elegí tu rol para continuar.'); return }
     setErr('')
-    // Skip role selection step if role was pre-selected from URL param
-    setStep(role ? 2 : 1)
+    setStep(2)
   }
 
   const step2Submit = async () => {
@@ -172,7 +311,9 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
       else if (role === 'club') await createClubRecord(user.uid, base)
       else if (role === 'agent') await createAgentRecord(user.uid, base)
       setStep(3)
-      setTimeout(() => router.push('/dashboard'), 1800)
+      const selectedRole = role
+      persistAuthIntent(selectedRole)
+      setTimeout(() => router.push(getRoleDashboardPath(selectedRole)), 1800)
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : 'Error al registrarse.')
     } finally {
@@ -219,6 +360,16 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
                 </div>
               )}
             </div>
+            <div>
+              <div className="mb-1.5 text-[10px] uppercase tracking-[0.06em] text-[var(--oc-text-label)]">Rol del perfil</div>
+              <RoleSelect
+                value={role ?? ''}
+                onChange={(nextRole) => {
+                  setRole(nextRole)
+                  persistAuthIntent(nextRole)
+                }}
+              />
+            </div>
           </div>
           {err && <div className="mb-2.5 text-[12px] text-[var(--color-oc-red)]">{err}</div>}
           <Button variant="primary" className="w-full justify-center" size="lg" onClick={step0Submit}>Continuar →</Button>
@@ -262,6 +413,13 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
           <div className="text-white text-[23px] font-medium tracking-[-0.02em] mb-5">Tus datos</div>
           <div className="flex flex-col gap-2.5 mb-3.5">
             <Input placeholder="Nombre y apellido" aria-label="Nombre y apellido" autoComplete="name" value={form.fullName} onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))} />
+            <RoleSelect
+              value={role}
+              onChange={(nextRole) => {
+                setRole(nextRole)
+                persistAuthIntent(nextRole)
+              }}
+            />
             <div>
                <div className="mb-1.5 text-[10px] uppercase tracking-[0.06em] text-[var(--oc-text-label)]">Fecha de nacimiento</div>
               <input
@@ -282,22 +440,24 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
                 </div>
               </div>
             )}
-            <Select
+            <DarkDropdown
               value={form.nationality}
-              onChange={e => setForm(f => ({ ...f, nationality: e.target.value }))}
+              placeholder="Nacionalidad"
+              onChange={next => setForm(f => ({ ...f, nationality: next }))}
               options={[{ value: '', label: 'Nacionalidad' }, ...COUNTRIES.map(c => ({ value: c, label: c }))]}
             />
             {role === 'player' && (
-              <Select
+              <DarkDropdown
                 value={form.position}
-                onChange={e => setForm(f => ({ ...f, position: e.target.value }))}
+                placeholder="Puesto principal"
+                onChange={next => setForm(f => ({ ...f, position: next }))}
                 options={[{ value: '', label: 'Puesto principal' }, ...POSITIONS.map(p => ({ value: p, label: p }))]}
               />
             )}
           </div>
           {err && <div className="mb-2.5 text-[12px] text-[var(--color-oc-red)]">{err}</div>}
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setStep(initialRole ? 0 : 1)} className="flex-1 justify-center">Atrás</Button>
+            <Button variant="outline" onClick={() => setStep(0)} className="flex-1 justify-center">Atrás</Button>
             <Button variant="primary" onClick={step2Submit} className="flex-[2] justify-center" disabled={loading}>
               {loading ? 'Creando...' : 'Crear perfil →'}
             </Button>
@@ -314,10 +474,15 @@ function AuthContent() {
   const searchParams = useSearchParams()
   const initialTab = searchParams.get('tab') === 'register' ? 'register' : 'login'
   const roleParam = searchParams.get('role')
-  const initialRole = VALID_ROLES.includes(roleParam as Role) ? (roleParam as Role) : undefined
   const [tab, setTab] = useState(initialTab)
   const { user } = useAuth()
   const router = useRouter()
+  const queryRole = VALID_ROLES.includes(roleParam as Role) ? (roleParam as Role) : undefined
+  const initialRole = queryRole ?? readPersistedRole()
+
+  useEffect(() => {
+    if (tab === 'register' && queryRole) persistAuthIntent(queryRole)
+  }, [queryRole, tab])
 
   useEffect(() => {
     if (user) router.push('/dashboard')

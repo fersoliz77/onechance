@@ -27,11 +27,29 @@ export function useDashboardProfile(uid?: string, role?: string | null) {
       Promise.resolve().then(() => setLoadingProfile(false))
       return
     }
-    Promise.all([fn(), getProfileState(uid)]).then(([p, s]) => {
-      setProfile(p)
-      setState(s)
+    let cancelled = false
+    const load = async () => {
+      let profileResult: AnyProfile | null = null
+      let stateResult: ProfileState | null = null
+
+      for (let attempt = 0; attempt < 6; attempt += 1) {
+        const [p, s] = await Promise.all([fn(), getProfileState(uid)])
+        profileResult = p
+        stateResult = s
+        if (p) break
+        await new Promise(resolve => setTimeout(resolve, 250 * (attempt + 1)))
+      }
+
+      if (cancelled) return
+      setProfile(profileResult)
+      setState(stateResult)
       setLoadingProfile(false)
-    })
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
   }, [uid, role])
 
   return { profile, setProfile, state, setState, loadingProfile }
