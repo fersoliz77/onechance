@@ -11,7 +11,7 @@ interface Props {
   compact?: boolean
 }
 
-type StatusFilter = 'all' | 'active' | 'hidden'
+type StatusFilter = 'all' | 'published' | 'pending' | 'hidden'
 
 function VideoThumb() {
   return (
@@ -45,15 +45,15 @@ export default function AdminVideos({ videos, playerNames, onToggle, onRemove, o
               <button
                 onClick={() => setFilterOpen(o => !o)}
                 className="text-[12px] px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.4)] hover:text-white transition-colors cursor-pointer bg-transparent flex items-center gap-1">
-                Filtrar {statusFilter !== 'all' ? `· ${statusFilter === 'active' ? 'Visibles' : 'Ocultos'}` : '▾'}
+                Filtrar {statusFilter !== 'all' ? `· ${statusFilter === 'published' ? 'Publicados' : statusFilter === 'pending' ? 'Pendientes' : 'Ocultos'}` : '▾'}
               </button>
               {filterOpen && (
                 <div className="absolute right-0 top-9 z-20 rounded-xl border border-[rgba(255,255,255,0.1)] bg-[#111] shadow-xl py-1.5 min-w-[140px]">
-                  {(['all', 'active', 'hidden'] as StatusFilter[]).map(f => (
+                  {(['all', 'published', 'pending', 'hidden'] as StatusFilter[]).map(f => (
                     <button key={f} onClick={() => { setStatusFilter(f); setFilterOpen(false) }}
                       className="w-full text-left px-4 py-2 text-[13px] cursor-pointer border-none transition-all hover:bg-[rgba(255,255,255,0.05)]"
                       style={{ color: statusFilter === f ? '#AAFF00' : 'rgba(255,255,255,0.55)', background: 'transparent' }}>
-                      {f === 'all' ? 'Todos' : f === 'active' ? 'Visibles' : 'Ocultos'}
+                      {f === 'all' ? 'Todos' : f === 'published' ? 'Publicados' : f === 'pending' ? 'Pendientes' : 'Ocultos'}
                     </button>
                   ))}
                 </div>
@@ -86,10 +86,10 @@ export default function AdminVideos({ videos, playerNames, onToggle, onRemove, o
                   <button onClick={() => onToggle(v)}
                     className="text-[12px] px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer border-none transition-all"
                     style={{
-                      background: v.status === 'active' ? 'rgba(170,255,0,0.1)' : 'rgba(255,255,255,0.06)',
-                      color: v.status === 'active' ? '#AAFF00' : 'rgba(255,255,255,0.3)',
+                      background: v.status === 'published' ? 'rgba(0,200,83,0.14)' : v.status === 'pending' ? 'rgba(255,180,0,0.14)' : 'rgba(255,255,255,0.06)',
+                      color: v.status === 'published' ? '#00C853' : v.status === 'pending' ? '#FFB400' : 'rgba(255,255,255,0.35)',
                     }}>
-                    {v.status === 'active' ? 'Visible' : 'Oculto'}
+                    {v.status === 'pending' ? 'Aprobar' : v.status === 'published' ? 'Ocultar' : 'Publicar'}
                   </button>
                   <button onClick={() => onRemove(v.playerUid, v.id)}
                     className="text-[12px] px-2.5 py-1.5 rounded-lg font-semibold cursor-pointer border-none transition-all"

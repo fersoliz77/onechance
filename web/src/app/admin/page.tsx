@@ -472,12 +472,12 @@ export default function AdminPage() {
 
   const handleToggleVideo = useCallback((v: VideoEntry & { playerUid: string }) => {
     execute(`video-${v.id}`, async () => {
-      const next = v.status === 'active' ? 'hidden' : 'active'
+      const next: VideoEntry['status'] = v.status === 'pending' ? 'published' : v.status === 'published' ? 'hidden' : 'published'
       try {
         await callAdminApi('/api/admin/video', { playerUid: v.playerUid, videoId: v.id, action: 'toggle', status: next })
         setVideos(vs => vs.map(x => x.id === v.id && x.playerUid === v.playerUid ? { ...x, status: next } : x))
         await logAudit({ uid: firebaseUser!.uid, email: firebaseUser!.email }, 'toggle_video', v.id, 'video', { status: next })
-        toast.info(`Video ${next === 'active' ? 'visible' : 'oculto'}`)
+        toast.info(next === 'published' ? 'Video publicado' : 'Video ocultado')
       } catch { toast.error('Error al actualizar video') }
     })
   }, [callAdminApi, execute, firebaseUser, toast])

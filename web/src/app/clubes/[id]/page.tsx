@@ -6,11 +6,12 @@ import Button from '@/components/ui/Button'
 import ContactModal from '@/components/ui/ContactModal'
 import ProfileSkeleton from '@/components/ui/ProfileSkeleton'
 import { getClub } from '@/lib/firestore'
-import { getProfileState, subscribeProfileVisits } from '@/lib/rtdb'
+import { getProfileState, getVideos, subscribeProfileVisits } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
 import { canViewProfile } from '@/lib/publicProfileAccess'
 import { registerProfileVisit } from '@/lib/profileViews'
-import type { ClubProfile } from '@/types'
+import type { ClubProfile, VideoEntry } from '@/types'
+import VideoCard from '@/components/ui/VideoCard'
 
 export default function ClubProfilePage() {
   const { id } = useParams<{ id: string }>()
@@ -20,17 +21,19 @@ export default function ClubProfilePage() {
   const [showContactCta, setShowContactCta] = useState(false)
   const [activeTab, setActiveTab] = useState(0)
   const [visits, setVisits] = useState(0)
+  const [videos, setVideos] = useState<VideoEntry[]>([])
   const router = useRouter()
   const { user } = useAuth()
 
   useEffect(() => {
     let active = true
     ;(async () => {
-      const [cRes, sRes] = await Promise.allSettled([getClub(id), getProfileState(id)])
+      const [cRes, sRes, vRes] = await Promise.allSettled([getClub(id), getProfileState(id), getVideos(id)])
       if (!active) return
 
       setClub(cRes.status === 'fulfilled' ? cRes.value : null)
       setShowContactCta(sRes.status === 'fulfilled' ? Boolean(sRes.value?.visibility?.showContact) : false)
+      setVideos(vRes.status === 'fulfilled' ? vRes.value.filter((entry) => entry.status === 'published') : [])
       setLoading(false)
     })()
 
@@ -145,8 +148,8 @@ export default function ClubProfilePage() {
             </div>
           </div>
 
-          <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
-            {['Resumen', 'Institución', 'Búsqueda', 'Logros', 'Contacto', 'Verificación'].map((tab, i) => (
+          <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-7">
+            {['Resumen', 'Institución', 'Búsqueda', 'Logros', 'Videos', 'Contacto', 'Verificación'].map((tab, i) => (
               <button key={tab} type="button" onClick={() => setActiveTab(i)} className={`flex items-center justify-center border-b-2 cursor-pointer bg-transparent transition-colors ${activeTab === i ? 'border-[var(--oc-yellow)] text-[var(--oc-yellow)]' : 'border-transparent hover:text-white'}`}>{tab}</button>
             ))}
           </nav>
@@ -189,6 +192,21 @@ export default function ClubProfilePage() {
                     </div>
                   ) : (
                     <p className="mt-2 text-[13px] text-[var(--oc-text-faint)]">Aún no hay logros cargados.</p>
+                  )}
+                </section>
+              )}
+
+              {(activeTab === 0 || activeTab === 4) && (
+                <section className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
+                  <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Videos institucionales</p>
+                  {videos.length === 0 ? (
+                    <p className="mt-2 text-[13px] text-[var(--oc-text-faint)]">Este club aún no publicó videos.</p>
+                  ) : (
+                    <div className="mt-3 grid sm:grid-cols-2 gap-2.5">
+                      {videos.map((video) => (
+                        <VideoCard key={video.id} video={video} />
+                      ))}
+                    </div>
                   )}
                 </section>
               )}

@@ -29,13 +29,17 @@ export function VideosSection({ uid }: { uid: string }) {
     if (!url.trim()) return
     setAdding(true)
     const now = new Date().toISOString()
-    const payload = { type: 'embed' as const, platform: detectPlatform(url), title: title || 'Sin titulo', url, storageRef: null, status: 'active' as const, createdAt: now }
+    const payload = { type: 'embed' as const, platform: detectPlatform(url), title: title || 'Sin titulo', url, storageRef: null, status: 'hidden' as const, createdAt: now }
     const id = await addVideo(uid, payload)
     setVideos(v => [...v, { id, ...payload }])
     setUrl(''); setTitle(''); setAdding(false)
   }
   const handleRemove = async (videoId: string) => { await removeVideo(uid, videoId); setVideos(v => v.filter(x => x.id !== videoId)) }
-  const handleToggle = async (v: VideoEntry) => { const next = v.status === 'active' ? 'hidden' : 'active'; await toggleVideoStatus(uid, v.id, next); setVideos(vs => vs.map(x => x.id === v.id ? { ...x, status: next } : x)) }
+  const handleToggle = async (v: VideoEntry) => {
+    const next = v.status === 'hidden' ? 'pending' : 'hidden'
+    await toggleVideoStatus(uid, v.id, next)
+    setVideos(vs => vs.map(x => x.id === v.id ? { ...x, status: next } : x))
+  }
   const platformIcon = (p: VideoEntry['platform']) => p === 'youtube' ? '▶' : p === 'vimeo' ? '▶' : p === 'tiktok' ? '♪' : p === 'instagram' ? '◎' : '↗'
 
   return (
@@ -69,7 +73,8 @@ export function VideosSection({ uid }: { uid: string }) {
                   <div className="text-[rgba(255,255,255,0.25)] text-[11px] truncate">{v.url}</div>
                 </div>
                 <div className="flex gap-1.5 shrink-0">
-                  <button onClick={() => handleToggle(v)} className="text-[10px] px-2 py-1 rounded-[5px] cursor-pointer" style={{ background: v.status === 'active' ? 'rgba(0,200,83,0.12)' : 'rgba(255,255,255,0.05)', color: v.status === 'active' ? '#00C853' : 'rgba(255,255,255,0.3)' }}>{v.status === 'active' ? 'Visible' : 'Oculto'}</button>
+                  <button onClick={() => handleToggle(v)} className="text-[10px] px-2 py-1 rounded-[5px] cursor-pointer" style={{ background: v.status === 'pending' ? 'rgba(255,180,0,0.12)' : v.status === 'published' ? 'rgba(0,200,83,0.12)' : 'rgba(255,255,255,0.05)', color: v.status === 'pending' ? '#FFB400' : v.status === 'published' ? '#00C853' : 'rgba(255,255,255,0.35)' }}>{v.status === 'hidden' ? 'Enviar a revisión' : 'Ocultar'}</button>
+                  <span className="text-[10px] px-2 py-1 rounded-[5px]" style={{ background: v.status === 'pending' ? 'rgba(255,180,0,0.12)' : v.status === 'published' ? 'rgba(0,200,83,0.12)' : 'rgba(255,255,255,0.05)', color: v.status === 'pending' ? '#FFB400' : v.status === 'published' ? '#00C853' : 'rgba(255,255,255,0.35)' }}>{v.status === 'pending' ? 'Pendiente' : v.status === 'published' ? 'Publicado' : 'Oculto'}</span>
                   <button onClick={() => handleRemove(v.id)} className="text-[10px] px-2 py-1 rounded-[5px] cursor-pointer bg-[rgba(255,60,60,0.08)] text-[rgba(255,60,60,0.6)]">✕</button>
                 </div>
               </div>
@@ -77,6 +82,7 @@ export function VideosSection({ uid }: { uid: string }) {
           })}
         </div>
       )}
+      <div className="mt-3 text-[rgba(255,255,255,0.28)] text-[11px]">Al agregar, el video queda oculto. Cuando lo publiques se enviará a revisión del equipo admin.</div>
     </SurfaceCard>
   )
 }

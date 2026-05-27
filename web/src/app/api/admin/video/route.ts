@@ -8,7 +8,7 @@ type VideoNode = {
   title: string
   url: string | null
   storageRef: string | null
-  status: 'active' | 'hidden'
+  status: 'hidden' | 'pending' | 'published'
   createdAt: string
 }
 

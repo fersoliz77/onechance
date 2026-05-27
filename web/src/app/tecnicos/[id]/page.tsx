@@ -34,7 +34,7 @@ export default function CoachProfilePage() {
 
       setCoach(cRes.status === 'fulfilled' ? cRes.value : null)
       setShowContactCta(sRes.status === 'fulfilled' ? Boolean(sRes.value?.visibility?.showContact) : false)
-      setVideos(vRes.status === 'fulfilled' ? vRes.value.filter((entry) => entry.status === 'active') : [])
+      setVideos(vRes.status === 'fulfilled' ? vRes.value.filter((entry) => entry.status === 'published') : [])
       setLoading(false)
     })()
 

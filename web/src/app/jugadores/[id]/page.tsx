@@ -81,7 +81,7 @@ export default function PlayerProfilePage() {
       if (!active) return
 
       setPlayer(pRes.status === 'fulfilled' ? pRes.value : null)
-      setVideos(vRes.status === 'fulfilled' ? vRes.value.filter((x) => x.status === 'active') : [])
+      setVideos(vRes.status === 'fulfilled' ? vRes.value.filter((x) => x.status === 'published') : [])
       setPhotos(phRes.status === 'fulfilled' ? phRes.value.sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : [])
       setShowContactCta(sRes.status === 'fulfilled' ? Boolean(sRes.value?.visibility?.showContact) : false)
       setLoading(false)

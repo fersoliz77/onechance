@@ -38,7 +38,7 @@ export async function removeVideo(uid: string, videoId: string) {
   await remove(ref(rtdb, `videos/${uid}/${videoId}`))
 }
 
-export async function toggleVideoStatus(uid: string, videoId: string, status: 'active' | 'hidden') {
+export async function toggleVideoStatus(uid: string, videoId: string, status: 'hidden' | 'pending' | 'published') {
   await update(ref(rtdb, `videos/${uid}/${videoId}`), { status })
 }
 
@@ -180,7 +180,7 @@ export async function adminRemoveVideo(playerUid: string, videoId: string) {
   await remove(ref(rtdb, `videos/${playerUid}/${videoId}`))
 }
 
-export async function adminToggleVideo(playerUid: string, videoId: string, status: 'active' | 'hidden') {
+export async function adminToggleVideo(playerUid: string, videoId: string, status: 'hidden' | 'pending' | 'published') {
   await update(ref(rtdb, `videos/${playerUid}/${videoId}`), { status })
 }
 

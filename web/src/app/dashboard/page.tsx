@@ -47,7 +47,7 @@ export default function DashboardPage() {
   const tabs = [
     { id: 'overview', icon: '◉', label: 'Mi perfil' },
     { id: 'edit', icon: '✎', label: 'Editar datos' },
-    ...(role === 'player' ? [{ id: 'videos', icon: '▶', label: 'Videos' }] : []),
+    { id: 'videos', icon: '▶', label: 'Videos' },
     { id: 'photos',   icon: '□', label: 'Fotos' },
     { id: 'mensajes', icon: '✉', label: 'Mensajes' },
     { id: 'settings', icon: '⚙', label: 'Configuracion' },
@@ -120,7 +120,7 @@ export default function DashboardPage() {
                       <div className="flex flex-col gap-1.5">
                         {profile && role && <Button variant="ghost" size="sm" className="w-full justify-start text-[12px]" onClick={() => router.push(`/${ROLE_ROUTE[role]}/${user.uid}`)}>Ver mi perfil publico -&gt;</Button>}
                         <Button variant="ghost" size="sm" className="w-full justify-start text-[12px]" onClick={() => setTab('edit')}>Editar informacion -&gt;</Button>
-                        {role === 'player' && <Button variant="ghost" size="sm" className="w-full justify-start text-[12px]" onClick={() => setTab('videos')}>Gestionar videos -&gt;</Button>}
+                        <Button variant="ghost" size="sm" className="w-full justify-start text-[12px]" onClick={() => setTab('videos')}>Gestionar videos -&gt;</Button>
                         <Button variant="ghost" size="sm" className="w-full justify-start text-[12px]" onClick={() => setTab('photos')}>Gestionar fotos -&gt;</Button>
                       </div>
                     </SurfaceCard>
@@ -137,7 +137,7 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {tab === 'videos' && role === 'player' && <VideosSection uid={user.uid} />}
+              {tab === 'videos' && <VideosSection uid={user.uid} />}
               {tab === 'photos' && <PhotosSection uid={user.uid} />}
               {tab === 'mensajes' && <MessagesSection accent={accent} />}
               {tab === 'settings' && <SettingsSection uid={user.uid} state={state} onStateChange={setState} />}
