@@ -129,11 +129,15 @@ export function PhotosSection({ uid }: { uid: string }) {
       settled = true
       window.clearInterval(stallTimer)
       const code = (err as { code?: string }).code
-      const msg = code === 'storage/unauthorized'
-        ? 'No tenés permisos para subir fotos en este momento.'
+      const msg = (code === 'storage/unauthorized' || code === 'storage/unauthenticated')
+        ? 'No tenés permisos para subir fotos. Intentá cerrar sesión y volver a entrar.'
         : code === 'storage/canceled'
           ? 'La subida fue cancelada.'
-          : 'Error al subir la foto.'
+          : code === 'storage/quota-exceeded'
+            ? 'Se alcanzó el límite de almacenamiento.'
+            : code === 'storage/retry-limit-exceeded'
+              ? 'Error de conexión. Revisá tu internet e intentá de nuevo.'
+              : 'Error al subir la foto.'
       setError(msg)
       toast.error(msg)
       setUploading(false)
