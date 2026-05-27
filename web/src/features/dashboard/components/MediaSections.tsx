@@ -6,6 +6,8 @@ import { deleteObject, getDownloadURL, ref as storageRef, uploadBytesResumable }
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import SurfaceCard from '@/components/ui/SurfaceCard'
+import ToastStack from '@/components/admin/ui/ToastStack'
+import { useToastState } from '@/hooks/useToast'
 import { storage } from '@/lib/firebase'
 import { addPhoto, addVideo, getPhotos, getVideos, removePhoto, removeVideo, togglePhotoStatus, toggleVideoStatus, type PhotoEntry, updateVisibility } from '@/lib/rtdb'
 import type { ProfileState, VideoEntry } from '@/types'
@@ -93,23 +95,65 @@ export function PhotosSection({ uid }: { uid: string }) {
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState('')
+  const { toasts, toast, remove } = useToastState()
   useEffect(() => { getPhotos(uid).then(p => { setPhotos(p); setLoading(false) }) }, [uid])
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setError('Solo se permiten imagenes JPG, PNG o WebP.'); return }
-    if (file.size > 5 * 1024 * 1024) { setError('El archivo no puede superar 5MB.'); return }
-    if (photos.length >= 10) { setError('Maximo 10 fotos por perfil.'); return }
-    setError(''); setUploading(true); setUploadProgress(0)
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setError('Solo se permiten imagenes JPG, PNG o WebP.'); toast.error('Formato no permitido'); return }
+    if (file.size > 5 * 1024 * 1024) { setError('El archivo no puede superar 5MB.'); toast.error('El archivo supera 5MB'); return }
+    if (photos.length >= 10) { setError('Maximo 10 fotos por perfil.'); toast.error('Límite de 10 fotos alcanzado'); return }
+    setError(''); setUploading(true); setUploadProgress(1)
     const path = `photos/${uid}/${Date.now()}_${file.name}`
     const sRef = storageRef(storage, path)
     const task = uploadBytesResumable(sRef, file)
-    task.on('state_changed', snap => setUploadProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)), () => { setError('Error al subir la foto.'); setUploading(false) }, async () => {
-      const url = await getDownloadURL(task.snapshot.ref)
-      const now = new Date().toISOString()
-      const id = await addPhoto(uid, { url, storagePath: path, status: 'hidden', createdAt: now })
-      setPhotos(p => [...p, { id, url, storagePath: path, status: 'hidden', createdAt: now }])
-      setUploading(false); setUploadProgress(0)
+
+    let settled = false
+    let lastBytes = 0
+    const stallTimer = window.setInterval(() => {
+      if (settled) {
+        window.clearInterval(stallTimer)
+        return
+      }
+      if (task.snapshot.bytesTransferred <= lastBytes && task.snapshot.state === 'running') {
+        setUploadProgress((prev) => Math.min(prev + 1, 12))
+      }
+      lastBytes = task.snapshot.bytesTransferred
+    }, 1200)
+
+    task.on('state_changed', (snap) => {
+      const total = snap.totalBytes || file.size || 1
+      const pct = Math.max(1, Math.round((snap.bytesTransferred / total) * 100))
+      setUploadProgress(Math.min(pct, 99))
+    }, (err) => {
+      settled = true
+      window.clearInterval(stallTimer)
+      const code = (err as { code?: string }).code
+      const msg = code === 'storage/unauthorized'
+        ? 'No tenés permisos para subir fotos en este momento.'
+        : code === 'storage/canceled'
+          ? 'La subida fue cancelada.'
+          : 'Error al subir la foto.'
+      setError(msg)
+      toast.error(msg)
+      setUploading(false)
+      setUploadProgress(0)
+    }, async () => {
+      try {
+        const url = await getDownloadURL(task.snapshot.ref)
+        const now = new Date().toISOString()
+        const id = await addPhoto(uid, { url, storagePath: path, status: 'hidden', createdAt: now })
+        setPhotos(p => [...p, { id, url, storagePath: path, status: 'hidden', createdAt: now }])
+        toast.success('Foto subida con éxito. Quedó oculta hasta enviarla a revisión.')
+      } catch {
+        setError('Se subió el archivo, pero no se pudo registrar la foto en el perfil.')
+        toast.error('No se pudo registrar la foto en tu perfil.')
+      } finally {
+        settled = true
+        window.clearInterval(stallTimer)
+        setUploading(false)
+        setUploadProgress(0)
+      }
     })
     e.target.value = ''
   }
@@ -119,7 +163,7 @@ export function PhotosSection({ uid }: { uid: string }) {
     await togglePhotoStatus(uid, photo.id, next)
     setPhotos(ps => ps.map(p => p.id === photo.id ? { ...p, status: next } : p))
   }
-  return <SurfaceCard><div className="flex items-center justify-between mb-4"><div className="text-white text-[14px] font-medium">Fotos del perfil</div><span className="text-[rgba(255,255,255,0.25)] text-[11px]">{photos.length}/10</span></div>{loading ? <div className="text-[rgba(255,255,255,0.2)] text-[12px]">Cargando…</div> : <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-3">{photos.map(p => <div key={p.id} className="relative group aspect-square rounded-[9px] overflow-hidden border border-[rgba(255,255,255,0.08)]"><Image src={p.url} alt="Foto de perfil" fill className="object-cover" sizes="(max-width: 640px) 33vw, 25vw" /><div className="absolute left-1.5 top-1.5 text-[10px] px-1.5 py-0.5 rounded-[5px]" style={{ background: p.status === 'pending' ? 'rgba(255,180,0,0.14)' : p.status === 'published' ? 'rgba(0,200,83,0.14)' : 'rgba(255,255,255,0.12)', color: p.status === 'pending' ? '#FFB400' : p.status === 'published' ? '#00C853' : 'rgba(255,255,255,0.7)' }}>{p.status === 'pending' ? 'Pendiente' : p.status === 'published' ? 'Publicada' : 'Oculta'}</div><div className="absolute inset-x-0 bottom-0 flex gap-1.5 p-1.5 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.7))] opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => handleTogglePhoto(p)} className="flex-1 text-[10px] px-2 py-1 rounded-[5px] cursor-pointer border-none" style={{ background: p.status === 'hidden' ? 'rgba(255,180,0,0.2)' : 'rgba(255,255,255,0.16)', color: p.status === 'hidden' ? '#FFB400' : '#fff' }}>{p.status === 'hidden' ? 'Enviar' : 'Ocultar'}</button><button onClick={() => handleRemove(p)} className="text-[10px] px-2 py-1 rounded-[5px] cursor-pointer border-none bg-[rgba(255,60,60,0.2)] text-[rgba(255,120,120,0.95)]" title="Eliminar foto">✕</button></div></div>)}{photos.length < 10 && <label className="aspect-square rounded-[9px] border-2 border-dashed border-[rgba(255,255,255,0.12)] flex flex-col items-center justify-center text-[rgba(255,255,255,0.25)] text-[12px] cursor-pointer hover:border-[rgba(255,255,255,0.25)] transition-colors">{uploading ? <div className="text-center px-2"><div className="text-[15px] mb-1">{uploadProgress}%</div><div className="text-[10px]">Subiendo…</div></div> : <><span className="text-[25px] leading-none mb-1">+</span><span>Subir foto</span></>}<input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleFileChange} disabled={uploading} /></label>}</div>}{error && <div className="text-[rgba(255,60,60,0.8)] text-[12px] mt-1">{error}</div>}<div className="text-[rgba(255,255,255,0.22)] text-[11px]">Al subir, la foto queda oculta. Publicarla la envía a revisión admin. · Max. 10 fotos · JPG, PNG o WebP · hasta 5MB cada una</div></SurfaceCard>
+  return <SurfaceCard><div className="flex items-center justify-between mb-4"><div className="text-white text-[14px] font-medium">Fotos del perfil</div><span className="text-[rgba(255,255,255,0.25)] text-[11px]">{photos.length}/10</span></div>{uploading && <div className="mb-3 rounded-[8px] border border-[rgba(0,200,83,0.25)] bg-[rgba(0,200,83,0.08)] p-2.5"><div className="flex items-center justify-between text-[11px] text-[rgba(255,255,255,0.72)]"><span>Subiendo foto...</span><span>{uploadProgress}%</span></div><div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[rgba(255,255,255,0.12)]"><div className="h-full rounded-full bg-[linear-gradient(90deg,#00C853,#AAFF00)] transition-all duration-200" style={{ width: `${uploadProgress}%` }} /></div></div>}{loading ? <div className="text-[rgba(255,255,255,0.2)] text-[12px]">Cargando…</div> : <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-3">{photos.map(p => <div key={p.id} className="relative group aspect-square rounded-[9px] overflow-hidden border border-[rgba(255,255,255,0.08)]"><Image src={p.url} alt="Foto de perfil" fill className="object-cover" sizes="(max-width: 640px) 33vw, 25vw" /><div className="absolute left-1.5 top-1.5 text-[10px] px-1.5 py-0.5 rounded-[5px]" style={{ background: p.status === 'pending' ? 'rgba(255,180,0,0.14)' : p.status === 'published' ? 'rgba(0,200,83,0.14)' : 'rgba(255,255,255,0.12)', color: p.status === 'pending' ? '#FFB400' : p.status === 'published' ? '#00C853' : 'rgba(255,255,255,0.7)' }}>{p.status === 'pending' ? 'Pendiente' : p.status === 'published' ? 'Publicada' : 'Oculta'}</div><div className="absolute inset-x-0 bottom-0 flex gap-1.5 p-1.5 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.7))] opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => handleTogglePhoto(p)} className="flex-1 text-[10px] px-2 py-1 rounded-[5px] cursor-pointer border-none" style={{ background: p.status === 'hidden' ? 'rgba(255,180,0,0.2)' : 'rgba(255,255,255,0.16)', color: p.status === 'hidden' ? '#FFB400' : '#fff' }}>{p.status === 'hidden' ? 'Enviar' : 'Ocultar'}</button><button onClick={() => handleRemove(p)} className="text-[10px] px-2 py-1 rounded-[5px] cursor-pointer border-none bg-[rgba(255,60,60,0.2)] text-[rgba(255,120,120,0.95)]" title="Eliminar foto">✕</button></div></div>)}{photos.length < 10 && <label className="aspect-square rounded-[9px] border-2 border-dashed border-[rgba(255,255,255,0.12)] flex flex-col items-center justify-center text-[rgba(255,255,255,0.25)] text-[12px] cursor-pointer hover:border-[rgba(255,255,255,0.25)] transition-colors">{uploading ? <div className="text-center px-2"><div className="text-[15px] mb-1">{uploadProgress}%</div><div className="text-[10px]">Subiendo…</div></div> : <><span className="text-[25px] leading-none mb-1">+</span><span>Subir foto</span></>}<input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleFileChange} disabled={uploading} /></label>}</div>}{error && <div className="text-[rgba(255,60,60,0.8)] text-[12px] mt-1">{error}</div>}<div className="text-[rgba(255,255,255,0.22)] text-[11px]">Al subir, la foto queda oculta. Publicarla la envía a revisión admin. · Max. 10 fotos · JPG, PNG o WebP · hasta 5MB cada una</div><ToastStack toasts={toasts} onRemove={remove} /></SurfaceCard>
 }
 
 export function SettingsSection({ uid, state, onStateChange }: { uid: string; state: ProfileState | null; onStateChange: (s: ProfileState) => void }) {
