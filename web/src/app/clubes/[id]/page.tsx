@@ -7,7 +7,7 @@ import Button from '@/components/ui/Button'
 import ContactModal from '@/components/ui/ContactModal'
 import ProfileSkeleton from '@/components/ui/ProfileSkeleton'
 import { getClub } from '@/lib/firestore'
-import { getPhotos, getProfileState, getVideos, subscribeProfileVisits, type PhotoEntry } from '@/lib/rtdb'
+import { getPublishedPhotos, getProfileState, getVideos, subscribeProfileVisits, type PhotoEntry } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
 import { canViewProfile } from '@/lib/publicProfileAccess'
 import { registerProfileVisit } from '@/lib/profileViews'
@@ -30,7 +30,7 @@ export default function ClubProfilePage() {
   useEffect(() => {
     let active = true
     ;(async () => {
-      const [cRes, sRes, vRes, pRes] = await Promise.allSettled([getClub(id), getProfileState(id), getVideos(id), getPhotos(id)])
+      const [cRes, sRes, vRes, pRes] = await Promise.allSettled([getClub(id), getProfileState(id), getVideos(id), getPublishedPhotos(id)])
       if (!active) return
 
       setClub(cRes.status === 'fulfilled' ? cRes.value : null)

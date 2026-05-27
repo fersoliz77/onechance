@@ -1,4 +1,4 @@
-import { ref, get, set, update, push, remove, onValue, off } from 'firebase/database'
+import { ref, get, set, update, push, remove, onValue, off, query, orderByChild, equalTo } from 'firebase/database'
 import { rtdb } from './firebase'
 import type { ProfileState, VideoEntry } from '@/types'
 
@@ -53,6 +53,14 @@ export interface PhotoEntry {
 
 export async function getPhotos(uid: string): Promise<PhotoEntry[]> {
   const snap = await get(ref(rtdb, `photos/${uid}`))
+  if (!snap.exists()) return []
+  const val = snap.val() as Record<string, Omit<PhotoEntry, 'id'> & { status?: PhotoEntry['status'] }>
+  return Object.entries(val).map(([id, p]) => ({ id, ...p, status: p.status ?? 'published' }))
+}
+
+export async function getPublishedPhotos(uid: string): Promise<PhotoEntry[]> {
+  const q = query(ref(rtdb, `photos/${uid}`), orderByChild('status'), equalTo('published'))
+  const snap = await get(q)
   if (!snap.exists()) return []
   const val = snap.val() as Record<string, Omit<PhotoEntry, 'id'> & { status?: PhotoEntry['status'] }>
   return Object.entries(val).map(([id, p]) => ({ id, ...p, status: p.status ?? 'published' }))

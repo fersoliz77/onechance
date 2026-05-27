@@ -23,6 +23,7 @@
     },
     "photos": {
       "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin') || (query.orderByChild === 'status' && query.equalTo === 'published')",
         "$photoId": {
           ".read": "data.child('status').val() === 'published' || (auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin'))",
           ".write": "auth != null && ((root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin') || (auth.uid === $uid && ((!data.exists() && newData.child('status').val() === 'hidden') || (data.exists() && !newData.exists()) || (data.exists() && (newData.child('status').val() === data.child('status').val() || (data.child('status').val() === 'hidden' && newData.child('status').val() === 'pending') || (data.child('status').val() === 'pending' && newData.child('status').val() === 'hidden') || (data.child('status').val() === 'published' && newData.child('status').val() === 'hidden'))))))",

@@ -8,7 +8,7 @@ import Badge from '@/components/ui/Badge'
 import ContactModal from '@/components/ui/ContactModal'
 import ProfileSkeleton from '@/components/ui/ProfileSkeleton'
 import { getCoach } from '@/lib/firestore'
-import { getPhotos, getProfileState, getVideos, subscribeProfileVisits, type PhotoEntry } from '@/lib/rtdb'
+import { getPublishedPhotos, getProfileState, getVideos, subscribeProfileVisits, type PhotoEntry } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
 import { canViewProfile } from '@/lib/publicProfileAccess'
 import { registerProfileVisit } from '@/lib/profileViews'
@@ -31,7 +31,7 @@ export default function CoachProfilePage() {
   useEffect(() => {
     let active = true
     ;(async () => {
-      const [cRes, sRes, vRes, pRes] = await Promise.allSettled([getCoach(id), getProfileState(id), getVideos(id), getPhotos(id)])
+      const [cRes, sRes, vRes, pRes] = await Promise.allSettled([getCoach(id), getProfileState(id), getVideos(id), getPublishedPhotos(id)])
       if (!active) return
 
       setCoach(cRes.status === 'fulfilled' ? cRes.value : null)

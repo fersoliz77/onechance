@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { getPlayer } from '@/lib/firestore'
-import { getPhotos, getProfileState, getVideos, isFollowing, setFollow, subscribeProfileVisits, type PhotoEntry } from '@/lib/rtdb'
+import { getProfileState, getVideos, getPublishedPhotos, isFollowing, setFollow, subscribeProfileVisits, type PhotoEntry } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
 import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
@@ -77,7 +77,7 @@ export default function PlayerProfilePage() {
   useEffect(() => {
     let active = true
     ;(async () => {
-      const [pRes, vRes, sRes, phRes] = await Promise.allSettled([getPlayer(id), getVideos(id), getProfileState(id), getPhotos(id)])
+      const [pRes, vRes, sRes, phRes] = await Promise.allSettled([getPlayer(id), getVideos(id), getProfileState(id), getPublishedPhotos(id)])
       if (user?.uid) isFollowing(user.uid, id).then(setFollowing).catch(() => {})
       if (!active) return
 
