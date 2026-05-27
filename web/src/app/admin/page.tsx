@@ -24,6 +24,7 @@ import AdminConfigPanel from '@/components/admin/AdminConfigPanel'
 import AdminProfilesTab from '@/components/admin/AdminProfilesTab'
 import AdminSubscriptionsTab from '@/components/admin/AdminSubscriptionsTab'
 import AdminMessagesTab from '@/components/admin/AdminMessagesTab'
+import AdminReportsTab from '@/components/admin/AdminReportsTab'
 import CommandPalette from '@/components/admin/CommandPalette'
 import ToastStack from '@/components/admin/ui/ToastStack'
 import ConfirmModal from '@/components/admin/ui/ConfirmModal'
@@ -631,7 +632,7 @@ export default function AdminPage() {
           {/* SOLICITUDES */}
           {tab === 'solicitudes' && (
             <AdminPendingTable items={pending} onApprove={i => handleStatus(i,'published')} onReject={confirmReject} onView={item => {
-              const colToRoute: Record<string, string> = { players:'players', coaches:'coaches', clubs:'clubs', agents:'agents' }
+              const colToRoute: Record<string, string> = { players:'jugadores', coaches:'tecnicos', clubs:'clubes', agents:'representantes' }
               window.open(`/${colToRoute[item._col] ?? item._col}/${item.uid}`, '_blank')
             }} density={density} />
           )}
@@ -965,7 +966,10 @@ export default function AdminPage() {
 
           {/* MODERACIÓN — mensajería */}
           {tab === 'moderacion' && (
-            <AdminMessagesTab onPendingCountChange={setPendingMessagesCount} />
+            <div className="space-y-6">
+              <AdminMessagesTab onPendingCountChange={setPendingMessagesCount} />
+              <AdminReportsTab />
+            </div>
           )}
         </div>
 

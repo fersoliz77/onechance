@@ -21,14 +21,28 @@ export const DIVISIONS = [
 export function useClubsListing() {
   const [clubs, setClubs] = useState<ClubProfile[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState<ClubFilters>(emptyClubFilters)
 
-  useEffect(() => {
-    getPublishedClubs().then(data => {
+  const load = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const data = await getPublishedClubs()
       setClubs(data)
+    } catch (err) {
+      console.error('[useClubsListing] getPublishedClubs failed:', err)
+      setClubs([])
+      setError('No se pudieron cargar los clubes. Verificá tu conexión e intentá de nuevo.')
+    } finally {
       setLoading(false)
-    })
+    }
+  }
+
+  useEffect(() => {
+    const id = window.setTimeout(() => { void load() }, 0)
+    return () => window.clearTimeout(id)
   }, [])
 
   const visible = useMemo(() => {
@@ -46,5 +60,5 @@ export function useClubsListing() {
     })
   }, [clubs, filters, search])
 
-  return { clubs, visible, loading, search, setSearch, filters, setFilters }
+  return { clubs, visible, loading, error, reload: load, search, setSearch, filters, setFilters }
 }

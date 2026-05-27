@@ -88,6 +88,13 @@ export default function DashboardPage() {
                         <div>
                           <div className="text-white mb-1.5">Estamos preparando tu perfil...</div>
                           <div className="text-[rgba(255,255,255,0.45)]">Esto puede tardar unos segundos después de crear la cuenta.</div>
+                          <button
+                            type="button"
+                            onClick={() => window.location.reload()}
+                            className="mt-3 text-[12px] font-semibold text-[var(--oc-lime)] bg-transparent border-none cursor-pointer"
+                          >
+                            Reintentar carga →
+                          </button>
                         </div>
                       </div>
                     )}

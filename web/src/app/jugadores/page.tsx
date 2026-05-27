@@ -112,19 +112,11 @@ export default function JugadoresPage() {
             </div>
           </section>
 
-          <nav role="tablist" className="flex overflow-x-auto rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-[13px] font-[700] text-[var(--oc-fg-muted)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Secciones de resultados">
+          <div className="flex overflow-x-auto rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-[13px] font-[700] text-[var(--oc-fg-muted)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Resumen visual de secciones">
             {['Resumen', 'Filtros', 'Resultados', 'Scout view', 'Videos', 'Fotos'].map((tab, i) => (
-              <button
-                key={tab}
-                type="button"
-                role="tab"
-                aria-selected={i === 0}
-                className={`h-12 flex-1 min-w-[80px] shrink-0 flex items-center justify-center whitespace-nowrap px-2 border-b-2 ${i === 0 ? 'border-[var(--oc-lime)] text-[var(--oc-lime)]' : 'border-transparent'}`}
-              >
-                {tab}
-              </button>
+              <div key={tab} className={`h-12 flex-1 min-w-[80px] shrink-0 flex items-center justify-center whitespace-nowrap px-2 border-b-2 ${i === 0 ? 'border-[var(--oc-lime)] text-[var(--oc-lime)]' : 'border-transparent'}`}>{tab}</div>
             ))}
-          </nav>
+          </div>
 
           <div className="mt-[var(--oc-space-5)] flex flex-col items-start gap-[var(--oc-space-4)] md:flex-row md:gap-[var(--oc-space-5)]">
             <PlayerFiltersSidebar filters={filters} setFilters={f => { setFilters(f); setLimit(PAGE_SIZE) }} onClear={() => { setFilters(emptyPlayerFilters); setLimit(PAGE_SIZE) }} />

@@ -11,7 +11,7 @@ import { emptyAgentFilters, useAgentsListing } from '@/features/agents/hooks/use
 import { COUNTRIES } from '@/types'
 
 export default function RepresentantesPage() {
-  const { agents, visible, loading, search, setSearch, filters, setFilters } = useAgentsListing()
+  const { agents, visible, loading, error, reload, search, setSearch, filters, setFilters } = useAgentsListing()
   const router = useRouter()
   const [filtersOpen, setFiltersOpen] = useState(false)
   const activeFilters = Object.values(filters).filter(Boolean).length
@@ -60,11 +60,11 @@ export default function RepresentantesPage() {
               </div>
             </div>
           </section>
-          <nav className="flex overflow-x-auto rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-[13px] font-[700] text-[var(--oc-fg-muted)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex overflow-x-auto rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-[13px] font-[700] text-[var(--oc-fg-muted)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Resumen visual de secciones">
             {['Resumen', 'Filtros', 'Representantes', 'Mercados', 'Videos', 'Contacto'].map((tab, i) => (
               <div key={tab} className={`h-12 flex-1 min-w-[80px] shrink-0 flex items-center justify-center whitespace-nowrap px-2 border-b-2 ${i === 0 ? 'border-[var(--oc-purple)] text-[var(--oc-purple)]' : 'border-transparent'}`}>{tab}</div>
             ))}
-          </nav>
+          </div>
           <div className="mt-[var(--oc-space-5)] flex flex-col items-start gap-[var(--oc-space-4)] md:flex-row md:gap-[var(--oc-space-5)]">
             <aside className="w-full shrink-0 rounded-[var(--oc-radius-xl)] border border-[var(--oc-border-soft)] bg-[rgba(7,20,24,0.78)] shadow-[0_0_0_1px_rgba(180,100,255,0.08),0_18px_50px_rgba(0,0,0,0.35)] md:sticky md:top-[calc(var(--oc-nav-height)+var(--oc-space-4))] md:w-[300px] self-start">
               <button type="button" onClick={() => setFiltersOpen(o => !o)} className="w-full flex items-center justify-between p-[var(--oc-space-4)] md:cursor-default" aria-expanded={filtersOpen}>
@@ -88,6 +88,13 @@ export default function RepresentantesPage() {
             <div className="w-full flex-1">
               {loading ? (
                 <EmptyState message="Cargando representantes..." />
+              ) : error ? (
+                <div className="rounded-[12px] border border-[rgba(255,180,0,0.35)] bg-[rgba(255,180,0,0.08)] p-5 text-[13px] text-[rgba(255,220,140,0.95)]">
+                  <p>{error}</p>
+                  <button type="button" onClick={() => void reload()} className="mt-3 rounded-[8px] border border-[rgba(255,255,255,0.2)] px-3 py-2 text-[12px] font-[700] text-white">
+                    Reintentar
+                  </button>
+                </div>
               ) : visible.length === 0 ? (
                 <EmptyState message={agents.length === 0 ? 'Aún no hay representantes registrados. Sé el primero.' : 'No se encontraron representantes con esos filtros.'} />
               ) : (

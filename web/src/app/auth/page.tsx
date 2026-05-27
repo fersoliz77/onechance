@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { register, login, sendPasswordResetEmail, auth, createUserRecord, createPlayerRecord, createCoachRecord, createClubRecord, createAgentRecord } from '@/lib/auth'
@@ -64,13 +64,54 @@ function StepDots({ total, current }: { total: number; current: number }) {
 
 function RoleSelect({ value, onChange }: { value: Role | ''; onChange: (next: Role) => void }) {
   const [open, setOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(() => Math.max(0, ROLES.findIndex(r => r.id === value)))
+  const rootRef = useRef<HTMLDivElement | null>(null)
   const selected = ROLES.find(r => r.id === value)
 
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (!rootRef.current) return
+      if (!rootRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onDocClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [])
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setOpen(true)
+      setActiveIndex(i => Math.min(ROLES.length - 1, i + 1))
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setOpen(true)
+      setActiveIndex(i => Math.max(0, i - 1))
+    }
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      if (!open) setOpen(true)
+      else {
+        const next = ROLES[activeIndex]
+        if (next) onChange(next.id as Role)
+        setOpen(false)
+      }
+    }
+  }
+
   return (
-    <div className="relative">
+    <div ref={rootRef} className="relative">
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
+        onKeyDown={handleKeyDown}
         className="w-full h-[var(--oc-control-h-md)] rounded-[8px] border border-[var(--oc-border-strong)] bg-[var(--oc-surface-2)] px-3 text-left text-[14px] lg:text-[15px] text-white outline-none cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-[rgba(0,200,83,0.28)] focus-visible:border-[rgba(0,200,83,0.38)] flex items-center"
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -125,13 +166,54 @@ function DarkDropdown({
   onChange: (next: string) => void
 }) {
   const [open, setOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(() => Math.max(0, options.findIndex(o => o.value === value)))
+  const rootRef = useRef<HTMLDivElement | null>(null)
   const selected = options.find(o => o.value === value)
 
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (!rootRef.current) return
+      if (!rootRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onDocClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [])
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setOpen(true)
+      setActiveIndex(i => Math.min(options.length - 1, i + 1))
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setOpen(true)
+      setActiveIndex(i => Math.max(0, i - 1))
+    }
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      if (!open) setOpen(true)
+      else {
+        const next = options[activeIndex]
+        if (next) onChange(next.value)
+        setOpen(false)
+      }
+    }
+  }
+
   return (
-    <div className="relative">
+    <div ref={rootRef} className="relative">
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
+        onKeyDown={handleKeyDown}
         className="w-full h-[var(--oc-control-h-md)] rounded-[8px] border border-[var(--oc-border-strong)] bg-[var(--oc-surface-2)] px-3 text-left text-[14px] lg:text-[15px] outline-none cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-[rgba(0,200,83,0.28)] focus-visible:border-[rgba(0,200,83,0.38)] flex items-center"
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -295,10 +377,10 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
     if (creds.pass.length < 6) { setErr('La contraseña debe tener al menos 6 caracteres.'); return }
     if (!role) { setErr('Elegí tu rol para continuar.'); return }
     setErr('')
-    setStep(2)
+    setStep(1)
   }
 
-  const step2Submit = async () => {
+  const step1Submit = async () => {
     if (!form.fullName) { setErr('Ingresá tu nombre completo.'); return }
     if (!role) return
     setLoading(true)
@@ -310,7 +392,7 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
       else if (role === 'coach') await createCoachRecord(user.uid, base)
       else if (role === 'club') await createClubRecord(user.uid, base)
       else if (role === 'agent') await createAgentRecord(user.uid, base)
-      setStep(3)
+      setStep(2)
       const selectedRole = role
       persistAuthIntent(selectedRole)
       setTimeout(() => router.push(getRoleDashboardPath(selectedRole)), 1800)
@@ -321,7 +403,7 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
     }
   }
 
-  if (step === 3) {
+  if (step === 2) {
     return (
       <div className="text-center py-5">
         <div className="text-[45px] mb-4">⚽</div>
@@ -343,7 +425,7 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
 
   return (
     <div>
-      <StepDots total={3} current={step} />
+      <StepDots total={2} current={step} />
 
       {step === 0 && (
         <>
@@ -376,39 +458,10 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
         </>
       )}
 
-      {step === 1 && (
-        <>
-          <div className="mb-1.5 text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-label)]">Paso 2 de 3</div>
-          <div className="text-white text-[23px] font-medium tracking-[-0.02em] mb-1.5">¿Quién sos?</div>
-          <div className="mb-5 text-[13px] text-[var(--oc-text-muted)]">Elegí tu rol para personalizar tu perfil.</div>
-          <div className="flex flex-col gap-2 mb-4">
-            {ROLES.map(r => (
-              <button
-                key={r.id}
-                onClick={() => { setRole(r.id as Role); setStep(2) }}
-                className="flex items-center gap-3.5 text-left rounded-[10px] px-4 py-3 cursor-pointer font-sans transition-all duration-150 border"
-                style={{
-                   background: role === r.id ? 'rgba(170,255,0,0.1)' : 'var(--oc-surface-2)',
-                   borderColor: role === r.id ? 'var(--oc-border-green)' : 'var(--oc-border-soft)',
-                }}
-              >
-                <span className="text-[21px] shrink-0">{r.icon}</span>
-                <div>
-                  <div className="text-white text-[14px] font-medium">{r.title}</div>
-                   <div className="mt-0.5 text-[11px] text-[var(--oc-text-muted)]">{r.desc}</div>
-                </div>
-                 <span className="ml-auto text-[14px] text-[var(--oc-text-faint)]">→</span>
-              </button>
-            ))}
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => setStep(0)}>← Atrás</Button>
-        </>
-      )}
-
-      {step === 2 && role && (
+      {step === 1 && role && (
         <>
            <div className="mb-1.5 text-[10px] uppercase tracking-[0.08em] text-[var(--oc-text-label)]">
-            Paso 3 de 3 · {ROLES.find(r => r.id === role)?.title}
+            Paso 2 de 2 · {ROLES.find(r => r.id === role)?.title}
           </div>
           <div className="text-white text-[23px] font-medium tracking-[-0.02em] mb-5">Tus datos</div>
           <div className="flex flex-col gap-2.5 mb-3.5">
@@ -458,7 +511,7 @@ function RegisterForm({ initialRole }: { initialRole?: Role }) {
           {err && <div className="mb-2.5 text-[12px] text-[var(--color-oc-red)]">{err}</div>}
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setStep(0)} className="flex-1 justify-center">Atrás</Button>
-            <Button variant="primary" onClick={step2Submit} className="flex-[2] justify-center" disabled={loading}>
+            <Button variant="primary" onClick={step1Submit} className="flex-[2] justify-center" disabled={loading}>
               {loading ? 'Creando...' : 'Crear perfil →'}
             </Button>
           </div>

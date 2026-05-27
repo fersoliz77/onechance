@@ -54,7 +54,7 @@ function SectionTitle({ title, action }: { title: string; action?: string }) {
 export default function PlayerProfilePage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, firebaseUser } = useAuth()
   const [player, setPlayer] = useState<PlayerProfile | null>(null)
   const [videos, setVideos] = useState<VideoEntry[]>([])
   const [photos, setPhotos] = useState<PhotoEntry[]>([])
@@ -66,7 +66,8 @@ export default function PlayerProfilePage() {
   const [shareMsg, setShareMsg] = useState('')
   const [showReport, setShowReport] = useState(false)
   const [reportText, setReportText] = useState('')
-  const [reportSent, setReportSent] = useState(false)
+  const [reportNotice, setReportNotice] = useState('')
+  const [reportSending, setReportSending] = useState(false)
   const [visits, setVisits] = useState(0)
 
   const galleryUrls = photos.length > 0
@@ -188,11 +189,40 @@ export default function PlayerProfilePage() {
     await setFollow(user.uid, id, next).catch(() => setFollowing(!next))
   }
 
-  function handleSendReport() {
+  async function handleSendReport() {
     if (!reportText.trim()) return
-    setReportSent(true)
-    setReportText('')
-    setTimeout(() => { setReportSent(false); setShowReport(false) }, 2500)
+    if (!firebaseUser || !user) {
+      router.push('/auth?tab=register')
+      return
+    }
+
+    setReportSending(true)
+    setReportNotice('')
+    try {
+      const token = await firebaseUser.getIdToken()
+      const res = await fetch('/api/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          targetUid: id,
+          targetRole: 'player',
+          reason: reportText.trim(),
+          sourcePath: window.location.pathname,
+        }),
+      })
+      const body = await res.json().catch(() => ({})) as { error?: string }
+      if (!res.ok) throw new Error(body.error ?? 'No se pudo enviar el reporte.')
+      setReportNotice('Reporte enviado. Nuestro equipo lo revisará a la brevedad.')
+      setReportText('')
+      window.setTimeout(() => setShowReport(false), 1400)
+    } catch (err) {
+      setReportNotice(err instanceof Error ? err.message : 'No se pudo enviar el reporte.')
+    } finally {
+      setReportSending(false)
+    }
   }
 
   return (
@@ -215,29 +245,22 @@ export default function PlayerProfilePage() {
       {showReport && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(0,0,0,0.7)] backdrop-blur-sm">
           <div className="mx-4 w-full max-w-[400px] rounded-[16px] border border-[var(--oc-border)] bg-[rgba(8,20,26,0.97)] p-6">
-            {reportSent ? (
-              <div className="py-4 text-center">
-                <div className="text-[28px]">✓</div>
-                <p className="mt-2 text-[15px] font-[700] text-white">Reporte enviado</p>
-                <p className="mt-1 text-[13px] text-[var(--oc-fg-muted)]">Gracias por ayudarnos a mantener la comunidad.</p>
+            <>
+              <h3 className="text-[16px] font-[700] text-white">Reportar perfil</h3>
+              <p className="mt-1 text-[13px] text-[var(--oc-fg-muted)]">¿Por qué reportás este perfil?</p>
+              <textarea
+                className="mt-4 w-full rounded-[10px] border border-[var(--oc-border)] bg-[rgba(255,255,255,0.05)] p-3 text-[13px] text-white placeholder-[rgba(255,255,255,0.3)] focus:outline-none focus:border-[rgba(255,255,255,0.3)] resize-none"
+                rows={4}
+                placeholder="Describí el motivo del reporte..."
+                value={reportText}
+                onChange={(e) => { setReportText(e.target.value); setReportNotice('') }}
+              />
+              {reportNotice && <p className="mt-3 text-[12px] text-[rgba(255,180,0,0.92)]">{reportNotice}</p>}
+              <div className="mt-4 flex gap-2">
+                <button onClick={() => setShowReport(false)} className="flex-1 rounded-[8px] border border-[var(--oc-border)] py-2 text-[13px] text-[var(--oc-fg-muted)]">Cerrar</button>
+                <button onClick={handleSendReport} disabled={!reportText.trim() || reportSending} className="flex-1 rounded-[8px] bg-red-500 py-2 text-[13px] font-[700] text-white disabled:opacity-40">{reportSending ? 'Enviando...' : 'Enviar reporte'}</button>
               </div>
-            ) : (
-              <>
-                <h3 className="text-[16px] font-[700] text-white">Reportar perfil</h3>
-                <p className="mt-1 text-[13px] text-[var(--oc-fg-muted)]">¿Por qué reportás este perfil?</p>
-                <textarea
-                  className="mt-4 w-full rounded-[10px] border border-[var(--oc-border)] bg-[rgba(255,255,255,0.05)] p-3 text-[13px] text-white placeholder-[rgba(255,255,255,0.3)] focus:outline-none focus:border-[rgba(255,255,255,0.3)] resize-none"
-                  rows={4}
-                  placeholder="Describí el motivo del reporte..."
-                  value={reportText}
-                  onChange={(e) => setReportText(e.target.value)}
-                />
-                <div className="mt-4 flex gap-2">
-                  <button onClick={() => setShowReport(false)} className="flex-1 rounded-[8px] border border-[var(--oc-border)] py-2 text-[13px] text-[var(--oc-fg-muted)]">Cancelar</button>
-                  <button onClick={handleSendReport} disabled={!reportText.trim()} className="flex-1 rounded-[8px] bg-red-500 py-2 text-[13px] font-[700] text-white disabled:opacity-40">Enviar reporte</button>
-                </div>
-              </>
-            )}
+            </>
           </div>
         </div>
       )}

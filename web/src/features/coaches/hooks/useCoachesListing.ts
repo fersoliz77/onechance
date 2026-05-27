@@ -12,14 +12,28 @@ export const emptyCoachFilters: CoachFilters = { nationality: '', minYears: '' }
 export function useCoachesListing() {
   const [coaches, setCoaches] = useState<CoachProfile[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState<CoachFilters>(emptyCoachFilters)
 
-  useEffect(() => {
-    getPublishedCoaches().then(data => {
+  const load = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const data = await getPublishedCoaches()
       setCoaches(data)
+    } catch (err) {
+      console.error('[useCoachesListing] getPublishedCoaches failed:', err)
+      setCoaches([])
+      setError('No se pudieron cargar los técnicos. Verificá tu conexión e intentá de nuevo.')
+    } finally {
       setLoading(false)
-    })
+    }
+  }
+
+  useEffect(() => {
+    const id = window.setTimeout(() => { void load() }, 0)
+    return () => window.clearTimeout(id)
   }, [])
 
   const visible = useMemo(() => {
@@ -37,5 +51,5 @@ export function useCoachesListing() {
     })
   }, [coaches, filters, search])
 
-  return { coaches, visible, loading, search, setSearch, filters, setFilters }
+  return { coaches, visible, loading, error, reload: load, search, setSearch, filters, setFilters }
 }
