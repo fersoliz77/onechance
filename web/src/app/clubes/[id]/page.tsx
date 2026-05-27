@@ -1,12 +1,13 @@
 'use client'
 import { type CSSProperties, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
 import ContactModal from '@/components/ui/ContactModal'
 import ProfileSkeleton from '@/components/ui/ProfileSkeleton'
 import { getClub } from '@/lib/firestore'
-import { getProfileState, getVideos, subscribeProfileVisits } from '@/lib/rtdb'
+import { getPhotos, getProfileState, getVideos, subscribeProfileVisits, type PhotoEntry } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
 import { canViewProfile } from '@/lib/publicProfileAccess'
 import { registerProfileVisit } from '@/lib/profileViews'
@@ -22,18 +23,20 @@ export default function ClubProfilePage() {
   const [activeTab, setActiveTab] = useState(0)
   const [visits, setVisits] = useState(0)
   const [videos, setVideos] = useState<VideoEntry[]>([])
+  const [photos, setPhotos] = useState<PhotoEntry[]>([])
   const router = useRouter()
   const { user } = useAuth()
 
   useEffect(() => {
     let active = true
     ;(async () => {
-      const [cRes, sRes, vRes] = await Promise.allSettled([getClub(id), getProfileState(id), getVideos(id)])
+      const [cRes, sRes, vRes, pRes] = await Promise.allSettled([getClub(id), getProfileState(id), getVideos(id), getPhotos(id)])
       if (!active) return
 
       setClub(cRes.status === 'fulfilled' ? cRes.value : null)
       setShowContactCta(sRes.status === 'fulfilled' ? Boolean(sRes.value?.visibility?.showContact) : false)
       setVideos(vRes.status === 'fulfilled' ? vRes.value.filter((entry) => entry.status === 'published') : [])
+      setPhotos(pRes.status === 'fulfilled' ? pRes.value.filter((entry) => entry.status === 'published').sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : [])
       setLoading(false)
     })()
 
@@ -148,8 +151,8 @@ export default function ClubProfilePage() {
             </div>
           </div>
 
-          <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-7">
-            {['Resumen', 'Institución', 'Búsqueda', 'Logros', 'Videos', 'Contacto', 'Verificación'].map((tab, i) => (
+          <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-8">
+            {['Resumen', 'Institución', 'Búsqueda', 'Logros', 'Videos', 'Fotos', 'Contacto', 'Verificación'].map((tab, i) => (
               <button key={tab} type="button" onClick={() => setActiveTab(i)} className={`flex items-center justify-center border-b-2 cursor-pointer bg-transparent transition-colors ${activeTab === i ? 'border-[var(--oc-yellow)] text-[var(--oc-yellow)]' : 'border-transparent hover:text-white'}`}>{tab}</button>
             ))}
           </nav>
@@ -210,10 +213,27 @@ export default function ClubProfilePage() {
                   )}
                 </section>
               )}
+
+              {(activeTab === 0 || activeTab === 5) && (
+                <section className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
+                  <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Fotos institucionales</p>
+                  {photos.length === 0 ? (
+                    <p className="mt-2 text-[13px] text-[var(--oc-text-faint)]">Este club aún no publicó fotos.</p>
+                  ) : (
+                    <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      {photos.slice(0, 9).map((photo, i) => (
+                        <div key={photo.id} className="relative aspect-square overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.08)]">
+                          <Image src={photo.url} alt={`Foto ${i + 1} de ${club.name}`} fill sizes="180px" className="object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
             </div>
 
             <aside className="space-y-3">
-              {(activeTab === 0 || activeTab === 1 || activeTab === 5) && (
+              {(activeTab === 0 || activeTab === 1 || activeTab === 6) && (
                 <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-4)]">
                   <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--oc-text-faint)]">Cuerpo directivo</p>
                   <div className="mt-3 space-y-2.5">

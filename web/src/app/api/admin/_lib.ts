@@ -94,6 +94,13 @@ export const VideoActionSchema = z.object({
   status: z.enum(['hidden', 'pending', 'published']).optional(),
 })
 
+export const PhotoActionSchema = z.object({
+  playerUid: z.string().min(1),
+  photoId: z.string().min(1),
+  action: z.enum(['toggle', 'delete']),
+  status: z.enum(['hidden', 'pending', 'published']).optional(),
+})
+
 export const SystemRoleSchema = z.object({
   uid: z.string().min(1),
   systemRole: z.enum(['user', 'admin', 'super_admin']),

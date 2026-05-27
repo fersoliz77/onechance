@@ -19,12 +19,14 @@ import AdminCharts from '@/components/admin/AdminCharts'
 import AdminPendingTable from '@/components/admin/AdminPendingTable'
 import AdminActivity from '@/components/admin/AdminActivity'
 import AdminVideos from '@/components/admin/AdminVideos'
+import AdminPhotos from '@/components/admin/AdminPhotos'
 import AdminQuickActions from '@/components/admin/AdminQuickActions'
 import AdminConfigPanel from '@/components/admin/AdminConfigPanel'
 import AdminProfilesTab from '@/components/admin/AdminProfilesTab'
 import AdminSubscriptionsTab from '@/components/admin/AdminSubscriptionsTab'
 import AdminMessagesTab from '@/components/admin/AdminMessagesTab'
 import AdminReportsTab from '@/components/admin/AdminReportsTab'
+import type { PhotoEntry } from '@/lib/rtdb'
 import CommandPalette from '@/components/admin/CommandPalette'
 import ToastStack from '@/components/admin/ui/ToastStack'
 import ConfirmModal from '@/components/admin/ui/ConfirmModal'
@@ -117,6 +119,7 @@ export default function AdminPage() {
   const [agents,  setAgents]  = useState<AgentProfile[]>([])
   const [users, setUsers]     = useState<UserRecord[]>([])
   const [videos, setVideos]   = useState<(VideoEntry & { playerUid: string })[]>([])
+  const [photos, setPhotos]   = useState<(PhotoEntry & { playerUid: string })[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingVisits, setLoadingVisits] = useState(false)
   const [pendingMessagesCount, setPendingMessagesCount] = useState(0)
@@ -289,7 +292,7 @@ export default function AdminPage() {
     window.localStorage.setItem(VISIT_PAGE_SIZE_STORAGE_KEY, String(visitPageSize))
   }, [visitPageSize])
 
-  // Carga lazy: videos solo cuando se abre la pestaña "videos"
+  // Carga lazy: videos y fotos solo cuando se abre la pestaña "videos"
   useEffect(() => {
     if (!user || !isAdmin || tab !== 'videos') return
     if (loadedRef.current.has('videos')) return
@@ -298,14 +301,22 @@ export default function AdminPage() {
       try {
         if (!firebaseUser) return
         const token = await firebaseUser.getIdToken()
-        const res = await fetch('/api/admin/video', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!res.ok) throw new Error('Failed to load videos')
-        const body = await res.json() as { items?: (VideoEntry & { playerUid: string })[] }
+        const [videoRes, photoRes] = await Promise.all([
+          fetch('/api/admin/video', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch('/api/admin/photo', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ])
+        if (!videoRes.ok) throw new Error('Failed to load videos')
+        if (!photoRes.ok) throw new Error('Failed to load photos')
+        const body = await videoRes.json() as { items?: (VideoEntry & { playerUid: string })[] }
+        const photoBody = await photoRes.json() as { items?: (PhotoEntry & { playerUid: string })[] }
         setVideos(Array.isArray(body.items) ? body.items : [])
+        setPhotos(Array.isArray(photoBody.items) ? photoBody.items : [])
       } catch (err) {
-        console.error('[Admin] getAllVideos failed:', err)
+        console.error('[Admin] getAllVideos/getAllPhotos failed:', err)
       } finally {
       }
     }
@@ -319,6 +330,7 @@ export default function AdminPage() {
       const token = await firebaseUser.getIdToken(forceRefresh)
       return fetch(path, {
         method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
       })
@@ -497,6 +509,36 @@ export default function AdminPage() {
           await logAudit({ uid: firebaseUser!.uid, email: firebaseUser!.email }, 'delete_video', id, 'video')
           toast.success('Video eliminado')
         } catch { toast.error('Error al eliminar video') }
+      },
+    })
+  }, [callAdminApi, firebaseUser, toast])
+
+  const handleTogglePhoto = useCallback((p: PhotoEntry & { playerUid: string }) => {
+    execute(`photo-${p.id}`, async () => {
+      const next: PhotoEntry['status'] = p.status === 'pending' ? 'published' : p.status === 'published' ? 'hidden' : 'published'
+      try {
+        await callAdminApi('/api/admin/photo', { playerUid: p.playerUid, photoId: p.id, action: 'toggle', status: next })
+        setPhotos(ps => ps.map(x => x.id === p.id && x.playerUid === p.playerUid ? { ...x, status: next } : x))
+        await logAudit({ uid: firebaseUser!.uid, email: firebaseUser!.email }, 'toggle_photo', p.id, 'photo', { status: next })
+        toast.info(next === 'published' ? 'Foto publicada' : 'Foto ocultada')
+      } catch { toast.error('Error al actualizar foto') }
+    })
+  }, [callAdminApi, execute, firebaseUser, toast])
+
+  const confirmRemovePhoto = useCallback((playerUid: string, id: string) => {
+    setConfirm({
+      open: true, danger: true,
+      title: 'Eliminar foto',
+      description: 'Esta acción es permanente y no puede deshacerse.',
+      confirmLabel: 'Eliminar',
+      onConfirm: async () => {
+        setConfirm(CONFIRM_CLOSED)
+        try {
+          await callAdminApi('/api/admin/photo', { playerUid, photoId: id, action: 'delete' })
+          setPhotos(ps => ps.filter(p => !(p.playerUid === playerUid && p.id === id)))
+          await logAudit({ uid: firebaseUser!.uid, email: firebaseUser!.email }, 'delete_photo', id, 'photo')
+          toast.success('Foto eliminada')
+        } catch { toast.error('Error al eliminar foto') }
       },
     })
   }, [callAdminApi, firebaseUser, toast])
@@ -745,7 +787,10 @@ export default function AdminPage() {
 
           {/* VIDEOS */}
           {tab === 'videos' && (
-            <AdminVideos videos={videos} playerNames={playerNames} onToggle={handleToggleVideo} onRemove={confirmRemoveVideo} />
+            <div className="space-y-6">
+              <AdminVideos videos={videos} playerNames={playerNames} onToggle={handleToggleVideo} onRemove={confirmRemoveVideo} />
+              <AdminPhotos photos={photos} playerNames={playerNames} onToggle={handleTogglePhoto} onRemove={confirmRemovePhoto} />
+            </div>
           )}
 
           {/* VISITAS */}

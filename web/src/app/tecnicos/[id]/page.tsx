@@ -1,13 +1,14 @@
 'use client'
 import { type CSSProperties, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import ContactModal from '@/components/ui/ContactModal'
 import ProfileSkeleton from '@/components/ui/ProfileSkeleton'
 import { getCoach } from '@/lib/firestore'
-import { getProfileState, getVideos, subscribeProfileVisits } from '@/lib/rtdb'
+import { getPhotos, getProfileState, getVideos, subscribeProfileVisits, type PhotoEntry } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
 import { canViewProfile } from '@/lib/publicProfileAccess'
 import { registerProfileVisit } from '@/lib/profileViews'
@@ -21,6 +22,7 @@ export default function CoachProfilePage() {
   const [showContact, setShowContact] = useState(false)
   const [showContactCta, setShowContactCta] = useState(false)
   const [videos, setVideos] = useState<VideoEntry[]>([])
+  const [photos, setPhotos] = useState<PhotoEntry[]>([])
   const [activeTab, setActiveTab] = useState(0)
   const [visits, setVisits] = useState(0)
   const router = useRouter()
@@ -29,12 +31,13 @@ export default function CoachProfilePage() {
   useEffect(() => {
     let active = true
     ;(async () => {
-      const [cRes, sRes, vRes] = await Promise.allSettled([getCoach(id), getProfileState(id), getVideos(id)])
+      const [cRes, sRes, vRes, pRes] = await Promise.allSettled([getCoach(id), getProfileState(id), getVideos(id), getPhotos(id)])
       if (!active) return
 
       setCoach(cRes.status === 'fulfilled' ? cRes.value : null)
       setShowContactCta(sRes.status === 'fulfilled' ? Boolean(sRes.value?.visibility?.showContact) : false)
       setVideos(vRes.status === 'fulfilled' ? vRes.value.filter((entry) => entry.status === 'published') : [])
+      setPhotos(pRes.status === 'fulfilled' ? pRes.value.filter((entry) => entry.status === 'published').sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : [])
       setLoading(false)
     })()
 
@@ -151,8 +154,8 @@ export default function CoachProfilePage() {
             </div>
           </div>
 
-          <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
-            {['Resumen', 'Trayectoria', 'Habilidades', 'Videos', 'Palmarés', 'Estado'].map((tab, i) => (
+          <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-7">
+            {['Resumen', 'Trayectoria', 'Habilidades', 'Videos', 'Fotos', 'Palmarés', 'Estado'].map((tab, i) => (
               <button key={tab} type="button" onClick={() => setActiveTab(i)} className={`flex items-center justify-center border-b-2 cursor-pointer bg-transparent transition-colors ${activeTab === i ? 'border-[var(--oc-blue)] text-[var(--oc-blue)]' : 'border-transparent hover:text-white'}`}>{tab}</button>
             ))}
           </nav>
@@ -181,7 +184,7 @@ export default function CoachProfilePage() {
                   </div>
                 </div>
               )}
-              {(activeTab === 0 || activeTab === 2 || activeTab === 4) && coach.trophies && coach.trophies.length > 0 && (
+              {(activeTab === 0 || activeTab === 2 || activeTab === 5) && coach.trophies && coach.trophies.length > 0 && (
                 <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
                   <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2.5">Palmarés</div>
                   <div className="flex flex-col gap-1.5">
@@ -208,9 +211,23 @@ export default function CoachProfilePage() {
                   )}
                 </div>
               )}
+              {(activeTab === 0 || activeTab === 4) && (
+                <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
+                  <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2.5">Fotos</div>
+                  {photos.length === 0 ? <p className="text-[13px] text-[rgba(255,255,255,0.35)]">Este técnico aún no publicó fotos.</p> : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      {photos.slice(0, 9).map((photo, i) => (
+                        <div key={photo.id} className="relative aspect-square overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.08)]">
+                          <Image src={photo.url} alt={`Foto ${i + 1} de ${coach.fullName}`} fill sizes="180px" className="object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex flex-col gap-3">
-              {(activeTab === 0 || activeTab === 5) && (
+              {(activeTab === 0 || activeTab === 6) && (
                 <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-4)]">
                   <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2">Club actual</div>
                   <div className="text-white text-[15px] font-medium">{coach.currentClub || 'Sin club'}</div>

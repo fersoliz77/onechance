@@ -1,13 +1,14 @@
 'use client'
 import { type CSSProperties, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import Background from '@/components/layout/Background'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import ContactModal from '@/components/ui/ContactModal'
 import ProfileSkeleton from '@/components/ui/ProfileSkeleton'
 import { getAgent } from '@/lib/firestore'
-import { getProfileState, getVideos, subscribeProfileVisits } from '@/lib/rtdb'
+import { getPhotos, getProfileState, getVideos, subscribeProfileVisits, type PhotoEntry } from '@/lib/rtdb'
 import { useAuth } from '@/context/AuthContext'
 import { canViewProfile } from '@/lib/publicProfileAccess'
 import { registerProfileVisit } from '@/lib/profileViews'
@@ -21,6 +22,7 @@ export default function AgentProfilePage() {
   const [showContact, setShowContact] = useState(false)
   const [showContactCta, setShowContactCta] = useState(false)
   const [videos, setVideos] = useState<VideoEntry[]>([])
+  const [photos, setPhotos] = useState<PhotoEntry[]>([])
   const [activeTab, setActiveTab] = useState(0)
   const [visits, setVisits] = useState(0)
   const router = useRouter()
@@ -29,12 +31,13 @@ export default function AgentProfilePage() {
   useEffect(() => {
     let active = true
     ;(async () => {
-      const [aRes, sRes, vRes] = await Promise.allSettled([getAgent(id), getProfileState(id), getVideos(id)])
+      const [aRes, sRes, vRes, pRes] = await Promise.allSettled([getAgent(id), getProfileState(id), getVideos(id), getPhotos(id)])
       if (!active) return
 
       setAgent(aRes.status === 'fulfilled' ? aRes.value : null)
       setShowContactCta(sRes.status === 'fulfilled' ? Boolean(sRes.value?.visibility?.showContact) : false)
       setVideos(vRes.status === 'fulfilled' ? vRes.value.filter((entry) => entry.status === 'published') : [])
+      setPhotos(pRes.status === 'fulfilled' ? pRes.value.filter((entry) => entry.status === 'published').sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : [])
       setLoading(false)
     })()
 
@@ -160,8 +163,8 @@ export default function AgentProfilePage() {
             </div>
           </div>
 
-          <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-6">
-            {['Resumen', 'Agencia', 'Mercados', 'Transfers', 'Videos', 'Contacto'].map((tab, i) => (
+          <nav className="mb-5 grid h-12 grid-cols-3 rounded-b-[12px] border-x border-b border-[var(--oc-border)] bg-[rgba(6,18,23,0.95)] text-center text-[13px] font-[700] text-[var(--oc-fg-muted)] md:grid-cols-7">
+            {['Resumen', 'Agencia', 'Mercados', 'Transfers', 'Videos', 'Fotos', 'Contacto'].map((tab, i) => (
               <button key={tab} type="button" onClick={() => setActiveTab(i)} className={`flex items-center justify-center border-b-2 cursor-pointer bg-transparent transition-colors ${activeTab === i ? 'border-[var(--oc-purple)] text-[var(--oc-purple)]' : 'border-transparent hover:text-white'}`}>{tab}</button>
             ))}
           </nav>
@@ -202,9 +205,25 @@ export default function AgentProfilePage() {
                   )}
                 </div>
               )}
+              {(activeTab === 0 || activeTab === 5) && (
+                <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-5)]">
+                  <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2.5">Fotos</div>
+                  {photos.length === 0 ? (
+                    <p className="text-[13px] text-[rgba(255,255,255,0.35)]">Este representante aún no publicó fotos.</p>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      {photos.slice(0, 9).map((photo, i) => (
+                        <div key={photo.id} className="relative aspect-square overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.08)]">
+                          <Image src={photo.url} alt={`Foto ${i + 1} de ${agent.fullName}`} fill sizes="180px" className="object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex flex-col gap-3">
-              {(activeTab === 0 || activeTab === 1 || activeTab === 2) && (
+              {(activeTab === 0 || activeTab === 1 || activeTab === 2 || activeTab === 6) && (
                 <div className="oc-elev-card rounded-[var(--oc-radius-lg)] p-[var(--oc-space-4)]">
                   <div className="text-[rgba(255,255,255,0.2)] text-[10px] uppercase tracking-[0.08em] mb-2">Agencia</div>
                   <div className="text-white text-[15px] font-medium">{agent.agencyName || 'Independiente'}</div>

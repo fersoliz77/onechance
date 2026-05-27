@@ -47,14 +47,15 @@ export interface PhotoEntry {
   id: string
   url: string
   storagePath: string
+  status: 'hidden' | 'pending' | 'published'
   createdAt: string
 }
 
 export async function getPhotos(uid: string): Promise<PhotoEntry[]> {
   const snap = await get(ref(rtdb, `photos/${uid}`))
   if (!snap.exists()) return []
-  const val = snap.val() as Record<string, Omit<PhotoEntry, 'id'>>
-  return Object.entries(val).map(([id, p]) => ({ id, ...p }))
+  const val = snap.val() as Record<string, Omit<PhotoEntry, 'id'> & { status?: PhotoEntry['status'] }>
+  return Object.entries(val).map(([id, p]) => ({ id, ...p, status: p.status ?? 'published' }))
 }
 
 export async function addPhoto(uid: string, photo: Omit<PhotoEntry, 'id'>) {
@@ -65,6 +66,23 @@ export async function addPhoto(uid: string, photo: Omit<PhotoEntry, 'id'>) {
 
 export async function removePhoto(uid: string, photoId: string) {
   await remove(ref(rtdb, `photos/${uid}/${photoId}`))
+}
+
+export async function togglePhotoStatus(uid: string, photoId: string, status: 'hidden' | 'pending' | 'published') {
+  await update(ref(rtdb, `photos/${uid}/${photoId}`), { status })
+}
+
+export async function getAllPhotos(): Promise<(PhotoEntry & { playerUid: string })[]> {
+  const snap = await get(ref(rtdb, 'photos'))
+  if (!snap.exists()) return []
+  const result: (PhotoEntry & { playerUid: string })[] = []
+  const all = snap.val() as Record<string, Record<string, Omit<PhotoEntry, 'id'> & { status?: PhotoEntry['status'] }>>
+  for (const [playerUid, photos] of Object.entries(all)) {
+    for (const [id, p] of Object.entries(photos)) {
+      result.push({ id, playerUid, ...p, status: p.status ?? 'published' })
+    }
+  }
+  return result
 }
 
 // ── NOTIFICATIONS ─────────────────────────────────────────────
