@@ -14,8 +14,11 @@
     },
     "videos": {
       "$uid": {
-        ".read":  "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')",
-        ".write": "auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin')"
+        "$videoId": {
+          ".read": "data.child('status').val() === 'published' || (auth != null && (auth.uid === $uid || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin'))",
+          ".write": "auth != null && ((root.child('userRoles/' + auth.uid + '/systemRole').val() === 'admin' || root.child('userRoles/' + auth.uid + '/systemRole').val() === 'super_admin') || (auth.uid === $uid && ((!data.exists() && newData.child('status').val() === 'hidden') || (data.exists() && !newData.exists()) || (data.exists() && (newData.child('status').val() === data.child('status').val() || (data.child('status').val() === 'hidden' && newData.child('status').val() === 'pending') || (data.child('status').val() === 'pending' && newData.child('status').val() === 'hidden') || (data.child('status').val() === 'published' && newData.child('status').val() === 'hidden'))))))",
+          ".validate": "!newData.exists() || (newData.hasChildren(['type','platform','title','status','createdAt']) && newData.child('type').val().matches(/^(embed|upload)$/) && (newData.child('platform').val() === null || newData.child('platform').val().matches(/^(youtube|vimeo|tiktok|instagram)$/)) && newData.child('title').isString() && newData.child('title').val().length <= 120 && (newData.child('url').val() === null || newData.child('url').isString()) && (newData.child('storageRef').val() === null || newData.child('storageRef').isString()) && newData.child('status').val().matches(/^(hidden|pending|published)$/) && newData.child('createdAt').isString())"
+        }
       }
     },
     "photos": {

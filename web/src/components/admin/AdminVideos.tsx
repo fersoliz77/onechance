@@ -37,7 +37,7 @@ export default function AdminVideos({ videos, playerNames, onToggle, onRemove, o
   return (
     <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[17px] font-semibold text-white">Videos pendientes de revisión</h2>
+        <h2 className="text-[17px] font-semibold text-white">Moderación de videos</h2>
         {compact
           ? onViewAll && <button onClick={onViewAll} className="text-[13px] font-bold text-[#AAFF00] cursor-pointer hover:underline bg-transparent border-none">Ver todos</button>
           : (
